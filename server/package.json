@@ -16,7 +16,6 @@
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-rate-limit": "^7.4.0",
     "express-validator": "^7.1.0",
@@ -37,6 +36,7 @@
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.1.0",
     "@types/pg": "^8.11.6",
+    "dotenv": "^16.4.5",
     "jest": "^29.7.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.5.4"

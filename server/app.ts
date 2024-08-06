@@ -1,7 +1,7 @@
+import 'dotenv/config';
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import os from 'os';
@@ -9,8 +9,6 @@ import cluster from 'cluster';
 import morgan from 'morgan';
 import fs from 'fs';
 import path from 'path';
-
-dotenv.config();
 
 if (cluster.isPrimary) {
   console.log(`Cluster Manager ${process.pid} is running`);
