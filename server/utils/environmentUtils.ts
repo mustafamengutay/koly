@@ -19,6 +19,4 @@ export const checkEnvironmentVariables = (variables: string[]) => {
       );
     }
   }
-
-  console.log('OK');
 };
