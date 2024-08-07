@@ -1,0 +1,14 @@
+model User {
+  id                   Int       @id @default(autoincrement())
+  name                 String
+  surname              String
+  email                String    @unique
+  password             String
+  role                 String?
+  projects             Project[] @relation("OwnedProjects")
+  participatedProjects Project[]
+  reportedIssues       Issue[]   @relation("ReportedIssues")
+  adoptedIssues        Issue[]   @relation("AdoptedIssues")
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
