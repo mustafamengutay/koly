@@ -11,13 +11,25 @@ The main idea of “koly” is to provide a dynamic issue report for products an
 
 This file contains configuration settings for the tool. Each environment variable provides necessary information for different components. So, be sure that you added all those variables.
 
-| Name    | Description                                 | Example Value |
-| ------- | ------------------------------------------- | ------------- |
-| PORT    | The port on which the server will listen    | 3000          |
-| DB_HOST | The address of the database server          | localhost     |
-| DB_PORT | The port number of the database server      | 5432          |
-| DB_USER | The username for connecting to the database | your username |
-| DB_NAME | The name of the database to use             | koly          |
+| Name         | Description                              | Example Value                                               |
+| ------------ | ---------------------------------------- | ----------------------------------------------------------- |
+| PORT         | The port on which the server will listen | 3000                                                        |
+| DATABASE_URL | The address of your database server      | postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public |
+
+### DATABASE_URL Format
+
+| Name     | Description                                    | Example Value                          |
+| -------- | ---------------------------------------------- | -------------------------------------- |
+| USER     | The username to connect to the database        | username                               |
+| PASSWORD | The password for your database user            | password (empty if you do not have it) |
+| HOST     | The address of the database server             | localhost                              |
+| PORT     | The port where your database server is running | 5432                                   |
+| DATABASE | The name of the database                       | koly                                   |
+
+```bash
+# Example
+DATABASE_URL="postgresql://johndoe:randompassword@localhost:5432/mydb?schema=public"
+```
 
 ## Getting started
 
