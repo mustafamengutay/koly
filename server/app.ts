@@ -10,12 +10,17 @@ import morgan from 'morgan';
 import fs from 'fs';
 import path from 'path';
 
+import { errorHandler } from './middlewares/errorHandler';
+
+import authRoutes from './routes/authentication.route';
+
 if (cluster.isPrimary) {
   console.log(`Cluster Manager ${process.pid} is running`);
 
   const numCPUs = os.availableParallelism();
   for (let i = 0; i < numCPUs; i++) {
     cluster.fork();
+    console.log(`Server instance is working`);
   }
 
   cluster.on('exit', (worker) => {
@@ -44,6 +49,9 @@ if (cluster.isPrimary) {
   app.use(bodyParser.json());
   app.use(morgan('tiny', { stream: accessLogStream }));
 
+  app.use('/api/v1/auth', authRoutes);
+
+  app.use(errorHandler);
+
   app.listen(process.env.PORT);
-  //   console.log('Server is running!');
 }
