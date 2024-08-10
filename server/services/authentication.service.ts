@@ -1,11 +1,14 @@
 import prisma from '../configs/database';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
+import { User } from '@prisma/client/index';
 import { HttpError } from '../types/errors';
 
 export default class AuthenticationService {
   private static instance: AuthenticationService;
   private static readonly SALT_LENGTH: number = 12;
+  private static readonly SECRET: string = process.env.JWT_SECRET!;
 
   private constructor() {}
 
@@ -31,7 +34,7 @@ export default class AuthenticationService {
     surname: string,
     email: string,
     password: string
-  ) {
+  ): Promise<User> {
     const isEmailExist = await this.isEmailExist(email);
     if (isEmailExist) {
       throw new HttpError(409, 'The email is already exist');
@@ -43,12 +46,38 @@ export default class AuthenticationService {
     return newUser;
   }
 
+  /**
+   * Creates a login token for a user and returns it. If any error occurs,
+   * it throws that specific error.
+   * @param email User's email
+   * @param password User's password
+   * @returns A login token
+   */
+  public async login(email: string, password: string): Promise<string> {
+    const user = await this.findUserByEmail(email);
+    if (!user) {
+      throw new HttpError(404, 'The user does not exist');
+    }
+
+    const isPasswordCorrect = await this.isPasswordCorrect(
+      password,
+      user.password
+    );
+    if (!isPasswordCorrect) {
+      throw new HttpError(401, 'The password is wrong');
+    }
+
+    const token: string = this.createLoginToken(user.id, user.email);
+
+    return token;
+  }
+
   private async createUser(
     name: string,
     surname: string,
     email: string,
     hashedPassword: string
-  ) {
+  ): Promise<User> {
     try {
       const user = await prisma.user.create({
         data: {
@@ -62,6 +91,50 @@ export default class AuthenticationService {
       return user;
     } catch {
       throw new HttpError(500, 'The user could not be created');
+    }
+  }
+
+  private async findUserByEmail(email: string): Promise<User | null> {
+    try {
+      const user = await prisma.user.findUnique({
+        where: {
+          email,
+        },
+      });
+
+      return user;
+    } catch {
+      throw new HttpError(500, 'The user could not be found');
+    }
+  }
+
+  private createLoginToken(id: number, email: string): string {
+    try {
+      const token: string = jwt.sign(
+        {
+          id,
+          email,
+        },
+        AuthenticationService.SECRET,
+        {
+          expiresIn: '30m',
+        }
+      );
+
+      return token;
+    } catch {
+      throw new HttpError(500, 'The token could not be created');
+    }
+  }
+
+  private async isPasswordCorrect(
+    password: string,
+    hashedPassword: string
+  ): Promise<boolean> {
+    try {
+      return await bcrypt.compare(password, hashedPassword);
+    } catch {
+      throw new HttpError(500, 'The password could not be compared');
     }
   }
 

@@ -29,3 +29,24 @@ export const postSignUp = async (
     next(error);
   }
 };
+
+export const postLogin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email, password } = req.body;
+
+    const token: string = await authenticationService.login(email, password);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        token,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};

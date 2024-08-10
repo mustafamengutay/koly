@@ -1,5 +1,6 @@
 import prisma from '../../configs/database';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 
 import AuthenticationService from '../../services/authentication.service';
 import { HttpError } from '../../types/errors';
@@ -9,6 +10,7 @@ describe('AuthenticationService', () => {
 
   beforeAll(() => {
     bcrypt.hash = jest.fn().mockResolvedValue('hashedPassword');
+    jwt.sign = jest.fn().mockReturnValue('complexToken');
 
     prisma.user.create = jest.fn().mockResolvedValue({
       name: 'test',
@@ -91,6 +93,49 @@ describe('AuthenticationService', () => {
       await expect(
         authenticationService.signUp(name, surname, email, password)
       ).rejects.toThrow(HttpError);
+    });
+  });
+
+  describe('login', () => {
+    it('should return a login token if the login step successfull', async () => {
+      prisma.user.findUnique = jest.fn().mockResolvedValue({
+        email: 'test@gmail.com',
+        password: 'hashedPassword',
+      });
+      bcrypt.compare = jest.fn().mockResolvedValue(true);
+
+      const email = 'test@gmail.com';
+      const password = 'test123';
+
+      await expect(authenticationService.login(email, password)).resolves.toBe(
+        'complexToken'
+      );
+    });
+
+    it('should throw an Http error if the user does not exist', async () => {
+      prisma.user.findUnique = jest.fn().mockResolvedValue(null);
+
+      const email = 'test@gmail.com';
+      const password = 'test123';
+
+      await expect(
+        authenticationService.login(email, password)
+      ).rejects.toThrow(new HttpError(404, 'The user does not exist'));
+    });
+
+    it('should throw an error if the password is incorrect', async () => {
+      prisma.user.findUnique = jest.fn().mockResolvedValue({
+        email: 'test@gmail.com',
+        password: 'hashedPassword',
+      });
+      bcrypt.compare = jest.fn().mockResolvedValue(false);
+
+      const email = 'test@gmail.com';
+      const password = 'test123';
+
+      await expect(
+        authenticationService.login(email, password)
+      ).rejects.toThrow(new HttpError(401, 'The password is wrong'));
     });
   });
 });

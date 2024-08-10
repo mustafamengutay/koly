@@ -11,10 +11,11 @@ The main idea of “koly” is to provide a dynamic issue report for products an
 
 This file contains configuration settings for the tool. Each environment variable provides necessary information for different components. So, be sure that you added all those variables.
 
-| Name         | Description                              | Example Value                                               |
-| ------------ | ---------------------------------------- | ----------------------------------------------------------- |
-| PORT         | The port on which the server will listen | 3000                                                        |
-| DATABASE_URL | The address of your database server      | postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public |
+| Name         | Description                                 | Example Value                                               |
+| ------------ | ------------------------------------------- | ----------------------------------------------------------- |
+| PORT         | The port on which the server will listen    | 3000                                                        |
+| DATABASE_URL | The address of your database server         | postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public |
+| JWT_SECRET   | A secret key for the authentication feature | any text                                                    |
 
 ### DATABASE_URL Format
 

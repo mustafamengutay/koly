@@ -2,7 +2,10 @@ import express from 'express';
 import { body } from 'express-validator';
 import { inputValidator } from '../middlewares/validation';
 
-import { postSignUp } from '../controllers/authentication.controller';
+import {
+  postSignUp,
+  postLogin,
+} from '../controllers/authentication.controller';
 
 const router = express.Router();
 
@@ -16,6 +19,16 @@ router.post(
   ],
   inputValidator,
   postSignUp
+);
+
+router.post(
+  '/login',
+  [
+    body('email').trim().notEmpty().isEmail(),
+    body('password').trim().notEmpty(),
+  ],
+  inputValidator,
+  postLogin
 );
 
 export default router;
