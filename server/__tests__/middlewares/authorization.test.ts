@@ -19,7 +19,7 @@ describe('verifyUser', () => {
   beforeEach(() => {
     res = createResponse();
     next = jest.fn();
-    jwt.verify = jest.fn().mockReturnValue({ userId: '1' });
+    jwt.verify = jest.fn().mockReturnValue({ id: '1' });
   });
 
   afterAll(() => {

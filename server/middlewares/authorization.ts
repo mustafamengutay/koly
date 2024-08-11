@@ -26,7 +26,7 @@ export const verifyUser = (
     throw new HttpError(401, 'User is not authenticated');
   }
 
-  req.userId = decodedData.userId;
+  req.userId = decodedData.id;
 
   next();
 };
