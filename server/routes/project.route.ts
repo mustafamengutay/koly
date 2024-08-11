@@ -2,8 +2,12 @@ import express from 'express';
 import { body } from 'express-validator';
 import { inputValidator } from '../middlewares/validation';
 
-import { postCreateProject } from '../controllers/project.controller';
 import { verifyUser } from '../middlewares/authorization';
+
+import {
+  postCreateProject,
+  getListCreatedProjects,
+} from '../controllers/project.controller';
 
 const router = express.Router();
 
@@ -14,5 +18,7 @@ router.post(
   verifyUser,
   postCreateProject
 );
+
+router.get('/created', verifyUser, getListCreatedProjects);
 
 export default router;

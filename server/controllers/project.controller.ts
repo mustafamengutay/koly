@@ -30,3 +30,26 @@ export const postCreateProject = async (
     next(error);
   }
 };
+
+export const getListCreatedProjects = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const userId = req.userId!;
+
+  try {
+    const createdProjects: Project[] = await projectService.listCreatedProjects(
+      userId
+    );
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        projects: createdProjects,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};

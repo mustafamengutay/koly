@@ -45,4 +45,25 @@ export class ProjectService {
       throw new HttpError(500, 'The project could not be created');
     }
   }
+
+  /**
+   * Lists user created projects. If any error occurs, it throws the error.
+   * @param userId User ID
+   * @returns List of user projects.
+   */
+  public async listCreatedProjects(userId: number): Promise<Project[]> {
+    try {
+      const projects: Project[] = await prisma.project.findMany({
+        where: {
+          owner: {
+            id: userId,
+          },
+        },
+      });
+
+      return projects;
+    } catch {
+      throw new HttpError(500, 'Project could not be found');
+    }
+  }
 }
