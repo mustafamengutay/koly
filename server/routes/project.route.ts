@@ -7,6 +7,7 @@ import { verifyUser } from '../middlewares/authorization';
 import {
   postCreateProject,
   getListCreatedProjects,
+  getListParticipatedProjects,
 } from '../controllers/project.controller';
 
 const router = express.Router();
@@ -20,5 +21,7 @@ router.post(
 );
 
 router.get('/created', verifyUser, getListCreatedProjects);
+
+router.get('/participated', verifyUser, getListParticipatedProjects);
 
 export default router;

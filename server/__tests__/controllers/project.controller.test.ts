@@ -8,6 +8,7 @@ import {
 
 import {
   getListCreatedProjects,
+  getListParticipatedProjects,
   postCreateProject,
 } from '../../controllers/project.controller';
 import { ProjectService } from '../../services/project.service';
@@ -74,7 +75,7 @@ describe('Project Controllers', () => {
     });
   });
 
-  describe('getListUserCreatedProjects', () => {
+  describe('getListCreatedProjects', () => {
     const userId = 1;
 
     const projects = [
@@ -121,6 +122,57 @@ describe('Project Controllers', () => {
       );
 
       await postCreateProject(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe('listParticipatedProjects', () => {
+    const userId = 3;
+
+    const project = {
+      id: 1,
+      ownerId: 1,
+      name: 'Project 1',
+    };
+
+    beforeEach(() => {
+      projectService.listParticipatedProjects = jest.fn();
+      req = createRequest({
+        userId: userId,
+        method: 'GET',
+        url: '/api/v1/projects/participated',
+      });
+    });
+
+    it('should return 200 status code successful participated project listing', async () => {
+      (projectService.listParticipatedProjects as jest.Mock).mockResolvedValue(
+        project
+      );
+
+      await getListParticipatedProjects(req, res, next);
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('should respond with success status and data on participated project listing', async () => {
+      (projectService.listParticipatedProjects as jest.Mock).mockResolvedValue(
+        project
+      );
+
+      await getListParticipatedProjects(req, res, next);
+
+      expect(res._getJSONData()).toHaveProperty('status', 'success');
+      expect(res._getJSONData()).toHaveProperty('data', { projects: project });
+    });
+
+    it('should pass the error to the error handler if project listing fails', async () => {
+      const error = new Error('Fail');
+      (projectService.listParticipatedProjects as jest.Mock).mockRejectedValue(
+        error
+      );
+
+      await getListCreatedProjects(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });

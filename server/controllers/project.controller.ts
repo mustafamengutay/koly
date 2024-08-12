@@ -53,3 +53,25 @@ export const getListCreatedProjects = async (
     next(error);
   }
 };
+
+export const getListParticipatedProjects = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const userId = req.userId!;
+
+  try {
+    const participatedProjects: Project[] =
+      await projectService.listParticipatedProjects(userId);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        projects: participatedProjects,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};

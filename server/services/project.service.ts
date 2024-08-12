@@ -66,4 +66,33 @@ export class ProjectService {
       throw new HttpError(500, 'Project could not be found');
     }
   }
+
+  /**
+   * Lists participated projects of a user. If any error occurs,
+   * it throws the error.
+   * @param userId User ID
+   * @returns List of participated projects of a user.
+   */
+  public async listParticipatedProjects(userId: number): Promise<Project[]> {
+    try {
+      const participatedProject: Project[] = await prisma.project.findMany({
+        where: {
+          participants: {
+            some: {
+              id: userId,
+            },
+          },
+          owner: {
+            isNot: {
+              id: userId,
+            },
+          },
+        },
+      });
+
+      return participatedProject;
+    } catch {
+      throw new HttpError(500, 'Project could not be found');
+    }
+  }
 }

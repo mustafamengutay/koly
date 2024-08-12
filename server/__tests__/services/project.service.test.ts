@@ -13,6 +13,10 @@ describe('UserService', () => {
     prisma.project.findMany = jest.fn();
   });
 
+  afterAll(() => {
+    jest.clearAllMocks();
+  });
+
   const userId: number = 1;
   const project = {
     id: 1,
@@ -63,6 +67,34 @@ describe('UserService', () => {
       await expect(projectService.listCreatedProjects(userId)).rejects.toThrow(
         HttpError
       );
+    });
+  });
+
+  describe('listParticipatedProjects', () => {
+    const userId = 1;
+    const project = {
+      id: 1,
+      ownerId: 3,
+      name: 'Project 1',
+    };
+
+    it('should return a list of user participated projects', async () => {
+      (prisma.project.findMany as jest.Mock).mockResolvedValue([project]);
+
+      const participatedProjects: Project[] =
+        await projectService.listParticipatedProjects(userId);
+
+      expect(participatedProjects).toContain(project);
+    });
+
+    it('should throw an error if listing user participated projects fails', async () => {
+      (prisma.project.findMany as jest.Mock).mockRejectedValue(
+        new HttpError(500, 'Project could not be found')
+      );
+
+      await expect(
+        projectService.listParticipatedProjects(userId)
+      ).rejects.toThrow(HttpError);
     });
   });
 });
