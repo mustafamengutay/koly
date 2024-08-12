@@ -97,4 +97,33 @@ describe('UserService', () => {
       ).rejects.toThrow(HttpError);
     });
   });
+
+  describe('listAllProjects', () => {
+    const userId = 1;
+    const project = {
+      id: 1,
+      ownerId: 3,
+      name: 'Project 1',
+    };
+
+    it('should return a list of all projects that user is the member of it', async () => {
+      (prisma.project.findMany as jest.Mock).mockResolvedValue([project]);
+
+      const allProjects: Project[] = await projectService.listAllProjects(
+        userId
+      );
+
+      expect(allProjects).toContain(project);
+    });
+
+    it("should throw an error if listing user's projects fails", async () => {
+      (prisma.project.findMany as jest.Mock).mockRejectedValue(
+        new HttpError(500, 'Project could not be found')
+      );
+
+      await expect(projectService.listAllProjects(userId)).rejects.toThrow(
+        HttpError
+      );
+    });
+  });
 });

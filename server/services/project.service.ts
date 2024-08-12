@@ -47,13 +47,37 @@ export class ProjectService {
   }
 
   /**
+   * Lists all projects that a user is a member of it. If any error occurs,
+   * it throws the error.
+   * @param userId User ID
+   * @returns List of all projects.
+   */
+  public async listAllProjects(userId: number): Promise<Project[]> {
+    try {
+      const allProjects: Project[] = await prisma.project.findMany({
+        where: {
+          participants: {
+            some: {
+              id: userId,
+            },
+          },
+        },
+      });
+
+      return allProjects;
+    } catch {
+      throw new HttpError(500, 'Project could not be found');
+    }
+  }
+
+  /**
    * Lists user created projects. If any error occurs, it throws the error.
    * @param userId User ID
    * @returns List of user projects.
    */
   public async listCreatedProjects(userId: number): Promise<Project[]> {
     try {
-      const projects: Project[] = await prisma.project.findMany({
+      const createdProjects: Project[] = await prisma.project.findMany({
         where: {
           owner: {
             id: userId,
@@ -61,7 +85,7 @@ export class ProjectService {
         },
       });
 
-      return projects;
+      return createdProjects;
     } catch {
       throw new HttpError(500, 'Project could not be found');
     }

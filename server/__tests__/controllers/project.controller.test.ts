@@ -7,6 +7,7 @@ import {
 } from 'node-mocks-http';
 
 import {
+  getListAllProjects,
   getListCreatedProjects,
   getListParticipatedProjects,
   postCreateProject,
@@ -173,6 +174,51 @@ describe('Project Controllers', () => {
       );
 
       await getListCreatedProjects(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe('listAllProjects', () => {
+    const userId = 3;
+
+    const project = {
+      id: 1,
+      ownerId: 1,
+      name: 'Project 1',
+    };
+
+    beforeEach(() => {
+      projectService.listAllProjects = jest.fn();
+      req = createRequest({
+        userId: userId,
+        method: 'GET',
+        url: '/api/v1/projects/all',
+      });
+    });
+
+    it('should return 200 status code successful project listing', async () => {
+      (projectService.listAllProjects as jest.Mock).mockResolvedValue(project);
+
+      await getListAllProjects(req, res, next);
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('should respond with success status and data on project listing', async () => {
+      (projectService.listAllProjects as jest.Mock).mockResolvedValue(project);
+
+      await getListAllProjects(req, res, next);
+
+      expect(res._getJSONData()).toHaveProperty('status', 'success');
+      expect(res._getJSONData()).toHaveProperty('data', { projects: project });
+    });
+
+    it('should pass the error to the error handler if project listing fails', async () => {
+      const error = new Error('Fail');
+      (projectService.listAllProjects as jest.Mock).mockRejectedValue(error);
+
+      await getListAllProjects(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });

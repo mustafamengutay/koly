@@ -8,6 +8,7 @@ import {
   postCreateProject,
   getListCreatedProjects,
   getListParticipatedProjects,
+  getListAllProjects,
 } from '../controllers/project.controller';
 
 const router = express.Router();
@@ -19,6 +20,8 @@ router.post(
   verifyUser,
   postCreateProject
 );
+
+router.get('/all', verifyUser, getListAllProjects);
 
 router.get('/created', verifyUser, getListCreatedProjects);
 
