@@ -8,8 +8,8 @@ model Issue {
   projectId    Int
   reportedBy   User     @relation("ReportedIssues", fields: [reportedById], references: [id])
   reportedById Int
-  adoptedBy    User     @relation("AdoptedIssues", fields: [adoptedById], references: [id])
-  adoptedById  Int
+  adoptedBy    User?    @relation("AdoptedIssues", fields: [adoptedById], references: [id])
+  adoptedById  Int?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
