@@ -5,7 +5,7 @@ import { HttpError } from '../../types/errors';
 
 import { ProjectService } from '../../services/project.service';
 
-describe('UserService', () => {
+describe('ProjectService', () => {
   const projectService = ProjectService.getInstance();
 
   beforeEach(() => {
@@ -124,6 +124,48 @@ describe('UserService', () => {
       await expect(projectService.listAllProjects(userId)).rejects.toThrow(
         HttpError
       );
+    });
+  });
+
+  describe('Utils', () => {
+    describe('isParticipant', () => {
+      const projectId = 2;
+
+      beforeEach(() => {
+        prisma.user.findUnique = jest.fn();
+      });
+
+      it('should return true if the user is a participant of the group', async () => {
+        prisma.user.findUnique = jest.fn().mockResolvedValue(true);
+
+        const isParticipant = await ProjectService.isParticipant(
+          userId,
+          projectId
+        );
+
+        expect(isParticipant).toBe(true);
+      });
+
+      it('should return false if the user is not a participant of the group', async () => {
+        prisma.user.findUnique = jest.fn().mockResolvedValue(false);
+
+        const isParticipant = await ProjectService.isParticipant(
+          userId,
+          projectId
+        );
+
+        expect(isParticipant).toBe(false);
+      });
+
+      it('should throw an error if user cannot be found', async () => {
+        (prisma.user.findUnique as jest.Mock).mockRejectedValue(
+          new HttpError(500, 'User could not be found')
+        );
+
+        await expect(
+          ProjectService.isParticipant(userId, projectId)
+        ).rejects.toThrow(HttpError);
+      });
     });
   });
 });

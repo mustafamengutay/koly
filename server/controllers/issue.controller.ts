@@ -37,3 +37,25 @@ export const postReportIssue = async (
     next(error);
   }
 };
+
+export const getListAllIssues = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const projectId = Number(req.params.projectId);
+  const userId = req.userId!;
+
+  try {
+    const issues = await issueService.listAllIssues(userId, projectId);
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        issues,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};

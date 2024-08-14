@@ -119,4 +119,33 @@ export class ProjectService {
       throw new HttpError(500, 'Project could not be found');
     }
   }
+
+  /**
+   * A utility static method used to check a user is a participant of a project.
+   * If any error occurs, it throws the error.
+   * @param userId User ID
+   * @param projectId Project ID
+   * @returns true if a user is a participant of a project, otherwise, false.
+   */
+  public static async isParticipant(
+    userId: number,
+    projectId: number
+  ): Promise<boolean> {
+    try {
+      const user = await prisma.user.findUnique({
+        where: {
+          id: userId,
+          participatedProjects: {
+            some: {
+              id: projectId,
+            },
+          },
+        },
+      });
+
+      return !!user;
+    } catch {
+      throw new HttpError(500, 'User could not be found');
+    }
+  }
 }

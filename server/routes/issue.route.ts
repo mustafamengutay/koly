@@ -7,7 +7,10 @@ import { verifyUser } from '../middlewares/authorization';
 
 const router = express.Router();
 
-import { postReportIssue } from '../controllers/issue.controller';
+import {
+  getListAllIssues,
+  postReportIssue,
+} from '../controllers/issue.controller';
 
 router.post(
   '/:projectId/issues',
@@ -26,5 +29,7 @@ router.post(
   verifyUser,
   postReportIssue
 );
+
+router.get('/:projectId/issues', verifyUser, getListAllIssues);
 
 export default router;
