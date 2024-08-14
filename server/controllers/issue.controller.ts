@@ -1,0 +1,39 @@
+import { Response, NextFunction } from 'express';
+import { CustomRequest } from '../types/customRequest';
+import { Issue } from '@prisma/client';
+import { IssueData } from '../types/issue';
+
+import IssueService from '../services/issue.service';
+
+const issueService = IssueService.getInstance();
+
+export const postReportIssue = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const projectId = Number(req.params.projectId);
+  const { title, description, type } = req.body;
+  const reportedById = req.userId!;
+
+  const issue: IssueData = {
+    title,
+    description,
+    type,
+    projectId,
+    reportedById,
+  };
+
+  try {
+    const newIssue: Issue = await issueService.reportIssue(issue);
+
+    res.status(201).json({
+      status: 'success',
+      data: {
+        issue: newIssue,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
