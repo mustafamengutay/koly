@@ -122,17 +122,17 @@ export class ProjectService {
 
   /**
    * A utility static method used to check a user is a participant of a project.
-   * If any error occurs, it throws the error.
+   * If user is not a participant, throws a 403 error. Other errors, will have 500
+   * status code.
    * @param userId User ID
    * @param projectId Project ID
-   * @returns true if a user is a participant of a project, otherwise, false.
    */
-  public static async isParticipant(
+  public static async validateUserParticipation(
     userId: number,
     projectId: number
-  ): Promise<boolean> {
+  ): Promise<void> {
     try {
-      const user = await prisma.user.findUnique({
+      await prisma.user.findUniqueOrThrow({
         where: {
           id: userId,
           participatedProjects: {
@@ -142,9 +142,10 @@ export class ProjectService {
           },
         },
       });
-
-      return !!user;
-    } catch {
+    } catch (error: any) {
+      if ('code' in error && error.code === 'P2025') {
+        throw new HttpError(403, 'User is not a participant of the project');
+      }
       throw new HttpError(500, 'User could not be found');
     }
   }

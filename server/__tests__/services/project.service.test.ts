@@ -128,43 +128,42 @@ describe('ProjectService', () => {
   });
 
   describe('Utils', () => {
-    describe('isParticipant', () => {
+    describe('validateUserParticipation', () => {
       const projectId = 2;
 
       beforeEach(() => {
-        prisma.user.findUnique = jest.fn();
+        prisma.user.findUniqueOrThrow = jest.fn();
       });
 
-      it('should return true if the user is a participant of the group', async () => {
-        prisma.user.findUnique = jest.fn().mockResolvedValue(true);
-
-        const isParticipant = await ProjectService.isParticipant(
-          userId,
-          projectId
-        );
-
-        expect(isParticipant).toBe(true);
-      });
-
-      it('should return false if the user is not a participant of the group', async () => {
-        prisma.user.findUnique = jest.fn().mockResolvedValue(false);
-
-        const isParticipant = await ProjectService.isParticipant(
-          userId,
-          projectId
-        );
-
-        expect(isParticipant).toBe(false);
-      });
-
-      it('should throw an error if user cannot be found', async () => {
-        (prisma.user.findUnique as jest.Mock).mockRejectedValue(
-          new HttpError(500, 'User could not be found')
-        );
+      it('should not throw an error if the user is a participant of the project', async () => {
+        prisma.user.findUniqueOrThrow = jest
+          .fn()
+          .mockResolvedValue({ id: userId });
 
         await expect(
-          ProjectService.isParticipant(userId, projectId)
-        ).rejects.toThrow(HttpError);
+          ProjectService.validateUserParticipation(userId, projectId)
+        ).resolves.not.toThrow();
+      });
+
+      it('should throw a 403 error if user is not a participant of the project', async () => {
+        const error = new Error();
+        (error as any).code = 'P2025';
+        prisma.user.findUniqueOrThrow = jest.fn().mockRejectedValue(error);
+
+        await expect(
+          ProjectService.validateUserParticipation(userId, projectId)
+        ).rejects.toThrow(
+          new HttpError(403, 'User is not a participant of the project')
+        );
+      });
+
+      it('should throw a 500 error if there is a different error', async () => {
+        const error = new Error('Fail');
+        prisma.user.findUniqueOrThrow = jest.fn().mockRejectedValue(error);
+
+        await expect(
+          ProjectService.validateUserParticipation(userId, projectId)
+        ).rejects.toThrow(new HttpError(500, 'User could not be found'));
       });
     });
   });

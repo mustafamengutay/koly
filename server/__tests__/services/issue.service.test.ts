@@ -52,11 +52,13 @@ describe('IssueService', () => {
     const issues: IssueData[] = [issue, issue];
 
     beforeEach(() => {
-      ProjectService.isParticipant = jest.fn();
+      ProjectService.validateUserParticipation = jest.fn();
     });
 
     it('should return a list of Issue on a successful call', async () => {
-      (ProjectService.isParticipant as jest.Mock).mockResolvedValue(true);
+      (ProjectService.validateUserParticipation as jest.Mock).mockResolvedValue(
+        true
+      );
       (prisma.issue.findMany as jest.Mock).mockResolvedValue(issues);
 
       const allIssues = await issueService.listAllIssues(userId, projectId);
@@ -65,7 +67,13 @@ describe('IssueService', () => {
     });
 
     it('should throw an error if the user is not a participant of the group', async () => {
-      (ProjectService.isParticipant as jest.Mock).mockResolvedValue(false);
+      const error = new HttpError(
+        403,
+        'User is not a participant of the project'
+      );
+      (ProjectService.validateUserParticipation as jest.Mock).mockRejectedValue(
+        error
+      );
 
       await expect(
         issueService.listAllIssues(userId, projectId)

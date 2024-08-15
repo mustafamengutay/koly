@@ -44,10 +44,7 @@ export default class IssueService {
    * @returns Array of issues
    */
   public async listAllIssues(userId: number, projectId: number) {
-    const isParticipant = await ProjectService.isParticipant(userId, projectId);
-    if (!isParticipant) {
-      throw new HttpError(403, 'User is not a participant of the group');
-    }
+    await ProjectService.validateUserParticipation(userId, projectId);
 
     try {
       const allIssues = await prisma.issue.findMany({
