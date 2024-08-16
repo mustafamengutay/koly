@@ -129,8 +129,8 @@ describe('IssueService', () => {
       });
 
       const adoptedIssue: Issue = await issueService.adoptIssue(
-        userId,
         issueId,
+        userId,
         projectId
       );
 
@@ -147,7 +147,7 @@ describe('IssueService', () => {
       );
 
       await expect(
-        issueService.adoptIssue(userId, issueId, projectId)
+        issueService.adoptIssue(issueId, userId, projectId)
       ).rejects.toThrow(error);
     });
 
@@ -163,7 +163,7 @@ describe('IssueService', () => {
       const httpError = new HttpError(404, 'Issue does not exist');
 
       await expect(
-        issueService.adoptIssue(userId, issueId, projectId)
+        issueService.adoptIssue(issueId, userId, projectId)
       ).rejects.toThrow(httpError);
     });
 
@@ -179,7 +179,7 @@ describe('IssueService', () => {
       const error = new HttpError(409, 'Issue is already adopted');
 
       await expect(
-        issueService.adoptIssue(userId, issueId, projectId)
+        issueService.adoptIssue(issueId, userId, projectId)
       ).rejects.toThrow(error);
     });
 
@@ -199,7 +199,7 @@ describe('IssueService', () => {
       (prisma.issue.update as jest.Mock).mockRejectedValue(error);
 
       await expect(
-        issueService.adoptIssue(userId, issueId, projectId)
+        issueService.adoptIssue(issueId, userId, projectId)
       ).rejects.toThrow(error);
     });
   });

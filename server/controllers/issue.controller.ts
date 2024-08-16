@@ -53,8 +53,8 @@ export const patchAdoptIssues = async (
 
   try {
     const adoptedIssue: Issue = await issueService.adoptIssue(
-      userId,
       issueId,
+      userId,
       projectId
     );
 

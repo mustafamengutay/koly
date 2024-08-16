@@ -53,8 +53,8 @@ export default class IssueService {
    * @returns Issue adopted by a user.
    */
   public async adoptIssue(
-    userId: number,
     issueId: number,
+    userId: number,
     projectId: number
   ): Promise<Issue> {
     await ProjectService.validateUserParticipation(userId, projectId);
