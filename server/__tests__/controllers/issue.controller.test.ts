@@ -8,6 +8,7 @@ import {
 
 import {
   getListAllIssues,
+  patchAdoptIssues,
   postReportIssue,
 } from '../../controllers/issue.controller';
 import IssueService from '../../services/issue.service';
@@ -117,6 +118,55 @@ describe('Issue Controllers', () => {
       (issueService.listAllIssues as jest.Mock).mockRejectedValue(error);
 
       await getListAllIssues(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe('patchAdoptIssue', () => {
+    const issueId = 1;
+    const adoptedIssue = {
+      ...issue,
+      adoptedById: userId,
+    };
+
+    beforeEach(() => {
+      issueService.adoptIssue = jest.fn();
+      req = createRequest({
+        userId: userId,
+        method: 'PATCH',
+        url: `/api/v1/projects/${projectId}/issues/${issueId}`,
+        params: {
+          projectId,
+          issueId,
+        },
+      });
+    });
+
+    it.only('should return 200 status code on successful issue adoption', async () => {
+      (issueService.adoptIssue as jest.Mock).mockResolvedValue(adoptedIssue);
+
+      await patchAdoptIssues(req, res, next);
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it.only('should respond with success status and data on issue adoption', async () => {
+      (issueService.adoptIssue as jest.Mock).mockResolvedValue(adoptedIssue);
+
+      await patchAdoptIssues(req, res, next);
+
+      expect(res._getJSONData()).toHaveProperty('status', 'success');
+      expect(res._getJSONData()).toHaveProperty('data', {
+        issue: adoptedIssue,
+      });
+    });
+
+    it.only('should pass the error to the error handler if adoption fails', async () => {
+      const error = new Error('Fail');
+      (issueService.adoptIssue as jest.Mock).mockRejectedValue(error);
+
+      await patchAdoptIssues(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });

@@ -38,6 +38,33 @@ export const postReportIssue = async (
   }
 };
 
+export const patchAdoptIssues = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const projectId = Number(req.params.projectId);
+  const issueId = Number(req.params.issueId);
+  const userId = req.userId!;
+
+  try {
+    const adoptedIssue: Issue = await issueService.adoptIssue(
+      userId,
+      issueId,
+      projectId
+    );
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        issue: adoptedIssue,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getListAllIssues = async (
   req: CustomRequest,
   res: Response,

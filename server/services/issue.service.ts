@@ -39,6 +39,35 @@ export default class IssueService {
   }
 
   /**
+   * Used to adopt an issue by a user, and returns the adopted issue.
+   * If any error occurs, it throws that specific error.
+   * @param adoptedById User ID who will adopt the issue.
+   * @param issueId Issue ID
+   * @param projectId Project ID
+   * @returns Issue adopted by a user.
+   */
+  public async adoptIssue(
+    userId: number,
+    issueId: number,
+    projectId: number
+  ): Promise<Issue> {
+    await ProjectService.validateUserParticipation(userId, projectId);
+    const issue: Issue = await this.findIssueById(issueId);
+    await this.validateIssueNotAdopted(issue);
+
+    try {
+      const adoptedIssue: Issue = await this.updateIssueAdoptionById(
+        issueId,
+        userId
+      );
+
+      return adoptedIssue;
+    } catch {
+      throw new HttpError(500, 'Database Error: Issue could not be updated');
+    }
+  }
+
+  /**
    * Lists all issues of the selected project.
    * @param projectId Project ID
    * @returns Array of issues
@@ -71,5 +100,44 @@ export default class IssueService {
     } catch {
       throw new HttpError(500, 'Issue could not be found');
     }
+  }
+
+  private async findIssueById(id: number): Promise<Issue> {
+    try {
+      const issue = await prisma.issue.findUniqueOrThrow({
+        where: {
+          id,
+        },
+      });
+
+      return issue;
+    } catch (error: any) {
+      if ('code' in error && error.code === 'P2025') {
+        throw new HttpError(404, 'Issue does not exist');
+      }
+      throw new HttpError(500, 'Database Error: Issue could not be found');
+    }
+  }
+
+  private async validateIssueNotAdopted(issue: Issue) {
+    if (issue.adoptedById) {
+      throw new HttpError(409, 'Issue is already adopted');
+    }
+  }
+
+  private async updateIssueAdoptionById(
+    issueId: number,
+    adoptedById: number
+  ): Promise<Issue> {
+    const adoptedIssue: Issue = await prisma.issue.update({
+      where: {
+        id: issueId,
+      },
+      data: {
+        adoptedById,
+      },
+    });
+
+    return adoptedIssue;
   }
 }

@@ -9,6 +9,7 @@ const router = express.Router();
 
 import {
   getListAllIssues,
+  patchAdoptIssues,
   postReportIssue,
 } from '../controllers/issue.controller';
 
@@ -31,5 +32,7 @@ router.post(
 );
 
 router.get('/:projectId/issues', verifyUser, getListAllIssues);
+
+router.patch('/:projectId/issues/:issueId', verifyUser, patchAdoptIssues);
 
 export default router;
