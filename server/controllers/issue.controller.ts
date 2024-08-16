@@ -69,6 +69,33 @@ export const patchAdoptIssues = async (
   }
 };
 
+export const deleteRemoveReportedIssue = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const projectId = Number(req.params.projectId);
+  const issueId = Number(req.params.issueId);
+  const userId = req.userId!;
+
+  try {
+    const removedIssue: Issue = await issueService.removeReportedIssue(
+      issueId,
+      userId,
+      projectId
+    );
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        issue: removedIssue,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getListAllIssues = async (
   req: CustomRequest,
   res: Response,

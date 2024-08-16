@@ -7,6 +7,7 @@ import {
 } from 'node-mocks-http';
 
 import {
+  deleteRemoveReportedIssue,
   getListAllIssues,
   patchAdoptIssues,
   postReportIssue,
@@ -32,6 +33,7 @@ describe('Issue Controllers', () => {
 
   const userId = 1;
   const projectId = 5;
+  const issueId = 1;
   const issue: IssueData = {
     title: 'Issue 1',
     description: 'Description for Issue 1',
@@ -124,7 +126,6 @@ describe('Issue Controllers', () => {
   });
 
   describe('patchAdoptIssue', () => {
-    const issueId = 1;
     const adoptedIssue = {
       ...issue,
       adoptedById: userId,
@@ -167,6 +168,47 @@ describe('Issue Controllers', () => {
       (issueService.adoptIssue as jest.Mock).mockRejectedValue(error);
 
       await patchAdoptIssues(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe('deleteRemoveReportedIssue', () => {
+    beforeEach(() => {
+      issueService.removeReportedIssue = jest.fn();
+      req = createRequest({
+        userId: userId,
+        method: 'DELETE',
+        url: `/api/v1/projects/${projectId}/issues/${issueId}`,
+        params: {
+          projectId,
+          issueId,
+        },
+      });
+    });
+
+    it('should return 200 status code on successful deletion', async () => {
+      (issueService.removeReportedIssue as jest.Mock).mockResolvedValue(issue);
+
+      await deleteRemoveReportedIssue(req, res, next);
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('should respond with success status and data on deletion', async () => {
+      (issueService.removeReportedIssue as jest.Mock).mockResolvedValue(issue);
+
+      await deleteRemoveReportedIssue(req, res, next);
+
+      expect(res._getJSONData()).toHaveProperty('status', 'success');
+      expect(res._getJSONData()).toHaveProperty('data', { issue });
+    });
+
+    it('should pass the error to the error handler if deletion fails', async () => {
+      const error = new Error('Fail');
+      (issueService.removeReportedIssue as jest.Mock).mockRejectedValue(error);
+
+      await deleteRemoveReportedIssue(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });

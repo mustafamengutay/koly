@@ -11,6 +11,7 @@ import {
   getListAllIssues,
   patchAdoptIssues,
   postReportIssue,
+  deleteRemoveReportedIssue,
 } from '../controllers/issue.controller';
 
 router.post(
@@ -32,6 +33,12 @@ router.post(
 );
 
 router.get('/:projectId/issues', verifyUser, getListAllIssues);
+
+router.delete(
+  '/:projectId/issues/:issueId',
+  verifyUser,
+  deleteRemoveReportedIssue
+);
 
 router.patch('/:projectId/issues/:issueId', verifyUser, patchAdoptIssues);
 

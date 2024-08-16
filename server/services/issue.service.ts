@@ -74,6 +74,37 @@ export default class IssueService {
   }
 
   /**
+   * Gives issue deletion ability to reporter who want to delete their issues.
+   * If any error occurs, it throws that specific error.
+   * @param issueId ID of the issue to be deleted.
+   * @param userId Reporter Id.
+   * @param projectId Project Id.
+   * @returns Issue object deleted by a reporter.
+   */
+  public async removeReportedIssue(
+    issueId: number,
+    userId: number,
+    projectId: number
+  ): Promise<Issue> {
+    await ProjectService.validateUserParticipation(userId, projectId);
+    const issue: Issue = await this.findIssueById(issueId);
+    await this.validateIssueReporter(issue, userId);
+
+    try {
+      const removedIssue: Issue = await prisma.issue.delete({
+        where: {
+          id: issue.id,
+          reportedById: userId,
+        },
+      });
+
+      return removedIssue;
+    } catch {
+      throw new HttpError(500, 'Database Error: Issue could not be deleted');
+    }
+  }
+
+  /**
    * Lists all issues of the selected project.
    * @param projectId Project ID
    * @returns Array of issues
@@ -128,6 +159,12 @@ export default class IssueService {
   private async validateIssueNotAdopted(issue: Issue) {
     if (issue.adoptedById) {
       throw new HttpError(409, 'Issue is already adopted');
+    }
+  }
+
+  private async validateIssueReporter(issue: Issue, reporterId: number) {
+    if (issue.reportedById !== reporterId) {
+      throw new HttpError(409, 'Issue can only be removed by its reporter');
     }
   }
 
