@@ -25,7 +25,11 @@ export const postReportIssue = async (
   };
 
   try {
-    const newIssue: Issue = await issueService.reportIssue(issue);
+    const newIssue: Issue = await issueService.reportIssue(
+      issue,
+      reportedById,
+      projectId
+    );
 
     res.status(201).json({
       status: 'success',

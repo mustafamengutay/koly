@@ -23,7 +23,13 @@ export default class IssueService {
    * @param issue Issue object with necessary fields.
    * @returns Created issue object.
    */
-  public async reportIssue(issue: IssueData): Promise<Issue> {
+  public async reportIssue(
+    issue: IssueData,
+    userId: number,
+    projectId: number
+  ): Promise<Issue> {
+    await ProjectService.validateUserParticipation(userId, projectId);
+
     try {
       const newIssue: Issue = await prisma.issue.create({
         data: {

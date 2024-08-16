@@ -38,9 +38,27 @@ describe('IssueService', () => {
     it('should return a new Issue on successful issue reporting', async () => {
       (prisma.issue.create as jest.Mock).mockResolvedValue(issue);
 
-      const newIssue: Issue = await issueService.reportIssue(issue);
+      const newIssue: Issue = await issueService.reportIssue(
+        issue,
+        userId,
+        projectId
+      );
 
       expect(newIssue).toBe(issue);
+    });
+
+    it('should thrown an error if the user is not a participant of the project', async () => {
+      const error = new HttpError(
+        403,
+        'User is not a participant of the project'
+      );
+      (ProjectService.validateUserParticipation as jest.Mock).mockRejectedValue(
+        error
+      );
+
+      await expect(
+        issueService.reportIssue(issue, userId, projectId)
+      ).rejects.toThrow(HttpError);
     });
 
     it('should throw an error when issue reporting fails', async () => {
@@ -48,7 +66,9 @@ describe('IssueService', () => {
         new HttpError(500, 'The project could not be created')
       );
 
-      await expect(issueService.reportIssue(issue)).rejects.toThrow(HttpError);
+      await expect(
+        issueService.reportIssue(issue, userId, projectId)
+      ).rejects.toThrow(HttpError);
     });
   });
 

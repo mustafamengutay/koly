@@ -143,7 +143,7 @@ describe('Issue Controllers', () => {
       });
     });
 
-    it.only('should return 200 status code on successful issue adoption', async () => {
+    it('should return 200 status code on successful issue adoption', async () => {
       (issueService.adoptIssue as jest.Mock).mockResolvedValue(adoptedIssue);
 
       await patchAdoptIssues(req, res, next);
@@ -151,7 +151,7 @@ describe('Issue Controllers', () => {
       expect(res.statusCode).toBe(200);
     });
 
-    it.only('should respond with success status and data on issue adoption', async () => {
+    it('should respond with success status and data on issue adoption', async () => {
       (issueService.adoptIssue as jest.Mock).mockResolvedValue(adoptedIssue);
 
       await patchAdoptIssues(req, res, next);
@@ -162,7 +162,7 @@ describe('Issue Controllers', () => {
       });
     });
 
-    it.only('should pass the error to the error handler if adoption fails', async () => {
+    it('should pass the error to the error handler if adoption fails', async () => {
       const error = new Error('Fail');
       (issueService.adoptIssue as jest.Mock).mockRejectedValue(error);
 
