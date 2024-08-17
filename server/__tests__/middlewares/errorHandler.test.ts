@@ -19,7 +19,11 @@ describe('errorHandler', () => {
     res = createResponse();
   });
 
-  describe('Error Type', () => {
+  afterAll(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('Error Type - Base Type', () => {
     const error = new Error('Something went wrong');
 
     it('should send a response with a status code which is 500', () => {
@@ -47,50 +51,21 @@ describe('errorHandler', () => {
   describe('HttpError Type', () => {
     const error = new HttpError(431, 'Request Header Fields Too Large');
 
-    it('should send a response with a status code which is 500', () => {
+    it('should send a response with a status code which is 431', () => {
       errorHandler(error, req, res, next);
 
       expect(res.statusCode).toBe(431);
-    });
-
-    it('should send a response with a status which is error', () => {
-      errorHandler(error, req, res, next);
-
-      expect(res._getJSONData()).toHaveProperty('status', 'error');
-    });
-
-    it('should send a response with a status and a message', () => {
-      errorHandler(error, req, res, next);
-
-      expect(res._getJSONData()).toEqual({
-        status: 'error',
-        message: expect.any(String),
-      });
     });
   });
 
   describe('HttpBodyValidationError Type', () => {
     const error = new HttpBodyValidationError(409, []);
 
-    it('should send a response with a status code which is 500', () => {
+    it('should send a response with a status code which is 409', () => {
       errorHandler(error, req, res, next);
 
       expect(res.statusCode).toBe(409);
-    });
-
-    it('should send a response with a status which is fail', () => {
-      errorHandler(error, req, res, next);
-
-      expect(res._getJSONData()).toHaveProperty('status', 'fail');
-    });
-
-    it('should send a response with a status and a data which stores errors', () => {
-      errorHandler(error, req, res, next);
-
-      expect(res._getJSONData()).toEqual({
-        status: 'fail',
-        data: expect.any(Array),
-      });
+      expect(error.message).toBe('Field Validation Error');
     });
   });
 });

@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { HttpBodyValidationError, HttpError } from '../types/errors';
-
-type HandlerError = Error | HttpError | HttpBodyValidationError;
+import { HttpBodyValidationError } from '../types/errors';
+import { HandlerError, ApplicationError, ErrorStatus } from '../types/errors';
 
 export const errorHandler = (
   error: HandlerError,
@@ -9,28 +8,20 @@ export const errorHandler = (
   res: Response,
   next: NextFunction
 ) => {
+  const statusCode = (error as ApplicationError).statusCode || 500;
+
   if (error instanceof HttpBodyValidationError) {
-    const statusCode = error.statusCode;
     const errors = error.errors;
 
     res.status(statusCode).json({
-      status: 'fail',
+      status: ErrorStatus.Fail,
       data: errors,
     });
-  } else if (error instanceof HttpError) {
-    const statusCode = error.statusCode;
-    const message = error.message;
-
-    res.status(statusCode).json({
-      status: 'error',
-      message,
-    });
   } else {
-    const statusCode = 500;
     const message = error.message;
 
     res.status(statusCode).json({
-      status: 'error',
+      status: ErrorStatus.Error,
       message,
     });
   }
