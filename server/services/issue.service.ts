@@ -60,7 +60,7 @@ export default class IssueService {
     await ProjectService.validateUserParticipation(userId, projectId);
 
     const issue: Issue = await this.findIssueById(issueId);
-    await this.validateIssueNotAdopted(issue);
+    this.validateIssueNotAdopted(issue);
 
     try {
       const adoptedIssue: Issue = await prisma.issue.update({
@@ -94,7 +94,7 @@ export default class IssueService {
     await ProjectService.validateUserParticipation(userId, projectId);
 
     const issue: Issue = await this.findIssueById(issueId);
-    await this.validateIssueReporter(issue, userId);
+    this.validateIssueReporter(issue, userId);
 
     try {
       const removedIssue: Issue = await prisma.issue.delete({
@@ -197,7 +197,7 @@ export default class IssueService {
     }
   }
 
-  private async validateIssueNotAdopted(issue: Issue) {
+  private validateIssueNotAdopted(issue: Issue): void {
     if (issue.adoptedById) {
       throw new HttpError(409, 'Issue is already adopted');
     }
@@ -209,7 +209,7 @@ export default class IssueService {
     }
   }
 
-  private async validateIssueReporter(issue: Issue, reporterId: number) {
+  private validateIssueReporter(issue: Issue, reporterId: number): void {
     if (issue.reportedById !== reporterId) {
       throw new HttpError(409, 'Issue can only be removed by its reporter');
     }
