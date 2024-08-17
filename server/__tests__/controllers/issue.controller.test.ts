@@ -137,7 +137,7 @@ describe('Issue Controllers', () => {
       req = createRequest({
         userId: userId,
         method: 'PATCH',
-        url: `/api/v1/projects/${projectId}/issues/${issueId}`,
+        url: `/api/v1/projects/${projectId}/issues/${issueId}/adopt`,
         params: {
           projectId,
           issueId,

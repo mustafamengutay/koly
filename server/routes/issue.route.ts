@@ -41,7 +41,7 @@ router.delete(
   deleteRemoveReportedIssue
 );
 
-router.patch('/:projectId/issues/:issueId', verifyUser, patchAdoptIssues);
+router.patch('/:projectId/issues/:issueId/adopt', verifyUser, patchAdoptIssues);
 
 router.patch(
   '/:projectId/issues/:issueId/complete',
