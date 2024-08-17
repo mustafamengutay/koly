@@ -10,9 +10,8 @@ export const inputValidator = (
 ) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    const error = new HttpBodyValidationError(400, errors.array());
-
-    return next(error);
+    throw new HttpBodyValidationError(400, errors.array());
   }
+
   next();
 };
