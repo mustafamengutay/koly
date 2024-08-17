@@ -12,6 +12,7 @@ import {
   patchAdoptIssues,
   postReportIssue,
   deleteRemoveReportedIssue,
+  patchCompleteIssue,
 } from '../controllers/issue.controller';
 
 router.post(
@@ -41,5 +42,11 @@ router.delete(
 );
 
 router.patch('/:projectId/issues/:issueId', verifyUser, patchAdoptIssues);
+
+router.patch(
+  '/:projectId/issues/:issueId/complete',
+  verifyUser,
+  patchCompleteIssue
+);
 
 export default router;

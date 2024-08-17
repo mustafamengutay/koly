@@ -10,6 +10,7 @@ import {
   deleteRemoveReportedIssue,
   getListAllIssues,
   patchAdoptIssues,
+  patchCompleteIssue,
   postReportIssue,
 } from '../../controllers/issue.controller';
 import IssueService from '../../services/issue.service';
@@ -209,6 +210,47 @@ describe('Issue Controllers', () => {
       (issueService.removeReportedIssue as jest.Mock).mockRejectedValue(error);
 
       await deleteRemoveReportedIssue(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe('patchCompleteIssue', () => {
+    beforeEach(() => {
+      issueService.completeIssue = jest.fn();
+      req = createRequest({
+        userId: userId,
+        method: 'PATCH',
+        url: `/api/v1/projects/${projectId}/issues/${issueId}/complete`,
+        params: {
+          projectId,
+          issueId,
+        },
+      });
+    });
+
+    it('should return 200 status code on successful completion', async () => {
+      (issueService.completeIssue as jest.Mock).mockResolvedValue(issue);
+
+      await patchCompleteIssue(req, res, next);
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('should respond with success status and data on completion', async () => {
+      (issueService.completeIssue as jest.Mock).mockResolvedValue(issue);
+
+      await patchCompleteIssue(req, res, next);
+
+      expect(res._getJSONData()).toHaveProperty('status', 'success');
+      expect(res._getJSONData()).toHaveProperty('data', { issue });
+    });
+
+    it('should pass the error to the error handler if completion fails', async () => {
+      const error = new Error('Fail');
+      (issueService.completeIssue as jest.Mock).mockRejectedValue(error);
+
+      await patchCompleteIssue(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });

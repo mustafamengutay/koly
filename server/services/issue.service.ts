@@ -111,6 +111,41 @@ export default class IssueService {
   }
 
   /**
+   * Complete an issue. If any error occurs, it throws that specific error.
+   * @param issueId ID of the issue to be completed.
+   * @param userId User Id which completes the issue. It should be adopter of the issue.
+   * @param projectId Project Id.
+   * @returns Completed Issue object.
+   */
+  public async completeIssue(
+    issueId: number,
+    userId: number,
+    projectId: number
+  ): Promise<Issue> {
+    await ProjectService.validateUserParticipation(userId, projectId);
+
+    const issue: Issue = await this.findIssueById(issueId);
+    this.validateIssueAdopter(issue, userId);
+    this.validateIssueCompleted(issue);
+
+    try {
+      const completedIssue: Issue = await prisma.issue.update({
+        where: {
+          id: issueId,
+          adoptedById: userId,
+        },
+        data: {
+          status: Status.Completed,
+        },
+      });
+
+      return completedIssue;
+    } catch {
+      throw new HttpError(500, 'Database Error: Issue could not be updated');
+    }
+  }
+
+  /**
    * Lists all issues of the selected project.
    * @param projectId Project ID
    * @returns Array of issues
@@ -168,9 +203,21 @@ export default class IssueService {
     }
   }
 
+  private validateIssueCompleted(issue: Issue): void {
+    if (issue.status === Status.Completed) {
+      throw new HttpError(409, 'Issue is already completed');
+    }
+  }
+
   private async validateIssueReporter(issue: Issue, reporterId: number) {
     if (issue.reportedById !== reporterId) {
       throw new HttpError(409, 'Issue can only be removed by its reporter');
+    }
+  }
+
+  private validateIssueAdopter(issue: Issue, adopterId: number): void {
+    if (issue.adoptedById !== adopterId) {
+      throw new HttpError(409, 'Issue can only be processed by its adopter');
     }
   }
 }
