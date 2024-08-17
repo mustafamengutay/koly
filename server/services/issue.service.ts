@@ -58,14 +58,19 @@ export default class IssueService {
     projectId: number
   ): Promise<Issue> {
     await ProjectService.validateUserParticipation(userId, projectId);
+
     const issue: Issue = await this.findIssueById(issueId);
     await this.validateIssueNotAdopted(issue);
 
     try {
-      const adoptedIssue: Issue = await this.updateIssueAdoptionById(
-        issueId,
-        userId
-      );
+      const adoptedIssue: Issue = await prisma.issue.update({
+        where: {
+          id: issueId,
+        },
+        data: {
+          adoptedById: userId,
+        },
+      });
 
       return adoptedIssue;
     } catch {
@@ -87,6 +92,7 @@ export default class IssueService {
     projectId: number
   ): Promise<Issue> {
     await ProjectService.validateUserParticipation(userId, projectId);
+
     const issue: Issue = await this.findIssueById(issueId);
     await this.validateIssueReporter(issue, userId);
 
@@ -166,21 +172,5 @@ export default class IssueService {
     if (issue.reportedById !== reporterId) {
       throw new HttpError(409, 'Issue can only be removed by its reporter');
     }
-  }
-
-  private async updateIssueAdoptionById(
-    issueId: number,
-    adoptedById: number
-  ): Promise<Issue> {
-    const adoptedIssue: Issue = await prisma.issue.update({
-      where: {
-        id: issueId,
-      },
-      data: {
-        adoptedById,
-      },
-    });
-
-    return adoptedIssue;
   }
 }
