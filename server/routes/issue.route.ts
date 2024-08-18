@@ -1,5 +1,5 @@
 import express from 'express';
-import { body } from 'express-validator';
+import { param, body } from 'express-validator';
 import { inputValidator } from '../middlewares/validation';
 import { IssueType } from '../types/issue';
 
@@ -18,6 +18,7 @@ import {
 router.post(
   '/:projectId/issues',
   [
+    param('projectId').isInt().withMessage('projectId should be an integer'),
     body('title').trim().notEmpty().isLength({ min: 6 }),
     body('description').trim().notEmpty().isLength({ min: 10 }),
     body('type')
@@ -33,18 +34,43 @@ router.post(
   postReportIssue
 );
 
-router.get('/:projectId/issues', verifyUser, getListAllIssues);
+router.get(
+  '/:projectId/issues',
+  param('projectId').isInt().withMessage('projectId should be an integer'),
+  inputValidator,
+  verifyUser,
+  getListAllIssues
+);
 
 router.delete(
   '/:projectId/issues/:issueId',
+  [
+    param('projectId').isInt().withMessage('projectId should be an integer'),
+    param('issueId').isInt().withMessage('issueId should be an integer'),
+  ],
+  inputValidator,
   verifyUser,
   deleteRemoveReportedIssue
 );
 
-router.patch('/:projectId/issues/:issueId/adopt', verifyUser, patchAdoptIssues);
+router.patch(
+  '/:projectId/issues/:issueId/adopt',
+  [
+    param('projectId').isInt().withMessage('projectId should be an integer'),
+    param('issueId').isInt().withMessage('issueId should be an integer'),
+  ],
+  inputValidator,
+  verifyUser,
+  patchAdoptIssues
+);
 
 router.patch(
   '/:projectId/issues/:issueId/complete',
+  [
+    param('projectId').isInt().withMessage('projectId should be an integer'),
+    param('issueId').isInt().withMessage('issueId should be an integer'),
+  ],
+  inputValidator,
   verifyUser,
   patchCompleteIssue
 );
