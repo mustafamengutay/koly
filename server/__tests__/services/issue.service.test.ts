@@ -2,7 +2,7 @@ import { Issue } from '@prisma/client';
 import prisma from '../../configs/database';
 
 import { HttpError } from '../../types/errors';
-import { IssueData, IssueType, Status } from '../../types/issue';
+import { IssueData, IssueType, IssueStatus } from '../../types/issue';
 
 import IssueService from '../../services/issue.service';
 import { ProjectService } from '../../services/project.service';
@@ -207,7 +207,7 @@ describe('IssueService', () => {
   describe('completeIssue', () => {
     const mockOpenIssue = {
       ...issue,
-      status: Status.Open,
+      status: IssueStatus.Open,
       adoptedById: userId,
     };
 
@@ -222,7 +222,7 @@ describe('IssueService', () => {
 
       (prisma.issue.update as jest.Mock).mockResolvedValue({
         ...mockOpenIssue,
-        status: Status.Completed,
+        status: IssueStatus.Completed,
       });
 
       const completedIssue: Issue = await issueService.completeIssue(
@@ -233,7 +233,7 @@ describe('IssueService', () => {
 
       expect(completedIssue).toEqual({
         ...mockOpenIssue,
-        status: Status.Completed,
+        status: IssueStatus.Completed,
       });
     });
 
@@ -261,7 +261,7 @@ describe('IssueService', () => {
 
       (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue({
         ...mockOpenIssue,
-        status: Status.Completed,
+        status: IssueStatus.Completed,
       });
 
       await expect(

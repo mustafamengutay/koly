@@ -5,7 +5,7 @@ export type IssueData = Pick<
   'title' | 'description' | 'type' | 'projectId' | 'reportedById'
 >;
 
-export const Status = {
+export const IssueStatus = {
   Open: 'open',
   Completed: 'completed',
 } as const;

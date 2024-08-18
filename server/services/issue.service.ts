@@ -1,7 +1,7 @@
 import { Issue } from '@prisma/client';
 import prisma from '../configs/database';
 import { HttpError } from '../types/errors';
-import { IssueData, Status } from '../types/issue';
+import { IssueData, IssueStatus } from '../types/issue';
 import { ProjectService } from './project.service';
 
 export default class IssueService {
@@ -34,7 +34,7 @@ export default class IssueService {
       const newIssue: Issue = await prisma.issue.create({
         data: {
           ...issue,
-          status: Status.Open,
+          status: IssueStatus.Open,
         },
       });
 
@@ -135,7 +135,7 @@ export default class IssueService {
           adoptedById: userId,
         },
         data: {
-          status: Status.Completed,
+          status: IssueStatus.Completed,
         },
       });
 
@@ -208,7 +208,7 @@ export default class IssueService {
   }
 
   private validateIssueCompleted(issue: Issue): void {
-    if (issue.status === Status.Completed) {
+    if (issue.status === IssueStatus.Completed) {
       throw new HttpError(409, 'Issue is already completed');
     }
   }
