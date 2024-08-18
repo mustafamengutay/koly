@@ -158,6 +158,9 @@ export default class IssueService {
         where: {
           projectId,
         },
+        orderBy: {
+          createdAt: 'desc',
+        },
         include: {
           reportedBy: {
             select: {

@@ -62,6 +62,9 @@ export class ProjectService {
             },
           },
         },
+        orderBy: {
+          createdAt: 'desc',
+        },
       });
 
       return allProjects;
@@ -82,6 +85,9 @@ export class ProjectService {
           owner: {
             id: userId,
           },
+        },
+        orderBy: {
+          createdAt: 'desc',
         },
       });
 
@@ -111,6 +117,9 @@ export class ProjectService {
               id: userId,
             },
           },
+        },
+        orderBy: {
+          createdAt: 'desc',
         },
       });
 
