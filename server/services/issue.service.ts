@@ -146,6 +146,24 @@ export default class IssueService {
   }
 
   /**
+   * Returns the issue details. If any error occurs, it throws that
+   * specific error.
+   * @param issueId Issue to be viewed.
+   * @param userId User ID.
+   * @param projectId Project ID.
+   * @returns Issue object.
+   */
+  public async viewIssueDetails(
+    issueId: number,
+    userId: number,
+    projectId: number
+  ): Promise<Issue> {
+    await ProjectService.validateUserParticipation(userId, projectId);
+
+    return await this.findIssueById(issueId, projectId);
+  }
+
+  /**
    * Lists all issues of the selected project.
    * @param projectId Project ID
    * @returns Array of issues
@@ -189,6 +207,22 @@ export default class IssueService {
         where: {
           id,
           projectId,
+        },
+        include: {
+          reportedBy: {
+            select: {
+              name: true,
+              surname: true,
+              role: true,
+            },
+          },
+          adoptedBy: {
+            select: {
+              name: true,
+              surname: true,
+              role: true,
+            },
+          },
         },
       });
 

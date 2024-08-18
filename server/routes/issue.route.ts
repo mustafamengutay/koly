@@ -13,6 +13,7 @@ import {
   postReportIssue,
   deleteRemoveReportedIssue,
   patchCompleteIssue,
+  getViewIssueDetails,
 } from '../controllers/issue.controller';
 
 router.post(
@@ -40,6 +41,17 @@ router.get(
   inputValidator,
   verifyUser,
   getListAllIssues
+);
+
+router.get(
+  '/:projectId/issues/:issueId',
+  [
+    param('projectId').isInt().withMessage('projectId should be an integer'),
+    param('issueId').isInt().withMessage('issueId should be an integer'),
+  ],
+  inputValidator,
+  verifyUser,
+  getViewIssueDetails
 );
 
 router.delete(

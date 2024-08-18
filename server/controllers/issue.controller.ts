@@ -123,6 +123,33 @@ export const patchCompleteIssue = async (
   }
 };
 
+export const getViewIssueDetails = async (
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const projectId = Number(req.params.projectId);
+  const issueId = Number(req.params.issueId);
+  const userId = req.userId!;
+
+  try {
+    const issue: Issue = await issueService.viewIssueDetails(
+      issueId,
+      userId,
+      projectId
+    );
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        issue,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getListAllIssues = async (
   req: CustomRequest,
   res: Response,

@@ -290,6 +290,24 @@ describe('IssueService', () => {
     });
   });
 
+  describe('viewIssueDetails', () => {
+    it.only('should return an issue successfully', async () => {
+      (ProjectService.validateUserParticipation as jest.Mock).mockResolvedValue(
+        true
+      );
+
+      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue(issue);
+
+      const issueDetails: Issue = await issueService.viewIssueDetails(
+        issueId,
+        userId,
+        projectId
+      );
+
+      expect(issueDetails).toBe(issue);
+    });
+  });
+
   describe('Issue Utils', () => {
     describe('findIssuById', () => {
       const issueId = 1;

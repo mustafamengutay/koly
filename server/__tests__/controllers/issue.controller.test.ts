@@ -9,6 +9,7 @@ import {
 import {
   deleteRemoveReportedIssue,
   getListAllIssues,
+  getViewIssueDetails,
   patchAdoptIssues,
   patchCompleteIssue,
   postReportIssue,
@@ -251,6 +252,47 @@ describe('Issue Controllers', () => {
       (issueService.completeIssue as jest.Mock).mockRejectedValue(error);
 
       await patchCompleteIssue(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe.only('getViewIssueDetails', () => {
+    beforeEach(() => {
+      issueService.viewIssueDetails = jest.fn();
+      req = createRequest({
+        userId: userId,
+        method: 'GET',
+        url: `/api/v1/projects/${projectId}/issues/${issueId}`,
+        params: {
+          projectId,
+          issueId,
+        },
+      });
+    });
+
+    it('should return 200 status code on successful issue viewing', async () => {
+      (issueService.viewIssueDetails as jest.Mock).mockResolvedValue(issue);
+
+      await getViewIssueDetails(req, res, next);
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('should respond with success status and data on issue viewing', async () => {
+      (issueService.viewIssueDetails as jest.Mock).mockResolvedValue(issue);
+
+      await getViewIssueDetails(req, res, next);
+
+      expect(res._getJSONData()).toHaveProperty('status', 'success');
+      expect(res._getJSONData()).toHaveProperty('data', { issue });
+    });
+
+    it('should pass the error to the error handler if project creation fails', async () => {
+      const error = new Error('Fail');
+      (issueService.viewIssueDetails as jest.Mock).mockRejectedValue(error);
+
+      await getViewIssueDetails(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });
