@@ -12,6 +12,7 @@ import {
   getViewIssueDetails,
   patchAdoptIssues,
   patchCompleteIssue,
+  patchReleaseIssue,
   postReportIssue,
 } from '../../controllers/issue.controller';
 import IssueService from '../../services/issue.service';
@@ -175,6 +176,54 @@ describe('Issue Controllers', () => {
     });
   });
 
+  describe('patchReleaseIssue', () => {
+    const releasedIssue = {
+      ...issue,
+      adoptedById: null,
+    };
+
+    beforeEach(() => {
+      issueService.releaseIssue = jest.fn();
+      req = createRequest({
+        userId: userId,
+        method: 'PATCH',
+        url: `/api/v1/projects/${projectId}/issues/${issueId}/release`,
+        params: {
+          projectId,
+          issueId,
+        },
+      });
+    });
+
+    it('should return 200 status code on successful issue release', async () => {
+      (issueService.releaseIssue as jest.Mock).mockResolvedValue(releasedIssue);
+
+      await patchReleaseIssue(req, res, next);
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('should respond with success status and data on issue release', async () => {
+      (issueService.releaseIssue as jest.Mock).mockResolvedValue(releasedIssue);
+
+      await patchReleaseIssue(req, res, next);
+
+      expect(res._getJSONData()).toHaveProperty('status', 'success');
+      expect(res._getJSONData()).toHaveProperty('data', {
+        issue: releasedIssue,
+      });
+    });
+
+    it('should pass the error to the error handler if release fails', async () => {
+      const error = new Error('Fail');
+      (issueService.releaseIssue as jest.Mock).mockRejectedValue(error);
+
+      await patchReleaseIssue(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
   describe('deleteRemoveReportedIssue', () => {
     beforeEach(() => {
       issueService.removeReportedIssue = jest.fn();
@@ -257,7 +306,7 @@ describe('Issue Controllers', () => {
     });
   });
 
-  describe.only('getViewIssueDetails', () => {
+  describe('getViewIssueDetails', () => {
     beforeEach(() => {
       issueService.viewIssueDetails = jest.fn();
       req = createRequest({

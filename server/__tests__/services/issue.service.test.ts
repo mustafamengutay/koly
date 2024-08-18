@@ -148,6 +148,75 @@ describe('IssueService', () => {
     });
   });
 
+  describe('releaseIssue', () => {
+    const mockReleasedIssue = {
+      ...issue,
+      adoptedById: null,
+    };
+
+    it('should release an issue successfully', async () => {
+      (ProjectService.validateUserParticipation as jest.Mock).mockResolvedValue(
+        true
+      );
+
+      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue({
+        ...issue,
+        adoptedById: userId,
+      });
+
+      (prisma.issue.update as jest.Mock).mockResolvedValue(mockReleasedIssue);
+
+      const releasedIssue: Issue = await issueService.releaseIssue(
+        issueId,
+        userId,
+        projectId
+      );
+
+      expect(releasedIssue).toEqual(mockReleasedIssue);
+    });
+
+    it('should throw an error if the issue is adopted by another user', async () => {
+      (ProjectService.validateUserParticipation as jest.Mock).mockResolvedValue(
+        true
+      );
+
+      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue({
+        ...issue,
+        adoptedById: 2,
+      });
+
+      const error = new HttpError(
+        409,
+        'Issue can only be processed by its adopter'
+      );
+
+      await expect(
+        issueService.releaseIssue(issueId, userId, projectId)
+      ).rejects.toThrow(error);
+    });
+
+    it('should throw an error if the issue could not be updated', async () => {
+      (ProjectService.validateUserParticipation as jest.Mock).mockResolvedValue(
+        true
+      );
+
+      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue({
+        ...issue,
+        adoptedById: userId,
+      });
+
+      const error = new HttpError(
+        500,
+        'Database Error: Issue could not be updated'
+      );
+      (prisma.issue.update as jest.Mock).mockRejectedValue(error);
+
+      await expect(
+        issueService.releaseIssue(issueId, userId, projectId)
+      ).rejects.toThrow(error);
+    });
+  });
+
   describe('removeReportedIssue', () => {
     const anotherUserId = 2;
 
@@ -291,7 +360,7 @@ describe('IssueService', () => {
   });
 
   describe('viewIssueDetails', () => {
-    it.only('should return an issue successfully', async () => {
+    it('should return an issue successfully', async () => {
       (ProjectService.validateUserParticipation as jest.Mock).mockResolvedValue(
         true
       );

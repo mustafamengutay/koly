@@ -14,6 +14,7 @@ import {
   deleteRemoveReportedIssue,
   patchCompleteIssue,
   getViewIssueDetails,
+  patchReleaseIssue,
 } from '../controllers/issue.controller';
 
 router.post(
@@ -74,6 +75,17 @@ router.patch(
   inputValidator,
   verifyUser,
   patchAdoptIssues
+);
+
+router.patch(
+  '/:projectId/issues/:issueId/release',
+  [
+    param('projectId').isInt().withMessage('projectId should be an integer'),
+    param('issueId').isInt().withMessage('issueId should be an integer'),
+  ],
+  inputValidator,
+  verifyUser,
+  patchReleaseIssue
 );
 
 router.patch(

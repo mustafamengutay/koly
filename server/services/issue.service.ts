@@ -47,8 +47,8 @@ export default class IssueService {
   /**
    * Used to adopt an issue by a user, and returns the adopted issue.
    * If any error occurs, it throws that specific error.
-   * @param adoptedById User ID who will adopt the issue.
    * @param issueId Issue ID
+   * @param userId User ID who will adopt the issue.
    * @param projectId Project ID
    * @returns Issue adopted by a user.
    */
@@ -73,6 +73,41 @@ export default class IssueService {
       });
 
       return adoptedIssue;
+    } catch {
+      throw new HttpError(500, 'Database Error: Issue could not be updated');
+    }
+  }
+
+  /**
+   * Release an issue by a user, and returns the released issue.
+   * If any error occurs, it throws that specific error.
+   * @param issueId Issue ID.
+   * @param userId User ID who will release the issue.
+   * @param projectId Project ID.
+   * @returns Released issue object.
+   */
+  public async releaseIssue(
+    issueId: number,
+    userId: number,
+    projectId: number
+  ): Promise<Issue> {
+    await ProjectService.validateUserParticipation(userId, projectId);
+
+    const issue: Issue = await this.findIssueById(issueId, projectId);
+    this.validateIssueAdopter(issue, userId);
+
+    try {
+      const releasedIssue: Issue = await prisma.issue.update({
+        where: {
+          id: issueId,
+          adoptedById: userId,
+        },
+        data: {
+          adoptedById: null,
+        },
+      });
+
+      return releasedIssue;
     } catch {
       throw new HttpError(500, 'Database Error: Issue could not be updated');
     }
