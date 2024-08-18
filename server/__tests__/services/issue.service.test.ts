@@ -299,8 +299,10 @@ describe('IssueService', () => {
         (error as any).code = 'P2025';
         (prisma.issue.findUniqueOrThrow as jest.Mock).mockRejectedValue(error);
 
-        await expect(issueService['findIssueById'](issueId)).rejects.toThrow(
-          new HttpError(404, 'Issue does not exist')
+        await expect(
+          issueService['findIssueById'](issueId, projectId)
+        ).rejects.toThrow(
+          new HttpError(404, 'Issue does not exist in this project')
         );
       });
     });

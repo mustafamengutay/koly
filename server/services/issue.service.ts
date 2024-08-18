@@ -59,7 +59,7 @@ export default class IssueService {
   ): Promise<Issue> {
     await ProjectService.validateUserParticipation(userId, projectId);
 
-    const issue: Issue = await this.findIssueById(issueId);
+    const issue: Issue = await this.findIssueById(issueId, projectId);
     this.validateIssueNotAdopted(issue);
 
     try {
@@ -93,7 +93,7 @@ export default class IssueService {
   ): Promise<Issue> {
     await ProjectService.validateUserParticipation(userId, projectId);
 
-    const issue: Issue = await this.findIssueById(issueId);
+    const issue: Issue = await this.findIssueById(issueId, projectId);
     this.validateIssueReporter(issue, userId);
 
     try {
@@ -124,7 +124,7 @@ export default class IssueService {
   ): Promise<Issue> {
     await ProjectService.validateUserParticipation(userId, projectId);
 
-    const issue: Issue = await this.findIssueById(issueId);
+    const issue: Issue = await this.findIssueById(issueId, projectId);
     this.validateIssueAdopter(issue, userId);
     this.validateIssueCompleted(issue);
 
@@ -180,18 +180,19 @@ export default class IssueService {
     }
   }
 
-  private async findIssueById(id: number): Promise<Issue> {
+  private async findIssueById(id: number, projectId: number): Promise<Issue> {
     try {
       const issue = await prisma.issue.findUniqueOrThrow({
         where: {
           id,
+          projectId,
         },
       });
 
       return issue;
     } catch (error: any) {
       if ('code' in error && error.code === 'P2025') {
-        throw new HttpError(404, 'Issue does not exist');
+        throw new HttpError(404, 'Issue does not exist in this project');
       }
       throw new HttpError(500, 'Database Error: Issue could not be found');
     }
