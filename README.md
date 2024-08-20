@@ -1,6 +1,8 @@
 # koly
 
-The main idea of “koly” is to provide a dynamic issue report for products and product teams. It is a lightweight, fast and productive tool to track all issues of a product that are reported by the team members. **koly** displays all opened issues which can be taken by a team member(s), or can be assigned to a team member(s) by their team leader.
+Note: **koly** is still an **MVP**. I am aware of some of the techniques that can make the project better. All of those will be implemented in the future.
+
+The main idea of “koly” is to provide a dynamic issue report for projects and project teams. It is a lightweight, fast and productive tool to track all issues of a project that are reported by the team members. **koly** displays all issues which can be adopted by a team member(s), or can be assigned to a team member(s) by their team leader. **koly** provides features that allow you to manage projects without any learning curve and complexity.
 
 ## Pre-requisites
 
@@ -44,11 +46,11 @@ git clone  https://github.com/mustafamengutay/koly.git
 
 ```bash
 # First
-cd koly-main
+cd koly
 npm i
 
 # Second
-cd koly-main/server
+cd koly/server
 npm i
 ```
 
@@ -58,20 +60,10 @@ npm i
 # Will be added soon...
 ```
 
-- Run the server of the project in the development mode
+- Run the server in the development mode
 
 ```bash
-cd koly-main/server
+cd koly/server
 
 npm run dev
 ```
-
-- Build and run the server of the project
-
-```bash
-cd koly-main/server
-
-npm run start
-```
-
-Navigate to `http://localhost:3000`
