@@ -1,11 +1,11 @@
+import container from '../inversify.config';
+
 import express from 'express';
 import { body } from 'express-validator';
 import { inputValidator } from '../middlewares/validation';
+import { AuthenticationController } from '../controllers/authentication.controller';
 
-import {
-  postSignUp,
-  postLogin,
-} from '../controllers/authentication.controller';
+const authenticationController = container.get(AuthenticationController);
 
 const router = express.Router();
 
@@ -18,7 +18,7 @@ router.post(
     body('password').trim().notEmpty().isLength({ min: 6 }),
   ],
   inputValidator,
-  postSignUp
+  authenticationController.postSignUp
 );
 
 router.post(
@@ -28,7 +28,7 @@ router.post(
     body('password').trim().notEmpty(),
   ],
   inputValidator,
-  postLogin
+  authenticationController.postLogin
 );
 
 export default router;

@@ -1,23 +1,41 @@
-import prisma from '../../configs/database';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import 'reflect-metadata';
+import { Container } from 'inversify';
 
-import AuthenticationService from '../../services/authentication.service';
+import { IUserRepository } from '../../repositories/user.repository';
+import { ITokenService } from '../../services/token.service';
+import { IEncryptionService } from '../../services/encryption.service';
+import { AuthenticationService } from '../../services/authentication.service';
+
 import { HttpError } from '../../types/errors';
 
 describe('AuthenticationService', () => {
-  const authenticationService = AuthenticationService.getInstance();
+  let container: Container;
+  let mockUserRepository: IUserRepository;
+  let mockTokenService: ITokenService;
+  let mockEncryptionService: IEncryptionService;
+  let authenticationService: AuthenticationService;
 
-  beforeAll(() => {
-    bcrypt.hash = jest.fn().mockResolvedValue('hashedPassword');
-    jwt.sign = jest.fn().mockReturnValue('complexToken');
+  beforeEach(() => {
+    mockUserRepository = {
+      createUser: jest.fn(),
+      findUserByEmail: jest.fn(),
+      isEmailExist: jest.fn(),
+    };
+    mockTokenService = {
+      createLoginToken: jest.fn(),
+    };
+    mockEncryptionService = {
+      isPasswordCorrect: jest.fn(),
+      hashPassword: jest.fn(),
+    };
 
-    prisma.user.create = jest.fn().mockResolvedValue({
-      name: 'test',
-      surname: 'data',
-      email: 'test@gmail.com',
-      password: 'hashedPassword',
-    });
+    container = new Container();
+    container.bind('IUserRepository').toConstantValue(mockUserRepository);
+    container.bind('ITokenService').toConstantValue(mockTokenService);
+    container.bind('IEncryptionService').toConstantValue(mockEncryptionService);
+    container.bind(AuthenticationService).toSelf();
+
+    authenticationService = container.get(AuthenticationService);
   });
 
   afterEach(() => {
@@ -31,7 +49,13 @@ describe('AuthenticationService', () => {
     const password = 'test123';
 
     it('should create a user if the email does not exist', async () => {
-      prisma.user.findUnique = jest.fn().mockResolvedValue(null);
+      (mockUserRepository.isEmailExist as jest.Mock).mockResolvedValue(false);
+      (mockUserRepository.createUser as jest.Mock).mockResolvedValue({
+        name: 'test',
+        surname: 'data',
+        email: 'test@gmail.com',
+        password: 'hashedPassword',
+      });
 
       const user = await authenticationService.signUp(
         name,
@@ -45,7 +69,7 @@ describe('AuthenticationService', () => {
     });
 
     it('should throw an error if the email exist', async () => {
-      prisma.user.findUnique = jest.fn().mockResolvedValue({
+      mockUserRepository.isEmailExist = jest.fn().mockResolvedValue({
         email: 'test@gmail.com',
       });
 
@@ -55,8 +79,8 @@ describe('AuthenticationService', () => {
     });
 
     it('should throw an http error if password hashing fails', async () => {
-      prisma.user.findUnique = jest.fn().mockResolvedValue(null);
-      bcrypt.hash = jest
+      mockUserRepository.isEmailExist = jest.fn().mockResolvedValue(null);
+      mockEncryptionService.hashPassword = jest
         .fn()
         .mockRejectedValue(
           new HttpError(500, 'The password could not be hashed')
@@ -68,15 +92,16 @@ describe('AuthenticationService', () => {
     });
 
     it('should throw an error if user creation fails', async () => {
-      prisma.user.findUnique = jest.fn().mockResolvedValue(null);
-      bcrypt.hash = jest.fn().mockResolvedValue('hashedPassword');
-      prisma.user.create = jest
+      const mockError = new HttpError(500, 'The user could not be created');
+      mockUserRepository.isEmailExist = jest.fn().mockResolvedValue(null);
+      mockEncryptionService.hashPassword = jest
         .fn()
-        .mockRejectedValue(new Error('User creation failed'));
+        .mockResolvedValue('hashedPassword');
+      mockUserRepository.createUser = jest.fn().mockRejectedValue(mockError);
 
       await expect(
         authenticationService.signUp(name, surname, email, password)
-      ).rejects.toThrow(HttpError);
+      ).rejects.toThrow(mockError);
     });
   });
 
@@ -84,23 +109,25 @@ describe('AuthenticationService', () => {
     const email = 'test@gmail.com';
     const password = 'test123';
 
-    beforeEach(() => {
-      prisma.user.findUnique = jest.fn().mockResolvedValue({
-        email: 'test@gmail.com',
-        password: 'hashedPassword',
-      });
-    });
-
     it('should return a login token if the login step successfull', async () => {
-      bcrypt.compare = jest.fn().mockResolvedValue(true);
+      const token = 'complexToken';
+
+      mockEncryptionService.isPasswordCorrect = jest
+        .fn()
+        .mockResolvedValue(true);
+      mockTokenService.createLoginToken = jest.fn().mockReturnValue(token);
+      mockUserRepository.findUserByEmail = jest.fn().mockResolvedValue({
+        email,
+        password,
+      });
 
       await expect(authenticationService.login(email, password)).resolves.toBe(
-        'complexToken'
+        token
       );
     });
 
     it('should throw an Http error if the user does not exist', async () => {
-      prisma.user.findUnique = jest.fn().mockResolvedValue(null);
+      mockUserRepository.findUserByEmail = jest.fn().mockResolvedValue(null);
 
       await expect(
         authenticationService.login(email, password)
@@ -108,7 +135,13 @@ describe('AuthenticationService', () => {
     });
 
     it('should throw an error if the password is incorrect', async () => {
-      bcrypt.compare = jest.fn().mockResolvedValue(false);
+      mockUserRepository.findUserByEmail = jest.fn().mockResolvedValue({
+        email,
+        password,
+      });
+      mockEncryptionService.isPasswordCorrect = jest
+        .fn()
+        .mockResolvedValue(false);
 
       await expect(
         authenticationService.login(email, password)
