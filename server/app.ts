@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import 'reflect-metadata';
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
@@ -22,7 +23,6 @@ if (cluster.isPrimary) {
   const numCPUs = os.availableParallelism();
   for (let i = 0; i < numCPUs; i++) {
     cluster.fork();
-    console.log(`Server instance is working`);
   }
 
   cluster.on('exit', (worker) => {
