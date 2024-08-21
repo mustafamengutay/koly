@@ -1,98 +1,102 @@
+import { inject, injectable } from 'inversify';
 import { Response, NextFunction } from 'express';
 import { CustomRequest } from '../types/customRequest';
-import { Project } from '@prisma/client';
 
 import { ProjectService } from '../services/project.service';
 
-const projectService = ProjectService.getInstance();
+@injectable()
+export class ProjectController {
+  private projectService: ProjectService;
 
-export const postCreateProject = async (
-  req: CustomRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  const { name } = req.body;
-  const userId = req.userId!;
-
-  try {
-    const newProject: Project = await projectService.createProject(
-      userId,
-      name
-    );
-
-    res.status(201).json({
-      status: 'success',
-      data: {
-        project: newProject,
-      },
-    });
-  } catch (error) {
-    next(error);
+  public constructor(@inject(ProjectService) projectService: ProjectService) {
+    this.projectService = projectService;
   }
-};
 
-export const getListAllProjects = async (
-  req: CustomRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  const userId = req.userId!;
+  public postCreateProject = async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const { name } = req.body;
+    const userId = req.userId!;
 
-  try {
-    const allProjects: Project[] = await projectService.listAllProjects(userId);
+    try {
+      const newProject = await this.projectService.createProject(userId, name);
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        projects: allProjects,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+      res.status(201).json({
+        status: 'success',
+        data: {
+          project: newProject,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 
-export const getListCreatedProjects = async (
-  req: CustomRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  const userId = req.userId!;
+  public getListAllProjects = async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const userId = req.userId!;
 
-  try {
-    const createdProjects: Project[] = await projectService.listCreatedProjects(
-      userId
-    );
+    try {
+      const allProjects = await this.projectService.listAllProjects(userId);
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        projects: createdProjects,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+      res.status(200).json({
+        status: 'success',
+        data: {
+          projects: allProjects,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 
-export const getListParticipatedProjects = async (
-  req: CustomRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  const userId = req.userId!;
+  public getListCreatedProjects = async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const userId = req.userId!;
 
-  try {
-    const participatedProjects: Project[] =
-      await projectService.listParticipatedProjects(userId);
+    try {
+      const createdProjects = await this.projectService.listCreatedProjects(
+        userId
+      );
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        projects: participatedProjects,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+      res.status(200).json({
+        status: 'success',
+        data: {
+          projects: createdProjects,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public getListParticipatedProjects = async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const userId = req.userId!;
+
+    try {
+      const participatedProjects =
+        await this.projectService.listParticipatedProjects(userId);
+
+      res.status(200).json({
+        status: 'success',
+        data: {
+          projects: participatedProjects,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+}

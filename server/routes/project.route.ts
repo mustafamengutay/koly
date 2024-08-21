@@ -1,15 +1,13 @@
+import container from '../inversify.config';
+
 import express from 'express';
 import { body } from 'express-validator';
 import { inputValidator } from '../middlewares/validation';
-
 import { verifyUser } from '../middlewares/authorization';
 
-import {
-  postCreateProject,
-  getListCreatedProjects,
-  getListParticipatedProjects,
-  getListAllProjects,
-} from '../controllers/project.controller';
+import { ProjectController } from '../controllers/project.controller';
+
+const projectController = container.get(ProjectController);
 
 const router = express.Router();
 
@@ -18,13 +16,17 @@ router.post(
   [body('name').trim().notEmpty().isLength({ min: 3 })],
   inputValidator,
   verifyUser,
-  postCreateProject
+  projectController.postCreateProject
 );
 
-router.get('/all', verifyUser, getListAllProjects);
+router.get('/all', verifyUser, projectController.getListAllProjects);
 
-router.get('/created', verifyUser, getListCreatedProjects);
+router.get('/created', verifyUser, projectController.getListCreatedProjects);
 
-router.get('/participated', verifyUser, getListParticipatedProjects);
+router.get(
+  '/participated',
+  verifyUser,
+  projectController.getListParticipatedProjects
+);
 
 export default router;

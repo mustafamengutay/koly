@@ -1,18 +1,15 @@
-import { Project } from '@prisma/client';
-import prisma from '../configs/database';
-import { HttpError } from '../types/errors';
+import { injectable, inject } from 'inversify';
 
+import { IProjectRepository } from '../repositories/project.repository';
+
+@injectable()
 export class ProjectService {
-  private static instance: ProjectService;
+  private projectRepository: IProjectRepository;
 
-  private constructor() {}
-
-  public static getInstance(): ProjectService {
-    if (!ProjectService.instance) {
-      ProjectService.instance = new ProjectService();
-    }
-
-    return ProjectService.instance;
+  public constructor(
+    @inject('IProjectRepository') projectRepository: IProjectRepository
+  ) {
+    this.projectRepository = projectRepository;
   }
 
   /**
@@ -22,28 +19,8 @@ export class ProjectService {
    * @param name New project's name
    * @returns New project object.
    */
-  public async createProject(userId: number, name: string): Promise<Project> {
-    try {
-      const newProject: Project = await prisma.project.create({
-        data: {
-          name,
-          owner: {
-            connect: {
-              id: userId,
-            },
-          },
-          participants: {
-            connect: {
-              id: userId,
-            },
-          },
-        },
-      });
-
-      return newProject;
-    } catch {
-      throw new HttpError(500, 'The project could not be created');
-    }
+  public async createProject(userId: number, name: string) {
+    return await this.projectRepository.createProject(userId, name);
   }
 
   /**
@@ -52,25 +29,8 @@ export class ProjectService {
    * @param userId User ID
    * @returns List of all projects.
    */
-  public async listAllProjects(userId: number): Promise<Project[]> {
-    try {
-      const allProjects: Project[] = await prisma.project.findMany({
-        where: {
-          participants: {
-            some: {
-              id: userId,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-      });
-
-      return allProjects;
-    } catch {
-      throw new HttpError(500, 'Project could not be found');
-    }
+  public async listAllProjects(userId: number) {
+    return await this.projectRepository.listAllProjects(userId);
   }
 
   /**
@@ -78,23 +38,8 @@ export class ProjectService {
    * @param userId User ID
    * @returns List of user projects.
    */
-  public async listCreatedProjects(userId: number): Promise<Project[]> {
-    try {
-      const createdProjects: Project[] = await prisma.project.findMany({
-        where: {
-          owner: {
-            id: userId,
-          },
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-      });
-
-      return createdProjects;
-    } catch {
-      throw new HttpError(500, 'Project could not be found');
-    }
+  public async listCreatedProjects(userId: number) {
+    return await this.projectRepository.listCreatedProjects(userId);
   }
 
   /**
@@ -103,30 +48,8 @@ export class ProjectService {
    * @param userId User ID
    * @returns List of participated projects of a user.
    */
-  public async listParticipatedProjects(userId: number): Promise<Project[]> {
-    try {
-      const participatedProject: Project[] = await prisma.project.findMany({
-        where: {
-          participants: {
-            some: {
-              id: userId,
-            },
-          },
-          owner: {
-            isNot: {
-              id: userId,
-            },
-          },
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-      });
-
-      return participatedProject;
-    } catch {
-      throw new HttpError(500, 'Project could not be found');
-    }
+  public async listParticipatedProjects(userId: number) {
+    return await this.projectRepository.listParticipatedProjects(userId);
   }
 
   /**
@@ -136,26 +59,10 @@ export class ProjectService {
    * @param userId User ID
    * @param projectId Project ID
    */
-  public static async validateUserParticipation(
+  public async validateUserParticipation(
     userId: number,
     projectId: number
   ): Promise<void> {
-    try {
-      await prisma.user.findUniqueOrThrow({
-        where: {
-          id: userId,
-          participatedProjects: {
-            some: {
-              id: projectId,
-            },
-          },
-        },
-      });
-    } catch (error: any) {
-      if ('code' in error && error.code === 'P2025') {
-        throw new HttpError(403, 'User is not a participant of the project');
-      }
-      throw new HttpError(500, 'User could not be found');
-    }
+    await this.projectRepository.validateUserParticipation(userId, projectId);
   }
 }

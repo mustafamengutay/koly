@@ -12,13 +12,23 @@ import {
 import { AuthenticationService } from './services/authentication.service';
 import { AuthenticationController } from './controllers/authentication.controller';
 
+import {
+  IProjectRepository,
+  ProjectRepository,
+} from './repositories/project.repository';
+import { ProjectService } from './services/project.service';
+import { ProjectController } from './controllers/project.controller';
+
 const container = new Container();
 
 container.bind<IUserRepository>('IUserRepository').to(UserRepository);
 container.bind<ITokenService>('ITokenService').to(TokenService);
 container.bind<IEncryptionService>('IEncryptionService').to(EncryptionService);
-
 container.bind<AuthenticationService>(AuthenticationService).toSelf();
 container.bind<AuthenticationController>(AuthenticationController).toSelf();
+
+container.bind<IProjectRepository>('IProjectRepository').to(ProjectRepository);
+container.bind<ProjectService>(ProjectService).toSelf();
+container.bind<ProjectController>(ProjectController).toSelf();
 
 export default container;
