@@ -63,9 +63,7 @@ describe('Project Controllers', () => {
     });
 
     it('should return 201 status code on successful project creation', async () => {
-      (mockProjectService.createProject as jest.Mock).mockResolvedValue(
-        project
-      );
+      mockProjectService.createProject.mockResolvedValue(project);
 
       await projectController.postCreateProject(req, res, next);
 
@@ -73,9 +71,7 @@ describe('Project Controllers', () => {
     });
 
     it('should respond with success status and data on project creation', async () => {
-      (mockProjectService.createProject as jest.Mock).mockResolvedValue(
-        project
-      );
+      mockProjectService.createProject.mockResolvedValue(project);
 
       await projectController.postCreateProject(req, res, next);
 
@@ -85,7 +81,7 @@ describe('Project Controllers', () => {
 
     it('should pass the error to the error handler if project creation fails', async () => {
       const error = new Error('Fail');
-      (mockProjectService.createProject as jest.Mock).mockRejectedValue(error);
+      mockProjectService.createProject.mockRejectedValue(error);
 
       await projectController.postCreateProject(req, res, next);
 
@@ -135,9 +131,7 @@ describe('Project Controllers', () => {
 
     it('should pass the error to the error handler if project listing fails', async () => {
       const error = new Error('Fail');
-      (mockProjectService.listCreatedProjects as jest.Mock).mockRejectedValue(
-        error
-      );
+      mockProjectService.listCreatedProjects.mockRejectedValue(error);
 
       await projectController.postCreateProject(req, res, next);
 
@@ -164,9 +158,7 @@ describe('Project Controllers', () => {
     });
 
     it('should return 200 status code successful participated project listing', async () => {
-      (
-        mockProjectService.listParticipatedProjects as jest.Mock
-      ).mockResolvedValue(project);
+      mockProjectService.listParticipatedProjects.mockResolvedValue(project);
 
       await projectController.getListParticipatedProjects(req, res, next);
 
@@ -174,9 +166,7 @@ describe('Project Controllers', () => {
     });
 
     it('should respond with success status and data on participated project listing', async () => {
-      (
-        mockProjectService.listParticipatedProjects as jest.Mock
-      ).mockResolvedValue(project);
+      mockProjectService.listParticipatedProjects.mockResolvedValue(project);
 
       await projectController.getListParticipatedProjects(req, res, next);
 
@@ -186,9 +176,7 @@ describe('Project Controllers', () => {
 
     it('should pass the error to the error handler if project listing fails', async () => {
       const error = new Error('Fail');
-      (
-        mockProjectService.listParticipatedProjects as jest.Mock
-      ).mockRejectedValue(error);
+      mockProjectService.listParticipatedProjects.mockRejectedValue(error);
 
       await projectController.getListCreatedProjects(req, res, next);
 
@@ -215,9 +203,7 @@ describe('Project Controllers', () => {
     });
 
     it('should return 200 status code successful project listing', async () => {
-      (mockProjectService.listAllProjects as jest.Mock).mockResolvedValue(
-        project
-      );
+      mockProjectService.listAllProjects.mockResolvedValue(project);
 
       await projectController.getListAllProjects(req, res, next);
 
@@ -225,9 +211,7 @@ describe('Project Controllers', () => {
     });
 
     it('should respond with success status and data on project listing', async () => {
-      (mockProjectService.listAllProjects as jest.Mock).mockResolvedValue(
-        project
-      );
+      mockProjectService.listAllProjects.mockResolvedValue(project);
 
       await projectController.getListAllProjects(req, res, next);
 
@@ -237,9 +221,7 @@ describe('Project Controllers', () => {
 
     it('should pass the error to the error handler if project listing fails', async () => {
       const error = new Error('Fail');
-      (mockProjectService.listAllProjects as jest.Mock).mockRejectedValue(
-        error
-      );
+      mockProjectService.listAllProjects.mockRejectedValue(error);
 
       await projectController.getListAllProjects(req, res, next);
 
