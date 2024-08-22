@@ -19,6 +19,17 @@ import {
 import { ProjectService } from './services/project.service';
 import { ProjectController } from './controllers/project.controller';
 
+import {
+  IIssueRepository,
+  IssueRepository,
+} from './repositories/issue.repository';
+import { IssueService } from './services/issue.service';
+import {
+  IIssueValidator,
+  IssueValidator,
+} from './services/validators/issueValidator';
+import { IssueController } from './controllers/issue.controller';
+
 const container = new Container();
 
 container.bind<IUserRepository>('IUserRepository').to(UserRepository);
@@ -30,5 +41,10 @@ container.bind<AuthenticationController>(AuthenticationController).toSelf();
 container.bind<IProjectRepository>('IProjectRepository').to(ProjectRepository);
 container.bind<ProjectService>(ProjectService).toSelf();
 container.bind<ProjectController>(ProjectController).toSelf();
+
+container.bind<IIssueRepository>('IIssueRepository').to(IssueRepository);
+container.bind<IIssueValidator>('IIssueValidator').to(IssueValidator);
+container.bind<IssueService>(IssueService).toSelf();
+container.bind<IssueController>(IssueController).toSelf();
 
 export default container;

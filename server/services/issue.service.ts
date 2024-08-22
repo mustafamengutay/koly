@@ -1,20 +1,25 @@
-import { Issue } from '@prisma/client';
-import prisma from '../configs/database';
-import { HttpError } from '../types/errors';
-import { IssueData, IssueStatus } from '../types/issue';
-import { ProjectService } from './project.service';
+import { inject, injectable } from 'inversify';
 
-export default class IssueService {
-  private static instance: IssueService;
+import { IssueData } from '../types/issue';
 
-  private constructor() {}
+import { IProjectRepository } from '../repositories/project.repository';
+import { IIssueRepository } from '../repositories/issue.repository';
+import { IIssueValidator } from './validators/issueValidator';
 
-  public static getInstance(): IssueService {
-    if (!IssueService.instance) {
-      IssueService.instance = new IssueService();
-    }
+@injectable()
+export class IssueService {
+  private projectRepository: IProjectRepository;
+  private issueRepository: IIssueRepository;
+  private issueValidator: IIssueValidator;
 
-    return IssueService.instance;
+  public constructor(
+    @inject('IProjectRepository') projectRepository: IProjectRepository,
+    @inject('IIssueRepository') issueRepository: IIssueRepository,
+    @inject('IIssueValidator') issueValidator: IIssueValidator
+  ) {
+    this.projectRepository = projectRepository;
+    this.issueRepository = issueRepository;
+    this.issueValidator = issueValidator;
   }
 
   /**
@@ -27,21 +32,9 @@ export default class IssueService {
     issue: IssueData,
     userId: number,
     projectId: number
-  ): Promise<Issue> {
-    await ProjectService.validateUserParticipation(userId, projectId);
-
-    try {
-      const newIssue: Issue = await prisma.issue.create({
-        data: {
-          ...issue,
-          status: IssueStatus.Open,
-        },
-      });
-
-      return newIssue;
-    } catch {
-      throw new HttpError(500, 'The Issue could not be created');
-    }
+  ) {
+    await this.projectRepository.validateUserParticipation(userId, projectId);
+    return await this.issueRepository.create(issue);
   }
 
   /**
@@ -52,30 +45,13 @@ export default class IssueService {
    * @param projectId Project ID
    * @returns Issue adopted by a user.
    */
-  public async adoptIssue(
-    issueId: number,
-    userId: number,
-    projectId: number
-  ): Promise<Issue> {
-    await ProjectService.validateUserParticipation(userId, projectId);
+  public async adoptIssue(issueId: number, userId: number, projectId: number) {
+    await this.projectRepository.validateUserParticipation(userId, projectId);
 
-    const issue: Issue = await this.findIssueById(issueId, projectId);
-    this.validateIssueNotAdopted(issue);
+    const issue = await this.issueRepository.findById(issueId, projectId);
+    this.issueValidator.validateIssueNotAdopted(issue.adoptedById);
 
-    try {
-      const adoptedIssue: Issue = await prisma.issue.update({
-        where: {
-          id: issueId,
-        },
-        data: {
-          adoptedById: userId,
-        },
-      });
-
-      return adoptedIssue;
-    } catch {
-      throw new HttpError(500, 'Database Error: Issue could not be updated');
-    }
+    return await this.issueRepository.adopt(issue.id, userId);
   }
 
   /**
@@ -90,27 +66,13 @@ export default class IssueService {
     issueId: number,
     userId: number,
     projectId: number
-  ): Promise<Issue> {
-    await ProjectService.validateUserParticipation(userId, projectId);
+  ) {
+    await this.projectRepository.validateUserParticipation(userId, projectId);
 
-    const issue: Issue = await this.findIssueById(issueId, projectId);
-    this.validateIssueAdopter(issue, userId);
+    const issue = await this.issueRepository.findById(issueId, projectId);
+    this.issueValidator.validateIssueAdopter(issue.adoptedById, userId);
 
-    try {
-      const releasedIssue: Issue = await prisma.issue.update({
-        where: {
-          id: issueId,
-          adoptedById: userId,
-        },
-        data: {
-          adoptedById: null,
-        },
-      });
-
-      return releasedIssue;
-    } catch {
-      throw new HttpError(500, 'Database Error: Issue could not be updated');
-    }
+    return this.issueRepository.release(issue.id, userId);
   }
 
   /**
@@ -125,24 +87,13 @@ export default class IssueService {
     issueId: number,
     userId: number,
     projectId: number
-  ): Promise<Issue> {
-    await ProjectService.validateUserParticipation(userId, projectId);
+  ) {
+    await this.projectRepository.validateUserParticipation(userId, projectId);
 
-    const issue: Issue = await this.findIssueById(issueId, projectId);
-    this.validateIssueReporter(issue, userId);
+    const issue = await this.issueRepository.findById(issueId, projectId);
+    this.issueValidator.validateIssueReporter(issue.reportedById, userId);
 
-    try {
-      const removedIssue: Issue = await prisma.issue.delete({
-        where: {
-          id: issue.id,
-          reportedById: userId,
-        },
-      });
-
-      return removedIssue;
-    } catch {
-      throw new HttpError(500, 'Database Error: Issue could not be deleted');
-    }
+    return this.issueRepository.remove(issue.id, userId);
   }
 
   /**
@@ -156,28 +107,14 @@ export default class IssueService {
     issueId: number,
     userId: number,
     projectId: number
-  ): Promise<Issue> {
-    await ProjectService.validateUserParticipation(userId, projectId);
+  ) {
+    await this.projectRepository.validateUserParticipation(userId, projectId);
 
-    const issue: Issue = await this.findIssueById(issueId, projectId);
-    this.validateIssueAdopter(issue, userId);
-    this.validateIssueCompleted(issue);
+    const issue = await this.issueRepository.findById(issueId, projectId);
+    this.issueValidator.validateIssueAdopter(issue.adoptedById, userId);
+    this.issueValidator.validateIssueCompleted(issue.status);
 
-    try {
-      const completedIssue: Issue = await prisma.issue.update({
-        where: {
-          id: issueId,
-          adoptedById: userId,
-        },
-        data: {
-          status: IssueStatus.Completed,
-        },
-      });
-
-      return completedIssue;
-    } catch {
-      throw new HttpError(500, 'Database Error: Issue could not be updated');
-    }
+    return this.issueRepository.complete(issue.id, userId);
   }
 
   /**
@@ -192,10 +129,9 @@ export default class IssueService {
     issueId: number,
     userId: number,
     projectId: number
-  ): Promise<Issue> {
-    await ProjectService.validateUserParticipation(userId, projectId);
-
-    return await this.findIssueById(issueId, projectId);
+  ) {
+    await this.projectRepository.validateUserParticipation(userId, projectId);
+    return await this.issueRepository.findById(issueId, projectId);
   }
 
   /**
@@ -204,93 +140,7 @@ export default class IssueService {
    * @returns Array of issues
    */
   public async listAllIssues(userId: number, projectId: number) {
-    await ProjectService.validateUserParticipation(userId, projectId);
-
-    try {
-      const allIssues = await prisma.issue.findMany({
-        where: {
-          projectId,
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-        include: {
-          reportedBy: {
-            select: {
-              name: true,
-              surname: true,
-            },
-          },
-          adoptedBy: {
-            select: {
-              name: true,
-              surname: true,
-            },
-          },
-        },
-      });
-
-      return allIssues;
-    } catch {
-      throw new HttpError(500, 'Issue could not be found');
-    }
-  }
-
-  private async findIssueById(id: number, projectId: number): Promise<Issue> {
-    try {
-      const issue = await prisma.issue.findUniqueOrThrow({
-        where: {
-          id,
-          projectId,
-        },
-        include: {
-          reportedBy: {
-            select: {
-              name: true,
-              surname: true,
-              role: true,
-            },
-          },
-          adoptedBy: {
-            select: {
-              name: true,
-              surname: true,
-              role: true,
-            },
-          },
-        },
-      });
-
-      return issue;
-    } catch (error: any) {
-      if ('code' in error && error.code === 'P2025') {
-        throw new HttpError(404, 'Issue does not exist in this project');
-      }
-      throw new HttpError(500, 'Database Error: Issue could not be found');
-    }
-  }
-
-  private validateIssueNotAdopted(issue: Issue): void {
-    if (issue.adoptedById) {
-      throw new HttpError(409, 'Issue is already adopted');
-    }
-  }
-
-  private validateIssueCompleted(issue: Issue): void {
-    if (issue.status === IssueStatus.Completed) {
-      throw new HttpError(409, 'Issue is already completed');
-    }
-  }
-
-  private validateIssueReporter(issue: Issue, reporterId: number): void {
-    if (issue.reportedById !== reporterId) {
-      throw new HttpError(409, 'Issue can only be removed by its reporter');
-    }
-  }
-
-  private validateIssueAdopter(issue: Issue, adopterId: number): void {
-    if (issue.adoptedById !== adopterId) {
-      throw new HttpError(409, 'Issue can only be processed by its adopter');
-    }
+    await this.projectRepository.validateUserParticipation(userId, projectId);
+    return this.issueRepository.findAllByProjectId(projectId);
   }
 }

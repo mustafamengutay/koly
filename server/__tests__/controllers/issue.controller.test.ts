@@ -1,3 +1,6 @@
+import 'reflect-metadata';
+import { Container } from 'inversify';
+
 import { NextFunction, Request, Response } from 'express';
 import {
   createRequest,
@@ -6,28 +9,36 @@ import {
   MockResponse,
 } from 'node-mocks-http';
 
-import {
-  deleteRemoveReportedIssue,
-  getListAllIssues,
-  getViewIssueDetails,
-  patchAdoptIssues,
-  patchCompleteIssue,
-  patchReleaseIssue,
-  postReportIssue,
-} from '../../controllers/issue.controller';
-import IssueService from '../../services/issue.service';
+import { IssueService } from '../../services/issue.service';
 import { IssueData, IssueType } from '../../types/issue';
+import { IssueController } from '../../controllers/issue.controller';
 
 describe('Issue Controllers', () => {
-  const issueService = IssueService.getInstance();
-
   let req: MockRequest<Request>;
   let res: MockResponse<Response>;
   let next: NextFunction;
 
+  let container: Container;
+  let issueController: IssueController;
+  let mockissueService = {
+    reportIssue: jest.fn(),
+    adoptIssue: jest.fn(),
+    releaseIssue: jest.fn(),
+    removeReportedIssue: jest.fn(),
+    completeIssue: jest.fn(),
+    viewIssueDetails: jest.fn(),
+    listAllIssues: jest.fn(),
+  };
+
   beforeEach(() => {
     res = createResponse();
     next = jest.fn();
+
+    container = new Container();
+    container.bind<object>(IssueService).toConstantValue(mockissueService);
+    container.bind(IssueController).toSelf();
+
+    issueController = container.get(IssueController);
   });
 
   afterAll(() => {
@@ -37,7 +48,7 @@ describe('Issue Controllers', () => {
   const userId = 1;
   const projectId = 5;
   const issueId = 1;
-  const issue: IssueData = {
+  const mockIssue: IssueData = {
     title: 'Issue 1',
     description: 'Description for Issue 1',
     type: IssueType.Bug,
@@ -47,7 +58,6 @@ describe('Issue Controllers', () => {
 
   describe('postReportIssue', () => {
     beforeEach(() => {
-      issueService.reportIssue = jest.fn();
       req = createRequest({
         userId: userId,
         method: 'POST',
@@ -55,42 +65,42 @@ describe('Issue Controllers', () => {
         params: {
           projectId,
         },
-        body: issue,
+        body: mockIssue,
       });
     });
 
     it('should return 201 status code on successful issue reporting', async () => {
-      (issueService.reportIssue as jest.Mock).mockResolvedValue(issue);
+      mockissueService.reportIssue.mockResolvedValue(mockIssue);
 
-      await postReportIssue(req, res, next);
+      await issueController.postReportIssue(req, res, next);
 
       expect(res.statusCode).toBe(201);
     });
 
     it('should respond with success status and data on issue reporting', async () => {
-      (issueService.reportIssue as jest.Mock).mockResolvedValue(issue);
+      mockissueService.reportIssue.mockResolvedValue(mockIssue);
 
-      await postReportIssue(req, res, next);
+      await issueController.postReportIssue(req, res, next);
 
       expect(res._getJSONData()).toHaveProperty('status', 'success');
-      expect(res._getJSONData()).toHaveProperty('data', { issue });
+      expect(res._getJSONData()).toHaveProperty('data', { issue: mockIssue });
     });
 
     it('should pass the error to the error handler if project creation fails', async () => {
       const error = new Error('Fail');
-      (issueService.reportIssue as jest.Mock).mockRejectedValue(error);
+      mockissueService.reportIssue.mockRejectedValue(error);
 
-      await postReportIssue(req, res, next);
+      await issueController.postReportIssue(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });
   });
 
   describe('getListAllIssues', () => {
-    const issues: IssueData[] = [issue, issue];
+    const issues: IssueData[] = [mockIssue, mockIssue];
 
     beforeEach(() => {
-      issueService.listAllIssues = jest.fn();
+      mockissueService.listAllIssues = jest.fn();
       req = createRequest({
         userId: userId,
         method: 'GET',
@@ -102,17 +112,17 @@ describe('Issue Controllers', () => {
     });
 
     it('should return 200 status code on successful listing', async () => {
-      (issueService.listAllIssues as jest.Mock).mockResolvedValue(issues);
+      mockissueService.listAllIssues.mockResolvedValue(issues);
 
-      await getListAllIssues(req, res, next);
+      await issueController.getListAllIssues(req, res, next);
 
       expect(res.statusCode).toBe(200);
     });
 
     it('should respond with success status and data on issue reporting', async () => {
-      (issueService.listAllIssues as jest.Mock).mockResolvedValue(issues);
+      mockissueService.listAllIssues.mockResolvedValue(issues);
 
-      await getListAllIssues(req, res, next);
+      await issueController.getListAllIssues(req, res, next);
 
       expect(res._getJSONData()).toHaveProperty('status', 'success');
       expect(res._getJSONData()).toHaveProperty('data', { issues });
@@ -120,9 +130,9 @@ describe('Issue Controllers', () => {
 
     it('should pass the error to the error handler if listing fails', async () => {
       const error = new Error('Fail');
-      (issueService.listAllIssues as jest.Mock).mockRejectedValue(error);
+      mockissueService.listAllIssues.mockRejectedValue(error);
 
-      await getListAllIssues(req, res, next);
+      await issueController.getListAllIssues(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });
@@ -130,12 +140,12 @@ describe('Issue Controllers', () => {
 
   describe('patchAdoptIssue', () => {
     const adoptedIssue = {
-      ...issue,
+      ...mockIssue,
       adoptedById: userId,
     };
 
     beforeEach(() => {
-      issueService.adoptIssue = jest.fn();
+      mockissueService.adoptIssue = jest.fn();
       req = createRequest({
         userId: userId,
         method: 'PATCH',
@@ -148,17 +158,17 @@ describe('Issue Controllers', () => {
     });
 
     it('should return 200 status code on successful issue adoption', async () => {
-      (issueService.adoptIssue as jest.Mock).mockResolvedValue(adoptedIssue);
+      mockissueService.adoptIssue.mockResolvedValue(adoptedIssue);
 
-      await patchAdoptIssues(req, res, next);
+      await issueController.patchAdoptIssues(req, res, next);
 
       expect(res.statusCode).toBe(200);
     });
 
     it('should respond with success status and data on issue adoption', async () => {
-      (issueService.adoptIssue as jest.Mock).mockResolvedValue(adoptedIssue);
+      mockissueService.adoptIssue.mockResolvedValue(adoptedIssue);
 
-      await patchAdoptIssues(req, res, next);
+      await issueController.patchAdoptIssues(req, res, next);
 
       expect(res._getJSONData()).toHaveProperty('status', 'success');
       expect(res._getJSONData()).toHaveProperty('data', {
@@ -168,9 +178,9 @@ describe('Issue Controllers', () => {
 
     it('should pass the error to the error handler if adoption fails', async () => {
       const error = new Error('Fail');
-      (issueService.adoptIssue as jest.Mock).mockRejectedValue(error);
+      mockissueService.adoptIssue.mockRejectedValue(error);
 
-      await patchAdoptIssues(req, res, next);
+      await issueController.patchAdoptIssues(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });
@@ -178,12 +188,12 @@ describe('Issue Controllers', () => {
 
   describe('patchReleaseIssue', () => {
     const releasedIssue = {
-      ...issue,
+      ...mockIssue,
       adoptedById: null,
     };
 
     beforeEach(() => {
-      issueService.releaseIssue = jest.fn();
+      mockissueService.releaseIssue = jest.fn();
       req = createRequest({
         userId: userId,
         method: 'PATCH',
@@ -196,17 +206,17 @@ describe('Issue Controllers', () => {
     });
 
     it('should return 200 status code on successful issue release', async () => {
-      (issueService.releaseIssue as jest.Mock).mockResolvedValue(releasedIssue);
+      mockissueService.releaseIssue.mockResolvedValue(releasedIssue);
 
-      await patchReleaseIssue(req, res, next);
+      await issueController.patchReleaseIssue(req, res, next);
 
       expect(res.statusCode).toBe(200);
     });
 
     it('should respond with success status and data on issue release', async () => {
-      (issueService.releaseIssue as jest.Mock).mockResolvedValue(releasedIssue);
+      mockissueService.releaseIssue.mockResolvedValue(releasedIssue);
 
-      await patchReleaseIssue(req, res, next);
+      await issueController.patchReleaseIssue(req, res, next);
 
       expect(res._getJSONData()).toHaveProperty('status', 'success');
       expect(res._getJSONData()).toHaveProperty('data', {
@@ -216,9 +226,9 @@ describe('Issue Controllers', () => {
 
     it('should pass the error to the error handler if release fails', async () => {
       const error = new Error('Fail');
-      (issueService.releaseIssue as jest.Mock).mockRejectedValue(error);
+      mockissueService.releaseIssue.mockRejectedValue(error);
 
-      await patchReleaseIssue(req, res, next);
+      await issueController.patchReleaseIssue(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });
@@ -226,7 +236,7 @@ describe('Issue Controllers', () => {
 
   describe('deleteRemoveReportedIssue', () => {
     beforeEach(() => {
-      issueService.removeReportedIssue = jest.fn();
+      mockissueService.removeReportedIssue = jest.fn();
       req = createRequest({
         userId: userId,
         method: 'DELETE',
@@ -239,27 +249,27 @@ describe('Issue Controllers', () => {
     });
 
     it('should return 200 status code on successful deletion', async () => {
-      (issueService.removeReportedIssue as jest.Mock).mockResolvedValue(issue);
+      mockissueService.removeReportedIssue.mockResolvedValue(mockIssue);
 
-      await deleteRemoveReportedIssue(req, res, next);
+      await issueController.deleteRemoveReportedIssue(req, res, next);
 
       expect(res.statusCode).toBe(200);
     });
 
     it('should respond with success status and data on deletion', async () => {
-      (issueService.removeReportedIssue as jest.Mock).mockResolvedValue(issue);
+      mockissueService.removeReportedIssue.mockResolvedValue(mockIssue);
 
-      await deleteRemoveReportedIssue(req, res, next);
+      await issueController.deleteRemoveReportedIssue(req, res, next);
 
       expect(res._getJSONData()).toHaveProperty('status', 'success');
-      expect(res._getJSONData()).toHaveProperty('data', { issue });
+      expect(res._getJSONData()).toHaveProperty('data', { issue: mockIssue });
     });
 
     it('should pass the error to the error handler if deletion fails', async () => {
       const error = new Error('Fail');
-      (issueService.removeReportedIssue as jest.Mock).mockRejectedValue(error);
+      mockissueService.removeReportedIssue.mockRejectedValue(error);
 
-      await deleteRemoveReportedIssue(req, res, next);
+      await issueController.deleteRemoveReportedIssue(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });
@@ -267,7 +277,7 @@ describe('Issue Controllers', () => {
 
   describe('patchCompleteIssue', () => {
     beforeEach(() => {
-      issueService.completeIssue = jest.fn();
+      mockissueService.completeIssue = jest.fn();
       req = createRequest({
         userId: userId,
         method: 'PATCH',
@@ -280,27 +290,27 @@ describe('Issue Controllers', () => {
     });
 
     it('should return 200 status code on successful completion', async () => {
-      (issueService.completeIssue as jest.Mock).mockResolvedValue(issue);
+      mockissueService.completeIssue.mockResolvedValue(mockIssue);
 
-      await patchCompleteIssue(req, res, next);
+      await issueController.patchCompleteIssue(req, res, next);
 
       expect(res.statusCode).toBe(200);
     });
 
     it('should respond with success status and data on completion', async () => {
-      (issueService.completeIssue as jest.Mock).mockResolvedValue(issue);
+      mockissueService.completeIssue.mockResolvedValue(mockIssue);
 
-      await patchCompleteIssue(req, res, next);
+      await issueController.patchCompleteIssue(req, res, next);
 
       expect(res._getJSONData()).toHaveProperty('status', 'success');
-      expect(res._getJSONData()).toHaveProperty('data', { issue });
+      expect(res._getJSONData()).toHaveProperty('data', { issue: mockIssue });
     });
 
     it('should pass the error to the error handler if completion fails', async () => {
       const error = new Error('Fail');
-      (issueService.completeIssue as jest.Mock).mockRejectedValue(error);
+      mockissueService.completeIssue.mockRejectedValue(error);
 
-      await patchCompleteIssue(req, res, next);
+      await issueController.patchCompleteIssue(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });
@@ -308,7 +318,7 @@ describe('Issue Controllers', () => {
 
   describe('getViewIssueDetails', () => {
     beforeEach(() => {
-      issueService.viewIssueDetails = jest.fn();
+      mockissueService.viewIssueDetails = jest.fn();
       req = createRequest({
         userId: userId,
         method: 'GET',
@@ -321,27 +331,27 @@ describe('Issue Controllers', () => {
     });
 
     it('should return 200 status code on successful issue viewing', async () => {
-      (issueService.viewIssueDetails as jest.Mock).mockResolvedValue(issue);
+      mockissueService.viewIssueDetails.mockResolvedValue(mockIssue);
 
-      await getViewIssueDetails(req, res, next);
+      await issueController.getViewIssueDetails(req, res, next);
 
       expect(res.statusCode).toBe(200);
     });
 
     it('should respond with success status and data on issue viewing', async () => {
-      (issueService.viewIssueDetails as jest.Mock).mockResolvedValue(issue);
+      mockissueService.viewIssueDetails.mockResolvedValue(mockIssue);
 
-      await getViewIssueDetails(req, res, next);
+      await issueController.getViewIssueDetails(req, res, next);
 
       expect(res._getJSONData()).toHaveProperty('status', 'success');
-      expect(res._getJSONData()).toHaveProperty('data', { issue });
+      expect(res._getJSONData()).toHaveProperty('data', { issue: mockIssue });
     });
 
     it('should pass the error to the error handler if project creation fails', async () => {
       const error = new Error('Fail');
-      (issueService.viewIssueDetails as jest.Mock).mockRejectedValue(error);
+      mockissueService.viewIssueDetails.mockRejectedValue(error);
 
-      await getViewIssueDetails(req, res, next);
+      await issueController.getViewIssueDetails(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });

@@ -1,21 +1,16 @@
+import container from '../inversify.config';
+
 import express from 'express';
 import { param, body } from 'express-validator';
 import { inputValidator } from '../middlewares/validation';
 import { IssueType } from '../types/issue';
-
 import { verifyUser } from '../middlewares/authorization';
 
-const router = express.Router();
+import { IssueController } from '../controllers/issue.controller';
 
-import {
-  getListAllIssues,
-  patchAdoptIssues,
-  postReportIssue,
-  deleteRemoveReportedIssue,
-  patchCompleteIssue,
-  getViewIssueDetails,
-  patchReleaseIssue,
-} from '../controllers/issue.controller';
+const issueController = container.get<IssueController>(IssueController);
+
+const router = express.Router();
 
 router.post(
   '/:projectId/issues',
@@ -33,7 +28,7 @@ router.post(
   ],
   inputValidator,
   verifyUser,
-  postReportIssue
+  issueController.postReportIssue
 );
 
 router.get(
@@ -41,7 +36,7 @@ router.get(
   param('projectId').isInt().withMessage('projectId should be an integer'),
   inputValidator,
   verifyUser,
-  getListAllIssues
+  issueController.getListAllIssues
 );
 
 router.get(
@@ -52,7 +47,7 @@ router.get(
   ],
   inputValidator,
   verifyUser,
-  getViewIssueDetails
+  issueController.getViewIssueDetails
 );
 
 router.delete(
@@ -63,7 +58,7 @@ router.delete(
   ],
   inputValidator,
   verifyUser,
-  deleteRemoveReportedIssue
+  issueController.deleteRemoveReportedIssue
 );
 
 router.patch(
@@ -74,7 +69,7 @@ router.patch(
   ],
   inputValidator,
   verifyUser,
-  patchAdoptIssues
+  issueController.patchAdoptIssues
 );
 
 router.patch(
@@ -85,7 +80,7 @@ router.patch(
   ],
   inputValidator,
   verifyUser,
-  patchReleaseIssue
+  issueController.patchReleaseIssue
 );
 
 router.patch(
@@ -96,7 +91,7 @@ router.patch(
   ],
   inputValidator,
   verifyUser,
-  patchCompleteIssue
+  issueController.patchCompleteIssue
 );
 
 export default router;

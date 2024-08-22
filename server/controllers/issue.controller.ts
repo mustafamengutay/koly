@@ -1,200 +1,208 @@
+import { inject, injectable } from 'inversify';
 import { Response, NextFunction } from 'express';
 import { CustomRequest } from '../types/customRequest';
-import { Issue } from '@prisma/client';
+
 import { IssueData } from '../types/issue';
 
-import IssueService from '../services/issue.service';
+import { IssueService } from '../services/issue.service';
 
-const issueService = IssueService.getInstance();
+@injectable()
+export class IssueController {
+  private issueService: IssueService;
 
-export const postReportIssue = async (
-  req: CustomRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  const projectId = Number(req.params.projectId);
-  const { title, description, type } = req.body;
-  const reportedById = req.userId!;
+  public constructor(@inject(IssueService) issueService: IssueService) {
+    this.issueService = issueService;
+  }
 
-  const issue: IssueData = {
-    title,
-    description,
-    type,
-    projectId,
-    reportedById,
+  public async postReportIssue(
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) {
+    const projectId = Number(req.params.projectId);
+    const { title, description, type } = req.body;
+    const reportedById = req.userId!;
+
+    const issue: IssueData = {
+      title,
+      description,
+      type,
+      projectId,
+      reportedById,
+    };
+
+    try {
+      const newIssue = await this.issueService.reportIssue(
+        issue,
+        reportedById,
+        projectId
+      );
+
+      res.status(201).json({
+        status: 'success',
+        data: {
+          issue: newIssue,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async patchAdoptIssues(
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) {
+    const projectId = Number(req.params.projectId);
+    const issueId = Number(req.params.issueId);
+    const userId = req.userId!;
+
+    try {
+      const adoptedIssue = await this.issueService.adoptIssue(
+        issueId,
+        userId,
+        projectId
+      );
+
+      res.status(200).json({
+        status: 'success',
+        data: {
+          issue: adoptedIssue,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async patchReleaseIssue(
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) {
+    const projectId = Number(req.params.projectId);
+    const issueId = Number(req.params.issueId);
+    const userId = req.userId!;
+
+    try {
+      const releasedIssue = await this.issueService.releaseIssue(
+        issueId,
+        userId,
+        projectId
+      );
+
+      res.status(200).json({
+        status: 'success',
+        data: {
+          issue: releasedIssue,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public deleteRemoveReportedIssue = async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const projectId = Number(req.params.projectId);
+    const issueId = Number(req.params.issueId);
+    const userId = req.userId!;
+
+    try {
+      const removedIssue = await this.issueService.removeReportedIssue(
+        issueId,
+        userId,
+        projectId
+      );
+
+      res.status(200).json({
+        status: 'success',
+        data: {
+          issue: removedIssue,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
   };
 
-  try {
-    const newIssue: Issue = await issueService.reportIssue(
-      issue,
-      reportedById,
-      projectId
-    );
+  public patchCompleteIssue = async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const projectId = Number(req.params.projectId);
+    const issueId = Number(req.params.issueId);
+    const userId = req.userId!;
 
-    res.status(201).json({
-      status: 'success',
-      data: {
-        issue: newIssue,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+    try {
+      const completedIssue = await this.issueService.completeIssue(
+        issueId,
+        userId,
+        projectId
+      );
 
-export const patchAdoptIssues = async (
-  req: CustomRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  const projectId = Number(req.params.projectId);
-  const issueId = Number(req.params.issueId);
-  const userId = req.userId!;
+      res.status(200).json({
+        status: 'success',
+        data: {
+          issue: completedIssue,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 
-  try {
-    const adoptedIssue: Issue = await issueService.adoptIssue(
-      issueId,
-      userId,
-      projectId
-    );
+  public getViewIssueDetails = async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const projectId = Number(req.params.projectId);
+    const issueId = Number(req.params.issueId);
+    const userId = req.userId!;
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        issue: adoptedIssue,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+    try {
+      const issue = await this.issueService.viewIssueDetails(
+        issueId,
+        userId,
+        projectId
+      );
 
-export const patchReleaseIssue = async (
-  req: CustomRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  const projectId = Number(req.params.projectId);
-  const issueId = Number(req.params.issueId);
-  const userId = req.userId!;
+      res.status(200).json({
+        status: 'success',
+        data: {
+          issue,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 
-  try {
-    const releasedIssue: Issue = await issueService.releaseIssue(
-      issueId,
-      userId,
-      projectId
-    );
+  public getListAllIssues = async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const projectId = Number(req.params.projectId);
+    const userId = req.userId!;
 
-    res.status(200).json({
-      status: 'success',
-      data: {
-        issue: releasedIssue,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+    try {
+      const issues = await this.issueService.listAllIssues(userId, projectId);
 
-export const deleteRemoveReportedIssue = async (
-  req: CustomRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  const projectId = Number(req.params.projectId);
-  const issueId = Number(req.params.issueId);
-  const userId = req.userId!;
-
-  try {
-    const removedIssue: Issue = await issueService.removeReportedIssue(
-      issueId,
-      userId,
-      projectId
-    );
-
-    res.status(200).json({
-      status: 'success',
-      data: {
-        issue: removedIssue,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const patchCompleteIssue = async (
-  req: CustomRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  const projectId = Number(req.params.projectId);
-  const issueId = Number(req.params.issueId);
-  const userId = req.userId!;
-
-  try {
-    const completedIssue: Issue = await issueService.completeIssue(
-      issueId,
-      userId,
-      projectId
-    );
-
-    res.status(200).json({
-      status: 'success',
-      data: {
-        issue: completedIssue,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getViewIssueDetails = async (
-  req: CustomRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  const projectId = Number(req.params.projectId);
-  const issueId = Number(req.params.issueId);
-  const userId = req.userId!;
-
-  try {
-    const issue: Issue = await issueService.viewIssueDetails(
-      issueId,
-      userId,
-      projectId
-    );
-
-    res.status(200).json({
-      status: 'success',
-      data: {
-        issue,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const getListAllIssues = async (
-  req: CustomRequest,
-  res: Response,
-  next: NextFunction
-) => {
-  const projectId = Number(req.params.projectId);
-  const userId = req.userId!;
-
-  try {
-    const issues = await issueService.listAllIssues(userId, projectId);
-
-    res.status(200).json({
-      status: 'success',
-      data: {
-        issues,
-      },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
+      res.status(200).json({
+        status: 'success',
+        data: {
+          issues,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+}

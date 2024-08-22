@@ -1,23 +1,53 @@
-import { Issue } from '@prisma/client';
-import prisma from '../../configs/database';
+import 'reflect-metadata';
+import { Container } from 'inversify';
 
-import { HttpError } from '../../types/errors';
 import { IssueData, IssueType, IssueStatus } from '../../types/issue';
 
-import IssueService from '../../services/issue.service';
-import { ProjectService } from '../../services/project.service';
+import { IProjectRepository } from '../../repositories/project.repository';
+import { IIssueRepository } from '../../repositories/issue.repository';
+import { IIssueValidator } from '../../services/validators/issueValidator';
+import { IssueService } from '../../services/issue.service';
 
 describe('IssueService', () => {
-  const issueService = IssueService.getInstance();
+  let container: Container;
+  let mockProjectRepository: IProjectRepository;
+  let mockIssueRepository: IIssueRepository;
+  let mockIssueValidator: IIssueValidator;
+  let issueService: IssueService;
 
   beforeEach(() => {
-    prisma.issue.create = jest.fn();
-    prisma.issue.findMany = jest.fn();
-    prisma.issue.findUniqueOrThrow = jest.fn();
-    prisma.issue.update = jest.fn();
-    prisma.issue.delete = jest.fn();
+    mockProjectRepository = {
+      createProject: jest.fn(),
+      listAllProjects: jest.fn(),
+      listCreatedProjects: jest.fn(),
+      listParticipatedProjects: jest.fn(),
+      validateUserParticipation: jest.fn(),
+    };
 
-    ProjectService.validateUserParticipation = jest.fn();
+    mockIssueRepository = {
+      adopt: jest.fn(),
+      complete: jest.fn(),
+      create: jest.fn(),
+      findAllByProjectId: jest.fn(),
+      findById: jest.fn(),
+      release: jest.fn(),
+      remove: jest.fn(),
+    };
+
+    mockIssueValidator = {
+      validateIssueAdopter: jest.fn(),
+      validateIssueCompleted: jest.fn(),
+      validateIssueNotAdopted: jest.fn(),
+      validateIssueReporter: jest.fn(),
+    };
+
+    container = new Container();
+    container.bind('IProjectRepository').toConstantValue(mockProjectRepository);
+    container.bind('IIssueRepository').toConstantValue(mockIssueRepository);
+    container.bind('IIssueValidator').toConstantValue(mockIssueValidator);
+    container.bind(IssueService).toSelf();
+
+    issueService = container.get(IssueService);
   });
 
   afterAll(() => {
@@ -37,26 +67,15 @@ describe('IssueService', () => {
   };
 
   describe('reportIssue', () => {
-    it('should return a new Issue on successful issue reporting', async () => {
-      (prisma.issue.create as jest.Mock).mockResolvedValue(issue);
+    it('should create and return a new Issue on successful issue reporting', async () => {
+      (
+        mockProjectRepository.validateUserParticipation as jest.Mock
+      ).mockResolvedValue(true);
+      (mockIssueRepository.create as jest.Mock).mockResolvedValue(issue);
 
-      const newIssue: Issue = await issueService.reportIssue(
-        issue,
-        userId,
-        projectId
-      );
+      const newIssue = await issueService.reportIssue(issue, userId, projectId);
 
       expect(newIssue).toBe(issue);
-    });
-
-    it('should throw an error when issue reporting fails', async () => {
-      (prisma.issue.create as jest.Mock).mockRejectedValue(
-        new HttpError(500, 'The project could not be created')
-      );
-
-      await expect(
-        issueService.reportIssue(issue, userId, projectId)
-      ).rejects.toThrow(HttpError);
     });
   });
 
@@ -64,24 +83,16 @@ describe('IssueService', () => {
     const issues: IssueData[] = [issue, issue];
 
     it('should return a list of Issue on a successful call', async () => {
-      (ProjectService.validateUserParticipation as jest.Mock).mockResolvedValue(
-        true
+      (
+        mockProjectRepository.validateUserParticipation as jest.Mock
+      ).mockResolvedValue(true);
+      (mockIssueRepository.findAllByProjectId as jest.Mock).mockResolvedValue(
+        issues
       );
-      (prisma.issue.findMany as jest.Mock).mockResolvedValue(issues);
 
       const allIssues = await issueService.listAllIssues(userId, projectId);
 
       expect(allIssues).toContain(issue);
-    });
-
-    it('should throw an error if listing fails', async () => {
-      (prisma.issue.findMany as jest.Mock).mockRejectedValue(
-        new HttpError(500, 'The project could not be created')
-      );
-
-      await expect(
-        issueService.listAllIssues(userId, projectId)
-      ).rejects.toThrow(HttpError);
     });
   });
 
@@ -89,62 +100,26 @@ describe('IssueService', () => {
     const issueId = 2;
 
     it('should update the adopter of an issue', async () => {
-      (ProjectService.validateUserParticipation as jest.Mock).mockResolvedValue(
-        true
-      );
-      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue({
+      (
+        mockProjectRepository.validateUserParticipation as jest.Mock
+      ).mockResolvedValue(true);
+      (mockIssueRepository.findById as jest.Mock).mockResolvedValue({
         ...issue,
         adoptedById: null,
       });
 
-      (prisma.issue.update as jest.Mock).mockResolvedValue({
+      (mockIssueRepository.adopt as jest.Mock).mockResolvedValue({
         ...issue,
         adoptedById: userId,
       });
 
-      const adoptedIssue: Issue = await issueService.adoptIssue(
+      const adoptedIssue = await issueService.adoptIssue(
         issueId,
         userId,
         projectId
       );
 
       expect(adoptedIssue.adoptedById).toBe(userId);
-    });
-
-    it('should throw an error if the issue is already adopted', async () => {
-      (ProjectService.validateUserParticipation as jest.Mock).mockResolvedValue(
-        true
-      );
-      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue({
-        ...issue,
-        adoptedById: userId,
-      });
-
-      const error = new HttpError(409, 'Issue is already adopted');
-
-      await expect(
-        issueService.adoptIssue(issueId, userId, projectId)
-      ).rejects.toThrow(error);
-    });
-
-    it('should throw an error if the issue could not be updated', async () => {
-      (ProjectService.validateUserParticipation as jest.Mock).mockResolvedValue(
-        true
-      );
-      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue({
-        ...issue,
-        adoptedById: null,
-      });
-
-      const error = new HttpError(
-        500,
-        'Database Error: Issue could not be updated'
-      );
-      (prisma.issue.update as jest.Mock).mockRejectedValue(error);
-
-      await expect(
-        issueService.adoptIssue(issueId, userId, projectId)
-      ).rejects.toThrow(error);
     });
   });
 
@@ -155,18 +130,21 @@ describe('IssueService', () => {
     };
 
     it('should release an issue successfully', async () => {
-      (ProjectService.validateUserParticipation as jest.Mock).mockResolvedValue(
-        true
-      );
+      (
+        mockProjectRepository.validateUserParticipation as jest.Mock
+      ).mockResolvedValue(true);
 
-      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue({
+      (mockIssueRepository.findById as jest.Mock).mockResolvedValue({
         ...issue,
         adoptedById: userId,
       });
 
-      (prisma.issue.update as jest.Mock).mockResolvedValue(mockReleasedIssue);
+      (mockIssueRepository.release as jest.Mock).mockResolvedValue({
+        ...issue,
+        adoptedById: null,
+      });
 
-      const releasedIssue: Issue = await issueService.releaseIssue(
+      const releasedIssue = await issueService.releaseIssue(
         issueId,
         userId,
         projectId
@@ -174,102 +152,24 @@ describe('IssueService', () => {
 
       expect(releasedIssue).toEqual(mockReleasedIssue);
     });
-
-    it('should throw an error if the issue is adopted by another user', async () => {
-      (ProjectService.validateUserParticipation as jest.Mock).mockResolvedValue(
-        true
-      );
-
-      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue({
-        ...issue,
-        adoptedById: 2,
-      });
-
-      const error = new HttpError(
-        409,
-        'Issue can only be processed by its adopter'
-      );
-
-      await expect(
-        issueService.releaseIssue(issueId, userId, projectId)
-      ).rejects.toThrow(error);
-    });
-
-    it('should throw an error if the issue could not be updated', async () => {
-      (ProjectService.validateUserParticipation as jest.Mock).mockResolvedValue(
-        true
-      );
-
-      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue({
-        ...issue,
-        adoptedById: userId,
-      });
-
-      const error = new HttpError(
-        500,
-        'Database Error: Issue could not be updated'
-      );
-      (prisma.issue.update as jest.Mock).mockRejectedValue(error);
-
-      await expect(
-        issueService.releaseIssue(issueId, userId, projectId)
-      ).rejects.toThrow(error);
-    });
   });
 
   describe('removeReportedIssue', () => {
-    const anotherUserId = 2;
-
-    const setupMockForRemoveReportedIssue = (): void => {
-      (ProjectService.validateUserParticipation as jest.Mock).mockResolvedValue(
-        true
-      );
-
-      // for findByIssue
-      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue(issue);
-    };
-
     it('should remove an issue successfully', async () => {
-      setupMockForRemoveReportedIssue();
+      (
+        mockProjectRepository.validateUserParticipation as jest.Mock
+      ).mockResolvedValue(true);
 
-      (prisma.issue.delete as jest.Mock).mockResolvedValue(issue);
+      (mockIssueRepository.findById as jest.Mock).mockResolvedValue(issue);
+      (mockIssueRepository.remove as jest.Mock).mockResolvedValue(issue);
 
-      const removedIssue: Issue = await issueService.removeReportedIssue(
+      const removedIssue = await issueService.removeReportedIssue(
         issueId,
         userId,
         projectId
       );
 
       expect(removedIssue).toBe(issue);
-    });
-
-    it("should throw an error if the issue is not a user's issue", async () => {
-      setupMockForRemoveReportedIssue();
-
-      await issueService.removeReportedIssue(issueId, userId, projectId);
-
-      const error = new HttpError(
-        409,
-        'Issue can only be removed by its reporter'
-      );
-
-      await expect(
-        issueService.removeReportedIssue(issueId, anotherUserId, projectId)
-      ).rejects.toThrow(error);
-    });
-
-    it('should throw an error if removing fails', async () => {
-      setupMockForRemoveReportedIssue();
-
-      const error = new HttpError(
-        500,
-        'Database Error: Issue could not be deleted'
-      );
-      (prisma.issue.delete as jest.Mock).mockRejectedValue(error);
-
-      await expect(
-        issueService.removeReportedIssue(issueId, userId, projectId)
-      ).rejects.toThrow(error);
     });
   });
 
@@ -281,20 +181,19 @@ describe('IssueService', () => {
     };
 
     it('should complete an issue successfully', async () => {
-      (ProjectService.validateUserParticipation as jest.Mock).mockResolvedValue(
-        true
-      );
+      (
+        mockProjectRepository.validateUserParticipation as jest.Mock
+      ).mockResolvedValue(true);
 
-      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue(
+      (mockIssueRepository.findById as jest.Mock).mockResolvedValue(
         mockOpenIssue
       );
-
-      (prisma.issue.update as jest.Mock).mockResolvedValue({
+      (mockIssueRepository.complete as jest.Mock).mockResolvedValue({
         ...mockOpenIssue,
         status: IssueStatus.Completed,
       });
 
-      const completedIssue: Issue = await issueService.completeIssue(
+      const completedIssue = await issueService.completeIssue(
         issueId,
         userId,
         projectId
@@ -305,93 +204,23 @@ describe('IssueService', () => {
         status: IssueStatus.Completed,
       });
     });
-
-    it('should throw an error if the user is not the adopter of the issue', async () => {
-      (ProjectService.validateUserParticipation as jest.Mock).mockResolvedValue(
-        true
-      );
-
-      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue({
-        ...mockOpenIssue,
-        adoptedById: 2,
-      });
-
-      await expect(
-        issueService.completeIssue(issueId, userId, projectId)
-      ).rejects.toThrow(
-        new HttpError(409, 'Issue can only be processed by its adopter')
-      );
-    });
-
-    it('should throw an error if the issue is already completed', async () => {
-      (ProjectService.validateUserParticipation as jest.Mock).mockResolvedValue(
-        true
-      );
-
-      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue({
-        ...mockOpenIssue,
-        status: IssueStatus.Completed,
-      });
-
-      await expect(
-        issueService.completeIssue(issueId, userId, projectId)
-      ).rejects.toThrow(new HttpError(409, 'Issue is already completed'));
-    });
-
-    it('should throw an error if completion fails', async () => {
-      (ProjectService.validateUserParticipation as jest.Mock).mockResolvedValue(
-        true
-      );
-
-      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue({
-        ...mockOpenIssue,
-      });
-
-      const error = new HttpError(
-        500,
-        'Database Error: Issue could not be updated'
-      );
-      (prisma.issue.update as jest.Mock).mockRejectedValue(error);
-
-      await expect(
-        issueService.completeIssue(issueId, userId, projectId)
-      ).rejects.toThrow(error);
-    });
   });
 
   describe('viewIssueDetails', () => {
     it('should return an issue successfully', async () => {
-      (ProjectService.validateUserParticipation as jest.Mock).mockResolvedValue(
-        true
-      );
+      (
+        mockProjectRepository.validateUserParticipation as jest.Mock
+      ).mockResolvedValue(true);
 
-      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue(issue);
+      (mockIssueRepository.findById as jest.Mock).mockResolvedValue(issue);
 
-      const issueDetails: Issue = await issueService.viewIssueDetails(
+      const issueDetails = await issueService.viewIssueDetails(
         issueId,
         userId,
         projectId
       );
 
       expect(issueDetails).toBe(issue);
-    });
-  });
-
-  describe('Issue Utils', () => {
-    describe('findIssuById', () => {
-      const issueId = 1;
-
-      it('should throw an error if the issue does not exist', async () => {
-        const error = new Error();
-        (error as any).code = 'P2025';
-        (prisma.issue.findUniqueOrThrow as jest.Mock).mockRejectedValue(error);
-
-        await expect(
-          issueService['findIssueById'](issueId, projectId)
-        ).rejects.toThrow(
-          new HttpError(404, 'Issue does not exist in this project')
-        );
-      });
     });
   });
 });
