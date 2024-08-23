@@ -52,6 +52,9 @@ npm i
 # Second
 cd koly/server
 npm i
+
+# Third
+npx prisma generate
 ```
 
 - Build the project
