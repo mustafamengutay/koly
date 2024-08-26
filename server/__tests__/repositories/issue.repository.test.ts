@@ -29,13 +29,14 @@ describe('IssueRepository', () => {
   const issueId = 1;
   const projectId = 5;
 
-  const issue: IssueData & { status: string } = {
+  const issue: IssueData & { status: string; adoptedById: number } = {
     title: 'Issue 1',
     description: 'Description for Issue 1',
     type: IssueType.Bug,
     status: IssueStatus.Open,
     projectId,
     reportedById: userId,
+    adoptedById: userId,
   };
 
   describe('create', () => {
@@ -89,6 +90,17 @@ describe('IssueRepository', () => {
       expect(allIssues).toContain(issue);
     });
 
+    it('should return issues adopted by user on a successful call', async () => {
+      (prisma.issue.findMany as jest.Mock).mockResolvedValue(issues);
+
+      const allIssues = await issueRepository.findAll({
+        projectId,
+        adoptedById: userId,
+      });
+
+      expect(allIssues).toContain(issue);
+    });
+
     it('should return issues reported by user on a successful call', async () => {
       (prisma.issue.findMany as jest.Mock).mockResolvedValue(issues);
 
@@ -105,9 +117,9 @@ describe('IssueRepository', () => {
         new HttpError(500, 'The project could not be created')
       );
 
-      await expect(
-        issueRepository.findAllByProjectId(projectId)
-      ).rejects.toThrow(HttpError);
+      await expect(issueRepository.findAll({ projectId })).rejects.toThrow(
+        HttpError
+      );
     });
   });
 
