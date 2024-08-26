@@ -57,6 +57,35 @@ describe('IssueRepository', () => {
     });
   });
 
+  describe('update', () => {
+    const mockUpdateIssueData = {
+      title: 'Updated title',
+      description: 'Updated description',
+      type: 'improvement',
+    };
+
+    it('should return an updated Issue on successful updating', async () => {
+      (prisma.issue.update as jest.Mock).mockResolvedValue(mockUpdateIssueData);
+
+      const updatedIssue: Issue = await issueRepository.update(
+        issueId,
+        mockUpdateIssueData
+      );
+
+      expect(updatedIssue).toBe(mockUpdateIssueData);
+    });
+
+    it('should throw an error if issue updating fails', async () => {
+      (prisma.issue.update as jest.Mock).mockRejectedValue(
+        new HttpError(500, 'The project could not be updated')
+      );
+
+      await expect(issueRepository.update(issueId, issue)).rejects.toThrow(
+        HttpError
+      );
+    });
+  });
+
   describe('findAll', () => {
     const issues: IssueData[] = [issue, issue];
 

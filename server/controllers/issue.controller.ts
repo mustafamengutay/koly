@@ -49,6 +49,41 @@ export class IssueController {
     }
   };
 
+  public patchUpdateIssue = async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const projectId = Number(req.params.projectId);
+    const issueId = Number(req.params.issueId);
+    const { title, description, type } = req.body;
+    const reportedById = req.userId!;
+
+    const issue: Partial<IssueData> = {
+      title,
+      description,
+      type,
+    };
+
+    try {
+      const updatedIssue = await this.issueService.updateIssue(
+        issueId,
+        issue,
+        reportedById,
+        projectId
+      );
+
+      res.status(200).json({
+        status: 'success',
+        data: {
+          issue: updatedIssue,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   public patchAdoptIssues = async (
     req: CustomRequest,
     res: Response,

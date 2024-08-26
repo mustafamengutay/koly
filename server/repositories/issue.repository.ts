@@ -8,6 +8,10 @@ import { HttpError } from '../types/errors';
 
 export interface IIssueRepository {
   create(issue: IssueData): Promise<Issue>;
+  update(
+    issueId: number,
+    data: { title?: string; description?: string; type?: string }
+  ): Promise<Issue>;
   adopt(issueId: number, userId: number): Promise<Issue>;
   release(issueId: number, userId: number): Promise<Issue>;
   remove(issueId: number, userId: number): Promise<Issue>;
@@ -36,6 +40,28 @@ export class IssueRepository implements IIssueRepository {
       return newIssue;
     } catch {
       throw new HttpError(500, 'The Issue could not be created');
+    }
+  }
+
+  public async update(
+    issueId: number,
+    data: { title?: string; description?: string; type?: string }
+  ): Promise<Issue> {
+    try {
+      const updatedIssue: Issue = await prisma.issue.update({
+        where: {
+          id: issueId,
+        },
+        data: {
+          title: data.title,
+          description: data.description,
+          type: data.type,
+        },
+      });
+
+      return updatedIssue;
+    } catch {
+      throw new HttpError(500, 'The Issue could not be updated');
     }
   }
 

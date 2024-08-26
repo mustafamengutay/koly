@@ -22,6 +22,7 @@ describe('Issue Controllers', () => {
   let issueController: IssueController;
   let mockissueService = {
     reportIssue: jest.fn(),
+    updateIssue: jest.fn(),
     adoptIssue: jest.fn(),
     releaseIssue: jest.fn(),
     removeReportedIssue: jest.fn(),
@@ -93,6 +94,60 @@ describe('Issue Controllers', () => {
       mockissueService.reportIssue.mockRejectedValue(error);
 
       await issueController.postReportIssue(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe('patchUpdateIssue', () => {
+    const mockUpdateIssueData = {
+      ...mockIssue,
+      title: 'Updated title',
+      description: 'Updated description',
+      type: 'improvement',
+    };
+
+    beforeEach(() => {
+      req = createRequest({
+        userId: userId,
+        method: 'PATCH',
+        url: `/api/v1/projects/${projectId}/issues/${issueId}`,
+        params: {
+          projectId,
+          issueId,
+        },
+        body: {
+          title: 'Updated Title',
+          description: 'Updated description',
+          type: IssueType.Improvement,
+        },
+      });
+    });
+
+    it('should return 200 status code on successful updating', async () => {
+      mockissueService.updateIssue.mockResolvedValue(mockUpdateIssueData);
+
+      await issueController.patchUpdateIssue(req, res, next);
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('should respond with success status and data on updating', async () => {
+      mockissueService.updateIssue.mockResolvedValue(mockUpdateIssueData);
+
+      await issueController.patchUpdateIssue(req, res, next);
+
+      expect(res._getJSONData()).toHaveProperty('status', 'success');
+      expect(res._getJSONData()).toHaveProperty('data', {
+        issue: mockUpdateIssueData,
+      });
+    });
+
+    it('should pass the error to the error handler if updating fails', async () => {
+      const error = new Error('Fail');
+      mockissueService.updateIssue.mockRejectedValue(error);
+
+      await issueController.patchUpdateIssue(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });

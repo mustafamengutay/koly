@@ -28,6 +28,7 @@ describe('IssueService', () => {
       adopt: jest.fn(),
       complete: jest.fn(),
       create: jest.fn(),
+      update: jest.fn(),
       findAll: jest.fn(),
       findById: jest.fn(),
       release: jest.fn(),
@@ -81,6 +82,38 @@ describe('IssueService', () => {
       const newIssue = await issueService.reportIssue(issue, userId, projectId);
 
       expect(newIssue).toBe(issue);
+    });
+  });
+
+  describe('updateIssue', () => {
+    const mockUpdateIssueData = {
+      ...issue,
+      title: 'Updated title',
+      description: 'Updated description',
+      type: 'improvement',
+    };
+
+    it('should update and return an Issue on successful updating', async () => {
+      (
+        mockProjectRepository.validateUserParticipation as jest.Mock
+      ).mockResolvedValue(true);
+      (mockIssueRepository.findById as jest.Mock).mockResolvedValue(issue);
+      (mockIssueRepository.update as jest.Mock).mockResolvedValue(
+        mockUpdateIssueData
+      );
+
+      const updatedIssue = await issueService.updateIssue(
+        issueId,
+        {
+          title: 'Updated title',
+          description: 'Updated description',
+          type: 'improvement',
+        },
+        userId,
+        projectId
+      );
+
+      expect(updatedIssue).toEqual(mockUpdateIssueData);
     });
   });
 

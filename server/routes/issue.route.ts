@@ -66,6 +66,26 @@ router.get(
   issueController.getViewIssueDetails
 );
 
+router.patch(
+  '/:projectId/issues/:issueId',
+  [
+    param('projectId').isInt().withMessage('projectId should be an integer'),
+    param('issueId').isInt().withMessage('issueId should be an integer'),
+    body('title').trim().optional().isLength({ min: 6 }),
+    body('description').trim().optional().isLength({ min: 10 }),
+    body('type')
+      .trim()
+      .optional()
+      .isIn([IssueType.Bug, IssueType.Feature, IssueType.Improvement])
+      .withMessage(
+        `type must be either ${IssueType.Bug}, ${IssueType.Feature}, or ${IssueType.Improvement}`
+      ),
+  ],
+  inputValidator,
+  verifyUser,
+  issueController.patchUpdateIssue
+);
+
 router.delete(
   '/:projectId/issues/:issueId',
   [

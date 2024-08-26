@@ -38,6 +38,32 @@ export class IssueService {
   }
 
   /**
+   * Updates an issue and returns it. If any error occurs, it throws that
+   * specific error.
+   * @param issueId Issue ID.
+   * @param issueData Partial Issue object with necessary fields.
+   * @param userId User ID.
+   * @param projectId Project ID.
+   * @returns Updated issue object.
+   */
+  public async updateIssue(
+    issueId: number,
+    issueData: Partial<IssueData>,
+    userId: number,
+    projectId: number
+  ) {
+    await this.projectRepository.validateUserParticipation(userId, projectId);
+    const issue = await this.issueRepository.findById(issueId, projectId);
+    this.issueValidator.validateIssueReporter(issue.reportedById, userId);
+
+    return await this.issueRepository.update(issue.id, {
+      title: issueData.title,
+      description: issueData.description,
+      type: issueData.type,
+    });
+  }
+
+  /**
    * Used to adopt an issue by a user, and returns the adopted issue.
    * If any error occurs, it throws that specific error.
    * @param issueId Issue ID
