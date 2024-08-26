@@ -1,6 +1,6 @@
 import { inject, injectable } from 'inversify';
 
-import { IssueData } from '../types/issue';
+import { IssueData, IssueStatus } from '../types/issue';
 
 import { IProjectRepository } from '../repositories/project.repository';
 import { IIssueRepository } from '../repositories/issue.repository';
@@ -154,5 +154,20 @@ export class IssueService {
   public async listIssuesReportedByUser(userId: number, projectId: number) {
     await this.projectRepository.validateUserParticipation(userId, projectId);
     return this.issueRepository.findAll({ projectId, reportedById: userId });
+  }
+
+  /**
+   * Lists all issues completed by a user in a project. If any error occurs, it throws that
+   * specific error.
+   * @param projectId Project ID.
+   * @returns Array of issues or an empty array.
+   */
+  public async listIssuesCompletedByUser(userId: number, projectId: number) {
+    await this.projectRepository.validateUserParticipation(userId, projectId);
+    return this.issueRepository.findAll({
+      projectId,
+      adoptedById: userId,
+      status: IssueStatus.Completed,
+    });
   }
 }

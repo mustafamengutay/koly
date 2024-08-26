@@ -48,6 +48,14 @@ router.get(
 );
 
 router.get(
+  '/:projectId/issues/my-reports/completed',
+  param('projectId').isInt().withMessage('projectId should be an integer'),
+  inputValidator,
+  verifyUser,
+  issueController.getListIssuesCompletedByUser
+);
+
+router.get(
   '/:projectId/issues/:issueId',
   [
     param('projectId').isInt().withMessage('projectId should be an integer'),

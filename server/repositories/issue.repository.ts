@@ -17,6 +17,7 @@ export interface IIssueRepository {
     type?: string;
     status?: string;
     projectId?: number;
+    adoptedById?: number;
     reportedById?: number;
   }): Promise<Issue[]>;
 }
@@ -140,47 +141,18 @@ export class IssueRepository implements IIssueRepository {
     }
   }
 
-  public async findAllByProjectId(projectId: number): Promise<Issue[]> {
-    try {
-      const allIssues = await prisma.issue.findMany({
-        where: {
-          projectId,
-        },
-        orderBy: {
-          createdAt: 'desc',
-        },
-        include: {
-          reportedBy: {
-            select: {
-              name: true,
-              surname: true,
-            },
-          },
-          adoptedBy: {
-            select: {
-              name: true,
-              surname: true,
-            },
-          },
-        },
-      });
-
-      return allIssues;
-    } catch {
-      throw new HttpError(500, 'Issue could not be found');
-    }
-  }
-
   public async findAll(where?: {
     type?: string;
     status?: string;
     projectId?: number;
+    adoptedById?: number;
     reportedById?: number;
   }): Promise<Issue[]> {
     if (!where) {
       where = {
         type: undefined,
         status: undefined,
+        adoptedById: undefined,
         reportedById: undefined,
       };
     }
@@ -191,6 +163,7 @@ export class IssueRepository implements IIssueRepository {
           projectId: where.projectId,
           type: where.type,
           status: where.status,
+          adoptedById: where.adoptedById,
           reportedById: where.reportedById,
         },
         orderBy: {

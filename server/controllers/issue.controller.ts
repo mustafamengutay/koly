@@ -14,11 +14,11 @@ export class IssueController {
     this.issueService = issueService;
   }
 
-  public async postReportIssue(
+  public postReportIssue = async (
     req: CustomRequest,
     res: Response,
     next: NextFunction
-  ) {
+  ) => {
     const projectId = Number(req.params.projectId);
     const { title, description, type } = req.body;
     const reportedById = req.userId!;
@@ -47,13 +47,13 @@ export class IssueController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  public async patchAdoptIssues(
+  public patchAdoptIssues = async (
     req: CustomRequest,
     res: Response,
     next: NextFunction
-  ) {
+  ) => {
     const projectId = Number(req.params.projectId);
     const issueId = Number(req.params.issueId);
     const userId = req.userId!;
@@ -74,13 +74,13 @@ export class IssueController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
-  public async patchReleaseIssue(
+  public patchReleaseIssue = async (
     req: CustomRequest,
     res: Response,
     next: NextFunction
-  ) {
+  ) => {
     const projectId = Number(req.params.projectId);
     const issueId = Number(req.params.issueId);
     const userId = req.userId!;
@@ -101,7 +101,7 @@ export class IssueController {
     } catch (error) {
       next(error);
     }
-  }
+  };
 
   public deleteRemoveReportedIssue = async (
     req: CustomRequest,
@@ -216,6 +216,31 @@ export class IssueController {
 
     try {
       const issues = await this.issueService.listIssuesReportedByUser(
+        userId,
+        projectId
+      );
+
+      res.status(200).json({
+        status: 'success',
+        data: {
+          issues,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public getListIssuesCompletedByUser = async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const projectId = Number(req.params.projectId);
+    const userId = req.userId!;
+
+    try {
+      const issues = await this.issueService.listIssuesCompletedByUser(
         userId,
         projectId
       );

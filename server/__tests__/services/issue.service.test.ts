@@ -58,11 +58,16 @@ describe('IssueService', () => {
   const issueId = 1;
   const projectId = 5;
 
-  const issue: IssueData = {
+  const issue: IssueData & {
+    status: string | undefined;
+    adoptedById: number | undefined;
+  } = {
     title: 'Issue 1',
     description: 'Description for Issue 1',
     type: IssueType.Bug,
+    status: IssueStatus.Open,
     projectId,
+    adoptedById: undefined,
     reportedById: userId,
   };
 
@@ -109,6 +114,32 @@ describe('IssueService', () => {
       );
 
       expect(allIssues).toContain(issue);
+    });
+  });
+
+  describe('listIssuesCompletedByUser', () => {
+    const mockIssue = {
+      ...issue,
+      status: IssueStatus.Completed,
+      adoptedById: userId,
+    };
+    const issues: (IssueData & {
+      status: string | undefined;
+      adoptedById: number | undefined;
+    })[] = [mockIssue, mockIssue];
+
+    it('should return a list of Issue completed by a user on a successful call', async () => {
+      (
+        mockProjectRepository.validateUserParticipation as jest.Mock
+      ).mockResolvedValue(true);
+      (mockIssueRepository.findAll as jest.Mock).mockResolvedValue(issues);
+
+      const allIssues = await issueService.listIssuesCompletedByUser(
+        userId,
+        projectId
+      );
+
+      expect(allIssues).toContain(mockIssue);
     });
   });
 

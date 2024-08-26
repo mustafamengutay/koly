@@ -10,7 +10,7 @@ import {
 } from 'node-mocks-http';
 
 import { IssueService } from '../../services/issue.service';
-import { IssueData, IssueType } from '../../types/issue';
+import { IssueData, IssueStatus, IssueType } from '../../types/issue';
 import { IssueController } from '../../controllers/issue.controller';
 
 describe('Issue Controllers', () => {
@@ -29,6 +29,7 @@ describe('Issue Controllers', () => {
     viewIssueDetails: jest.fn(),
     listAllIssues: jest.fn(),
     listIssuesReportedByUser: jest.fn(),
+    listIssuesCompletedByUser: jest.fn(),
   };
 
   beforeEach(() => {
@@ -176,6 +177,51 @@ describe('Issue Controllers', () => {
       mockissueService.listIssuesReportedByUser.mockRejectedValue(error);
 
       await issueController.getListIssuesReportedByUser(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe('getListIssuesCompletedByUser', () => {
+    const issues = [
+      { ...mockIssue, status: IssueStatus.Completed },
+      { ...mockIssue, status: IssueStatus.Completed },
+    ];
+
+    beforeEach(() => {
+      mockissueService.listIssuesCompletedByUser = jest.fn();
+      req = createRequest({
+        userId: userId,
+        method: 'GET',
+        url: `/api/v1/projects/${projectId}/issues/my-reports/completed`,
+        params: {
+          projectId,
+        },
+      });
+    });
+
+    it('should return 200 status code on successful listing', async () => {
+      mockissueService.listIssuesCompletedByUser.mockResolvedValue(issues);
+
+      await issueController.getListIssuesCompletedByUser(req, res, next);
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('should respond with success status and data on issue reporting', async () => {
+      mockissueService.listIssuesCompletedByUser.mockResolvedValue(issues);
+
+      await issueController.getListIssuesCompletedByUser(req, res, next);
+
+      expect(res._getJSONData()).toHaveProperty('status', 'success');
+      expect(res._getJSONData()).toHaveProperty('data', { issues });
+    });
+
+    it('should pass the error to the error handler if listing fails', async () => {
+      const error = new Error('Fail');
+      mockissueService.listIssuesCompletedByUser.mockRejectedValue(error);
+
+      await issueController.getListIssuesCompletedByUser(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });
