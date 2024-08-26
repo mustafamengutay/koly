@@ -28,6 +28,7 @@ describe('Issue Controllers', () => {
     completeIssue: jest.fn(),
     viewIssueDetails: jest.fn(),
     listAllIssues: jest.fn(),
+    listIssuesReportedByUser: jest.fn(),
   };
 
   beforeEach(() => {
@@ -133,6 +134,48 @@ describe('Issue Controllers', () => {
       mockissueService.listAllIssues.mockRejectedValue(error);
 
       await issueController.getListAllIssues(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe('getListIssuesReportedByUser', () => {
+    const issues: IssueData[] = [mockIssue, mockIssue];
+
+    beforeEach(() => {
+      mockissueService.listIssuesReportedByUser = jest.fn();
+      req = createRequest({
+        userId: userId,
+        method: 'GET',
+        url: `/api/v1/projects/${projectId}/issues/my-reports`,
+        params: {
+          projectId,
+        },
+      });
+    });
+
+    it('should return 200 status code on successful listing', async () => {
+      mockissueService.listIssuesReportedByUser.mockResolvedValue(issues);
+
+      await issueController.getListIssuesReportedByUser(req, res, next);
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('should respond with success status and data on issue reporting', async () => {
+      mockissueService.listIssuesReportedByUser.mockResolvedValue(issues);
+
+      await issueController.getListIssuesReportedByUser(req, res, next);
+
+      expect(res._getJSONData()).toHaveProperty('status', 'success');
+      expect(res._getJSONData()).toHaveProperty('data', { issues });
+    });
+
+    it('should pass the error to the error handler if listing fails', async () => {
+      const error = new Error('Fail');
+      mockissueService.listIssuesReportedByUser.mockRejectedValue(error);
+
+      await issueController.getListIssuesReportedByUser(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });

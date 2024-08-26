@@ -29,10 +29,11 @@ describe('IssueRepository', () => {
   const issueId = 1;
   const projectId = 5;
 
-  const issue: IssueData = {
+  const issue: IssueData & { status: string } = {
     title: 'Issue 1',
     description: 'Description for Issue 1',
     type: IssueType.Bug,
+    status: IssueStatus.Open,
     projectId,
     reportedById: userId,
   };
@@ -55,13 +56,46 @@ describe('IssueRepository', () => {
     });
   });
 
-  describe('findAllByProjectId', () => {
+  describe('findAll', () => {
     const issues: IssueData[] = [issue, issue];
 
     it('should return a list of Issue on a successful call', async () => {
       (prisma.issue.findMany as jest.Mock).mockResolvedValue(issues);
 
-      const allIssues = await issueRepository.findAllByProjectId(projectId);
+      const allIssues = await issueRepository.findAll({ projectId });
+
+      expect(allIssues).toContain(issue);
+    });
+
+    it('should return Issues with a particular type on a successful call', async () => {
+      (prisma.issue.findMany as jest.Mock).mockResolvedValue(issues);
+
+      const allIssues = await issueRepository.findAll({
+        projectId,
+        type: IssueType.Bug,
+      });
+
+      expect(allIssues).toContain(issue);
+    });
+
+    it('should return open issues on a successful call', async () => {
+      (prisma.issue.findMany as jest.Mock).mockResolvedValue(issues);
+
+      const allIssues = await issueRepository.findAll({
+        projectId,
+        status: IssueStatus.Open,
+      });
+
+      expect(allIssues).toContain(issue);
+    });
+
+    it('should return issues reported by user on a successful call', async () => {
+      (prisma.issue.findMany as jest.Mock).mockResolvedValue(issues);
+
+      const allIssues = await issueRepository.findAll({
+        projectId,
+        reportedById: userId,
+      });
 
       expect(allIssues).toContain(issue);
     });

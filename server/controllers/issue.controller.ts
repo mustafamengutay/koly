@@ -205,4 +205,29 @@ export class IssueController {
       next(error);
     }
   };
+
+  public getListIssuesReportedByUser = async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const projectId = Number(req.params.projectId);
+    const userId = req.userId!;
+
+    try {
+      const issues = await this.issueService.listIssuesReportedByUser(
+        userId,
+        projectId
+      );
+
+      res.status(200).json({
+        status: 'success',
+        data: {
+          issues,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

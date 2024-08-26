@@ -135,12 +135,24 @@ export class IssueService {
   }
 
   /**
-   * Lists all issues of the selected project.
+   * Lists all issues of the selected project. If any error occurs, it throws that
+   * specific error.
    * @param projectId Project ID
-   * @returns Array of issues
+   * @returns Array of issues or an empty array.
    */
   public async listAllIssues(userId: number, projectId: number) {
     await this.projectRepository.validateUserParticipation(userId, projectId);
-    return this.issueRepository.findAllByProjectId(projectId);
+    return this.issueRepository.findAll({ projectId });
+  }
+
+  /**
+   * Lists all issues reported by a user in a project. If any error occurs, it throws that
+   * specific error.
+   * @param projectId Project ID.
+   * @returns Array of issues or an empty array.
+   */
+  public async listIssuesReportedByUser(userId: number, projectId: number) {
+    await this.projectRepository.validateUserParticipation(userId, projectId);
+    return this.issueRepository.findAll({ projectId, reportedById: userId });
   }
 }

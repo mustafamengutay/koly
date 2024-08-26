@@ -13,7 +13,12 @@ export interface IIssueRepository {
   remove(issueId: number, userId: number): Promise<Issue>;
   complete(issueId: number, userId: number): Promise<Issue>;
   findById(issueId: number, projectId: number): Promise<Issue>;
-  findAllByProjectId(projectId: number): Promise<Issue[]>;
+  findAll(where?: {
+    type?: string;
+    status?: string;
+    projectId?: number;
+    reportedById?: number;
+  }): Promise<Issue[]>;
 }
 
 @injectable()
@@ -140,6 +145,53 @@ export class IssueRepository implements IIssueRepository {
       const allIssues = await prisma.issue.findMany({
         where: {
           projectId,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        include: {
+          reportedBy: {
+            select: {
+              name: true,
+              surname: true,
+            },
+          },
+          adoptedBy: {
+            select: {
+              name: true,
+              surname: true,
+            },
+          },
+        },
+      });
+
+      return allIssues;
+    } catch {
+      throw new HttpError(500, 'Issue could not be found');
+    }
+  }
+
+  public async findAll(where?: {
+    type?: string;
+    status?: string;
+    projectId?: number;
+    reportedById?: number;
+  }): Promise<Issue[]> {
+    if (!where) {
+      where = {
+        type: undefined,
+        status: undefined,
+        reportedById: undefined,
+      };
+    }
+
+    try {
+      const allIssues = await prisma.issue.findMany({
+        where: {
+          projectId: where.projectId,
+          type: where.type,
+          status: where.status,
+          reportedById: where.reportedById,
         },
         orderBy: {
           createdAt: 'desc',

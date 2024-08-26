@@ -28,7 +28,7 @@ describe('IssueService', () => {
       adopt: jest.fn(),
       complete: jest.fn(),
       create: jest.fn(),
-      findAllByProjectId: jest.fn(),
+      findAll: jest.fn(),
       findById: jest.fn(),
       release: jest.fn(),
       remove: jest.fn(),
@@ -86,11 +86,27 @@ describe('IssueService', () => {
       (
         mockProjectRepository.validateUserParticipation as jest.Mock
       ).mockResolvedValue(true);
-      (mockIssueRepository.findAllByProjectId as jest.Mock).mockResolvedValue(
-        issues
-      );
+      (mockIssueRepository.findAll as jest.Mock).mockResolvedValue(issues);
 
       const allIssues = await issueService.listAllIssues(userId, projectId);
+
+      expect(allIssues).toContain(issue);
+    });
+  });
+
+  describe('listIssuesReportedByUser', () => {
+    const issues: IssueData[] = [issue, issue];
+
+    it('should return a list of Issue reported by a user on a successful call', async () => {
+      (
+        mockProjectRepository.validateUserParticipation as jest.Mock
+      ).mockResolvedValue(true);
+      (mockIssueRepository.findAll as jest.Mock).mockResolvedValue(issues);
+
+      const allIssues = await issueService.listIssuesReportedByUser(
+        userId,
+        projectId
+      );
 
       expect(allIssues).toContain(issue);
     });
