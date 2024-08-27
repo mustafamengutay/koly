@@ -1,12 +1,13 @@
 import { injectable } from 'inversify';
 
 import prisma from '../configs/database';
-import { Project } from '@prisma/client';
+import { Project, User } from '@prisma/client';
 
 import { HttpError } from '../types/errors';
 
 export interface IProjectRepository {
   createProject(userId: number, name: string): Promise<Project>;
+  listMembers(projectId: number): Promise<Partial<User>[]>;
   listAllProjects(userId: number): Promise<Project[]>;
   listCreatedProjects(userId: number): Promise<Project[]>;
   listParticipatedProjects(userId: number): Promise<Project[]>;
@@ -36,6 +37,29 @@ export class ProjectRepository implements IProjectRepository {
       return newProject;
     } catch {
       throw new HttpError(500, 'The project could not be created');
+    }
+  }
+
+  public async listMembers(projectId: number): Promise<Partial<User>[]> {
+    try {
+      const members: Partial<User>[] = await prisma.user.findMany({
+        where: {
+          projects: {
+            some: {
+              id: projectId,
+            },
+          },
+        },
+        select: {
+          name: true,
+          surname: true,
+          role: true,
+        },
+      });
+
+      return members;
+    } catch {
+      throw new HttpError(500, 'Users could not be found');
     }
   }
 

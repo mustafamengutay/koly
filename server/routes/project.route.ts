@@ -29,4 +29,6 @@ router.get(
   projectController.getListParticipatedProjects
 );
 
+router.get('/:projectId/members', verifyUser, projectController.getListMembers);
+
 export default router;

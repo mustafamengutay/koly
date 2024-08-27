@@ -13,6 +13,7 @@ describe('ProjectRepository', () => {
   beforeEach(() => {
     prisma.project.create = jest.fn();
     prisma.project.findMany = jest.fn();
+    prisma.user.findMany = jest.fn();
 
     projectRepository = new ProjectRepository();
   });
@@ -49,6 +50,31 @@ describe('ProjectRepository', () => {
       await expect(
         projectRepository.createProject(userId, projectName)
       ).rejects.toThrow(HttpError);
+    });
+  });
+
+  describe('listMembers', () => {
+    const projectId = 1;
+    const user = {
+      name: 'User',
+      surname: 'Surname',
+    };
+
+    it('should return a list of users who are members of a project', async () => {
+      (prisma.user.findMany as jest.Mock).mockResolvedValue([user, user]);
+
+      const members = await projectRepository.listMembers(projectId);
+
+      expect(members).toContain(user);
+    });
+
+    it('should throw an error if listing members fails', async () => {
+      const error = new HttpError(500, 'Users could not be found');
+      (prisma.user.findMany as jest.Mock).mockRejectedValue(error);
+
+      await expect(projectRepository.listMembers(projectId)).rejects.toThrow(
+        error
+      );
     });
   });
 

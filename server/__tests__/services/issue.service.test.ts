@@ -18,6 +18,7 @@ describe('IssueService', () => {
   beforeEach(() => {
     mockProjectRepository = {
       createProject: jest.fn(),
+      listMembers: jest.fn(),
       listAllProjects: jest.fn(),
       listCreatedProjects: jest.fn(),
       listParticipatedProjects: jest.fn(),

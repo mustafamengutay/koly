@@ -34,6 +34,28 @@ export class ProjectController {
     }
   };
 
+  public getListMembers = async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const projectId = Number(req.params.projectId);
+    const userId = req.userId!;
+
+    try {
+      const members = await this.projectService.listMembers(userId, projectId);
+
+      res.status(200).json({
+        status: 'success',
+        data: {
+          members,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   public getListAllProjects = async (
     req: CustomRequest,
     res: Response,

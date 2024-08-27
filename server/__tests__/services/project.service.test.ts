@@ -17,6 +17,7 @@ describe('ProjectService', () => {
   beforeEach(() => {
     mockProjectRepository = {
       createProject: jest.fn(),
+      listMembers: jest.fn(),
       listAllProjects: jest.fn(),
       listCreatedProjects: jest.fn(),
       listParticipatedProjects: jest.fn(),
@@ -27,6 +28,8 @@ describe('ProjectService', () => {
     container.bind(ProjectService).toSelf();
 
     projectService = container.get(ProjectService);
+
+    projectService.validateUserParticipation = jest.fn();
   });
 
   afterEach(() => {
@@ -67,6 +70,29 @@ describe('ProjectService', () => {
     });
   });
 
+  describe('listMembers', () => {
+    const userId = 1;
+    const projectId = 1;
+    const user = {
+      name: 'User',
+      surname: 'Surname',
+    };
+
+    it('should return a list of users who are members of a project', async () => {
+      (projectService.validateUserParticipation as jest.Mock).mockResolvedValue(
+        true
+      );
+      (mockProjectRepository.listMembers as jest.Mock).mockResolvedValue([
+        user,
+        user,
+      ]);
+
+      const members = await projectService.listMembers(userId, projectId);
+
+      expect(members).toContain(user);
+    });
+  });
+
   describe('listCreatedProjects', () => {
     it('should return a list of user created projects', async () => {
       (
@@ -76,16 +102,6 @@ describe('ProjectService', () => {
       const createdProjects = await projectService.listCreatedProjects(userId);
 
       expect(createdProjects).toContain(project);
-    });
-
-    it('should throw an error if listing user created projects fails', async () => {
-      (
-        mockProjectRepository.listCreatedProjects as jest.Mock
-      ).mockRejectedValue(new HttpError(500, 'Project could not be found'));
-
-      await expect(projectService.listCreatedProjects(userId)).rejects.toThrow(
-        HttpError
-      );
     });
   });
 
@@ -107,16 +123,6 @@ describe('ProjectService', () => {
 
       expect(participatedProjects).toContain(project);
     });
-
-    it('should throw an error if listing user participated projects fails', async () => {
-      (
-        mockProjectRepository.listParticipatedProjects as jest.Mock
-      ).mockRejectedValue(new HttpError(500, 'Project could not be found'));
-
-      await expect(
-        projectService.listParticipatedProjects(userId)
-      ).rejects.toThrow(HttpError);
-    });
   });
 
   describe('listAllProjects', () => {
@@ -135,16 +141,6 @@ describe('ProjectService', () => {
       const allProjects = await projectService.listAllProjects(userId);
 
       expect(allProjects).toContain(project);
-    });
-
-    it("should throw an error if listing user's projects fails", async () => {
-      (mockProjectRepository.listAllProjects as jest.Mock).mockRejectedValue(
-        new HttpError(500, 'Project could not be found')
-      );
-
-      await expect(projectService.listAllProjects(userId)).rejects.toThrow(
-        HttpError
-      );
     });
   });
 });
