@@ -30,6 +30,13 @@ import {
 } from './services/validators/issueValidator';
 import { IssueController } from './controllers/issue.controller';
 
+import {
+  ISearchRepository,
+  SearchRepository,
+} from './repositories/search.repository';
+import { SearchService } from './services/search.service';
+import { SearchController } from './controllers/search.controller';
+
 const container = new Container();
 
 container.bind<IUserRepository>('IUserRepository').to(UserRepository);
@@ -46,5 +53,9 @@ container.bind<IIssueRepository>('IIssueRepository').to(IssueRepository);
 container.bind<IIssueValidator>('IIssueValidator').to(IssueValidator);
 container.bind<IssueService>(IssueService).toSelf();
 container.bind<IssueController>(IssueController).toSelf();
+
+container.bind<ISearchRepository>('ISearchRepository').to(SearchRepository);
+container.bind<SearchService>(SearchService).toSelf();
+container.bind<SearchController>(SearchController).toSelf();
 
 export default container;
