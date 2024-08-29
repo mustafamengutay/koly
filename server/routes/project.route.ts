@@ -31,4 +31,10 @@ router.get(
 
 router.get('/:projectId/members', verifyUser, projectController.getListMembers);
 
+router.patch(
+  '/:projectId/rename',
+  verifyUser,
+  projectController.patchUpdateProjectName
+);
+
 export default router;

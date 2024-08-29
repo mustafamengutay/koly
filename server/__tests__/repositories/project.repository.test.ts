@@ -12,6 +12,7 @@ describe('ProjectRepository', () => {
 
   beforeEach(() => {
     prisma.project.create = jest.fn();
+    prisma.project.update = jest.fn();
     prisma.project.findMany = jest.fn();
     prisma.user.findMany = jest.fn();
 
@@ -160,6 +161,38 @@ describe('ProjectRepository', () => {
       await expect(projectRepository.listAllProjects(userId)).rejects.toThrow(
         HttpError
       );
+    });
+  });
+
+  describe('updateName', () => {
+    const newProjectName = 'new name';
+    const project = {
+      id: 1,
+      ownerId: 3,
+      name: 'Project 1',
+    };
+
+    it('should return an updated project successfully', async () => {
+      (prisma.project.update as jest.Mock).mockResolvedValue({
+        ...project,
+        name: newProjectName,
+      });
+
+      const updatedProject: Project = await projectRepository.updateName(
+        project.id,
+        newProjectName
+      );
+
+      expect(updatedProject.name).toBe(newProjectName);
+    });
+
+    it('should throw an error if updating fails', async () => {
+      const error = new HttpError(500, 'Project could not be updated');
+      (prisma.project.update as jest.Mock).mockRejectedValue(error);
+
+      await expect(
+        projectRepository.updateName(project.id, newProjectName)
+      ).rejects.toThrow(error);
     });
   });
 

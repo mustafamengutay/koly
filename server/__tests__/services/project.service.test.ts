@@ -21,6 +21,8 @@ describe('ProjectService', () => {
       listAllProjects: jest.fn(),
       listCreatedProjects: jest.fn(),
       listParticipatedProjects: jest.fn(),
+      updateName: jest.fn(),
+      validateProjectOwner: jest.fn(),
     };
 
     container = new Container();
@@ -141,6 +143,89 @@ describe('ProjectService', () => {
       const allProjects = await projectService.listAllProjects(userId);
 
       expect(allProjects).toContain(project);
+    });
+  });
+
+  describe('updateProjectName', () => {
+    const userId = 1;
+    const newProjectName = 'new name';
+    const mockProject = {
+      id: 1,
+      ownerId: userId,
+      name: 'Project 1',
+    };
+
+    it('should throw an error if user is not a project owner', async () => {
+      const error = new HttpError(403, 'User is not the owner of the project');
+      (
+        mockProjectRepository.validateProjectOwner as jest.Mock
+      ).mockRejectedValue(error);
+
+      await expect(
+        projectService.updateProjectName(userId, mockProject.id, newProjectName)
+      ).rejects.toThrow(error);
+      expect(mockProjectRepository.updateName).not.toHaveBeenCalled();
+    });
+
+    it('should validate project owner before searching', async () => {
+      (
+        mockProjectRepository.validateProjectOwner as jest.Mock
+      ).mockResolvedValue(true);
+      (mockProjectRepository.updateName as jest.Mock).mockResolvedValue({
+        ...mockProject,
+        name: newProjectName,
+      });
+
+      await projectService.updateProjectName(
+        userId,
+        mockProject.id,
+        newProjectName
+      );
+
+      expect(mockProjectRepository.validateProjectOwner).toHaveBeenCalledWith(
+        userId,
+        mockProject.id
+      );
+    });
+
+    it('should call updateName with correct parameters', async () => {
+      (
+        mockProjectRepository.validateProjectOwner as jest.Mock
+      ).mockResolvedValue(true);
+      (mockProjectRepository.updateName as jest.Mock).mockResolvedValue({
+        ...mockProject,
+        name: newProjectName,
+      });
+
+      await projectService.updateProjectName(
+        userId,
+        mockProject.id,
+        newProjectName
+      );
+
+      expect(mockProjectRepository.updateName).toHaveBeenCalledWith(
+        mockProject.id,
+        newProjectName
+      );
+    });
+
+    it('should return the result from the repository', async () => {
+      (
+        mockProjectRepository.validateProjectOwner as jest.Mock
+      ).mockResolvedValue(true);
+      (mockProjectRepository.updateName as jest.Mock).mockResolvedValue({
+        ...mockProject,
+        name: newProjectName,
+      });
+
+      const result = await projectService.updateProjectName(
+        userId,
+        mockProject.id,
+        newProjectName
+      );
+
+      expect(result).toEqual({ ...mockProject, name: newProjectName });
+      expect(result.name).toBe(newProjectName);
     });
   });
 });

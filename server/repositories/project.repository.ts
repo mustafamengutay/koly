@@ -11,6 +11,8 @@ export interface IProjectRepository {
   listAllProjects(userId: number): Promise<Project[]>;
   listCreatedProjects(userId: number): Promise<Project[]>;
   listParticipatedProjects(userId: number): Promise<Project[]>;
+  updateName(projectId: number, name: string): Promise<Project>;
+  validateProjectOwner(userId: number, projectId: number): Promise<void>;
   validateUserParticipation(userId: number, projectId: number): Promise<void>;
 }
 
@@ -126,6 +128,42 @@ export class ProjectRepository implements IProjectRepository {
       return participatedProject;
     } catch {
       throw new HttpError(500, 'Project could not be found');
+    }
+  }
+
+  public async updateName(projectId: number, name: string): Promise<Project> {
+    try {
+      const updatedProject: Project = await prisma.project.update({
+        where: {
+          id: projectId,
+        },
+        data: {
+          name,
+        },
+      });
+
+      return updatedProject;
+    } catch {
+      throw new HttpError(500, 'Project could not be updated');
+    }
+  }
+
+  public async validateProjectOwner(
+    userId: number,
+    projectId: number
+  ): Promise<void> {
+    try {
+      await prisma.project.findUniqueOrThrow({
+        where: {
+          id: projectId,
+          ownerId: userId,
+        },
+      });
+    } catch (error: any) {
+      if ('code' in error && error.code === 'P2025') {
+        throw new HttpError(403, 'User is not the owner of the project');
+      }
+      throw new HttpError(500, 'User could not be found');
     }
   }
 

@@ -64,6 +64,22 @@ export class ProjectService {
   }
 
   /**
+   * Update the project name. If any error occurs, it throws the error.
+   * @param userId User ID.
+   * @param projectId Project ID.
+   * @param name New project name.
+   * @returns Updated project.
+   */
+  public async updateProjectName(
+    userId: number,
+    projectId: number,
+    name: string
+  ) {
+    await this.projectRepository.validateProjectOwner(userId, projectId);
+    return await this.projectRepository.updateName(projectId, name);
+  }
+
+  /**
    * A utility static method used to check a user is a participant of a project.
    * If user is not a participant, throws a 403 error. Other errors, will have 500
    * status code.

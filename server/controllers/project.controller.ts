@@ -121,4 +121,31 @@ export class ProjectController {
       next(error);
     }
   };
+
+  public patchUpdateProjectName = async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const projectId = Number(req.params.projectId);
+    const userId = req.userId!;
+    const { name } = req.body;
+
+    try {
+      const updatedProject = await this.projectService.updateProjectName(
+        userId,
+        projectId,
+        name
+      );
+
+      res.status(200).json({
+        status: 'success',
+        data: {
+          project: updatedProject,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

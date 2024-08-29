@@ -26,6 +26,7 @@ describe('Project Controllers', () => {
     listAllProjects: jest.fn(),
     listCreatedProjects: jest.fn(),
     listParticipatedProjects: jest.fn(),
+    updateProjectName: jest.fn(),
     validateUserParticipation: jest.fn(),
   };
 
@@ -269,6 +270,66 @@ describe('Project Controllers', () => {
       mockProjectService.listAllProjects.mockRejectedValue(error);
 
       await projectController.getListAllProjects(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe('patchUpdateProjectName', () => {
+    const userId = 3;
+    const project = {
+      id: 1,
+      ownerId: 1,
+      name: 'Project 1',
+    };
+    const newProjectName = 'New Project Name';
+
+    beforeEach(() => {
+      req = createRequest({
+        userId: userId,
+        method: 'PATCH',
+        url: '/api/v1/projects/1/rename',
+        params: {
+          projectId: project.id,
+        },
+        body: {
+          name: newProjectName,
+        },
+      });
+    });
+
+    it('should call updateProjectName service with correct parameters', async () => {
+      await projectController.patchUpdateProjectName(req, res, next);
+
+      expect(mockProjectService.updateProjectName).toHaveBeenCalledWith(
+        userId,
+        project.id,
+        newProjectName
+      );
+    });
+
+    it('should return 200 status code successful updating', async () => {
+      mockProjectService.updateProjectName.mockResolvedValue(project);
+
+      await projectController.patchUpdateProjectName(req, res, next);
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('should respond with success status and data on updating', async () => {
+      mockProjectService.updateProjectName.mockResolvedValue(project);
+
+      await projectController.patchUpdateProjectName(req, res, next);
+
+      expect(res._getJSONData()).toHaveProperty('status', 'success');
+      expect(res._getJSONData()).toHaveProperty('data', { project });
+    });
+
+    it('should pass the error to the error handler if updating fails', async () => {
+      const error = new Error('Fail');
+      mockProjectService.updateProjectName.mockRejectedValue(error);
+
+      await projectController.patchUpdateProjectName(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });
