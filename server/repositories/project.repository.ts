@@ -7,6 +7,7 @@ import { HttpError } from '../types/errors';
 
 export interface IProjectRepository {
   createProject(userId: number, name: string): Promise<Project>;
+  removeProject(projectId: number): Promise<Project>;
   listMembers(projectId: number): Promise<Partial<User>[]>;
   listAllProjects(userId: number): Promise<Project[]>;
   listCreatedProjects(userId: number): Promise<Project[]>;
@@ -39,6 +40,20 @@ export class ProjectRepository implements IProjectRepository {
       return newProject;
     } catch {
       throw new HttpError(500, 'The project could not be created');
+    }
+  }
+
+  public async removeProject(projectId: number): Promise<Project> {
+    try {
+      const removedProject: Project = await prisma.project.delete({
+        where: {
+          id: projectId,
+        },
+      });
+
+      return removedProject;
+    } catch {
+      throw new HttpError(500, 'Project could not be removed');
     }
   }
 

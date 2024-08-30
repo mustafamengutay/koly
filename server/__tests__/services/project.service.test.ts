@@ -17,6 +17,7 @@ describe('ProjectService', () => {
   beforeEach(() => {
     mockProjectRepository = {
       createProject: jest.fn(),
+      removeProject: jest.fn(),
       listMembers: jest.fn(),
       listAllProjects: jest.fn(),
       listCreatedProjects: jest.fn(),
@@ -226,6 +227,66 @@ describe('ProjectService', () => {
 
       expect(result).toEqual({ ...mockProject, name: newProjectName });
       expect(result.name).toBe(newProjectName);
+    });
+  });
+
+  describe('removeProject', () => {
+    it('should throw an error if user is not a project owner', async () => {
+      const error = new HttpError(403, 'User is not the owner of the project');
+      (
+        mockProjectRepository.validateProjectOwner as jest.Mock
+      ).mockRejectedValue(error);
+
+      await expect(
+        projectService.removeProject(userId, project.id)
+      ).rejects.toThrow(error);
+      expect(mockProjectRepository.removeProject).not.toHaveBeenCalled();
+    });
+
+    it('should validate project owner before removing', async () => {
+      (
+        mockProjectRepository.validateProjectOwner as jest.Mock
+      ).mockResolvedValue(true);
+      (mockProjectRepository.removeProject as jest.Mock).mockResolvedValue(
+        project
+      );
+
+      await projectService.removeProject(userId, project.id);
+
+      expect(mockProjectRepository.removeProject).toHaveBeenCalledWith(
+        project.id
+      );
+    });
+
+    it('should call removeProject with correct parameters', async () => {
+      (
+        mockProjectRepository.validateProjectOwner as jest.Mock
+      ).mockResolvedValue(true);
+      (mockProjectRepository.removeProject as jest.Mock).mockResolvedValue(
+        project
+      );
+
+      await projectService.removeProject(userId, project.id);
+
+      expect(mockProjectRepository.removeProject).toHaveBeenCalledWith(
+        project.id
+      );
+    });
+
+    it('should return the result from the repository', async () => {
+      (
+        mockProjectRepository.validateProjectOwner as jest.Mock
+      ).mockResolvedValue(true);
+      (mockProjectRepository.removeProject as jest.Mock).mockResolvedValue(
+        project
+      );
+
+      const removedProject = await projectService.removeProject(
+        userId,
+        project.id
+      );
+
+      expect(removedProject).toEqual(project);
     });
   });
 });

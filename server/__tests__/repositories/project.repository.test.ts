@@ -54,6 +54,39 @@ describe('ProjectRepository', () => {
     });
   });
 
+  describe('removeProject', () => {
+    const project = {
+      id: 1,
+      ownerId: 1,
+      name: 'Project 1',
+    };
+    const projects = [project];
+
+    beforeEach(() => {
+      prisma.project.delete = jest.fn().mockImplementation((id) => {
+        return projects.pop();
+      });
+    });
+
+    it('should remove the project successfully', async () => {
+      const removedProject: Project = await projectRepository.removeProject(
+        project.id
+      );
+
+      expect(removedProject).toEqual(project);
+      expect(projects).toEqual([]);
+    });
+
+    it('should throw an error when removing fails', async () => {
+      const error = new HttpError(500, 'Project could not be removed');
+      (prisma.project.delete as jest.Mock).mockRejectedValue(error);
+
+      await expect(projectRepository.removeProject(project.id)).rejects.toThrow(
+        error
+      );
+    });
+  });
+
   describe('listMembers', () => {
     const projectId = 1;
     const user = {

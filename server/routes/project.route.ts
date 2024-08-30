@@ -1,7 +1,7 @@
 import container from '../inversify.config';
 
 import express from 'express';
-import { body } from 'express-validator';
+import { param, body } from 'express-validator';
 import { inputValidator } from '../middlewares/validation';
 import { verifyUser } from '../middlewares/authorization';
 
@@ -19,6 +19,14 @@ router.post(
   projectController.postCreateProject
 );
 
+router.delete(
+  '/:projectId',
+  [param('projectId').isInt().withMessage('projectId should be an integer')],
+  inputValidator,
+  verifyUser,
+  projectController.deleteRemoveProject
+);
+
 router.get('/all', verifyUser, projectController.getListAllProjects);
 
 router.get('/created', verifyUser, projectController.getListCreatedProjects);
@@ -29,10 +37,18 @@ router.get(
   projectController.getListParticipatedProjects
 );
 
-router.get('/:projectId/members', verifyUser, projectController.getListMembers);
+router.get(
+  '/:projectId/members',
+  [param('projectId').isInt().withMessage('projectId should be an integer')],
+  inputValidator,
+  verifyUser,
+  projectController.getListMembers
+);
 
 router.patch(
   '/:projectId/rename',
+  [param('projectId').isInt().withMessage('projectId should be an integer')],
+  inputValidator,
   verifyUser,
   projectController.patchUpdateProjectName
 );

@@ -24,6 +24,17 @@ export class ProjectService {
   }
 
   /**
+   * Remove the project and its issues. If any error occurs, it throws the error.
+   * @param userId User ID.
+   * @param projectId Project ID.
+   * @returns Removed Project.
+   */
+  public async removeProject(userId: number, projectId: number) {
+    await this.projectRepository.validateProjectOwner(userId, projectId);
+    return await this.projectRepository.removeProject(projectId);
+  }
+
+  /**
    * Lists all members of a project. If any error occurs, it throws the error.
    * @param userId User ID.
    * @param projectId Project ID.

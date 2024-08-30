@@ -34,6 +34,31 @@ export class ProjectController {
     }
   };
 
+  public deleteRemoveProject = async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const projectId = Number(req.params.projectId);
+    const userId = req.userId!;
+
+    try {
+      const removedProject = await this.projectService.removeProject(
+        userId,
+        projectId
+      );
+
+      res.status(200).json({
+        status: 'success',
+        data: {
+          project: removedProject,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   public getListMembers = async (
     req: CustomRequest,
     res: Response,

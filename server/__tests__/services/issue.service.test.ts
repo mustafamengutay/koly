@@ -18,11 +18,14 @@ describe('IssueService', () => {
   beforeEach(() => {
     mockProjectRepository = {
       createProject: jest.fn(),
+      removeProject: jest.fn(),
+      updateName: jest.fn(),
       listMembers: jest.fn(),
       listAllProjects: jest.fn(),
       listCreatedProjects: jest.fn(),
       listParticipatedProjects: jest.fn(),
       validateUserParticipation: jest.fn(),
+      validateProjectOwner: jest.fn(),
     };
 
     mockIssueRepository = {

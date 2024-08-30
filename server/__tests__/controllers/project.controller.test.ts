@@ -22,6 +22,7 @@ describe('Project Controllers', () => {
 
   const mockProjectService = {
     createProject: jest.fn(),
+    removeProject: jest.fn(),
     listMembers: jest.fn(),
     listAllProjects: jest.fn(),
     listCreatedProjects: jest.fn(),
@@ -86,6 +87,53 @@ describe('Project Controllers', () => {
       mockProjectService.createProject.mockRejectedValue(error);
 
       await projectController.postCreateProject(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe('deleteRemoveProject', () => {
+    const userId = 3;
+    const project = {
+      id: 1,
+      ownerId: userId,
+      name: 'project1',
+    };
+
+    beforeEach(() => {
+      mockProjectService.removeProject = jest.fn();
+      req = createRequest({
+        userId: userId,
+        method: 'DELETE',
+        url: '/api/v1/projects/1',
+        params: {
+          projectId: 1,
+        },
+      });
+    });
+
+    it('should return 200 status code on successful removing', async () => {
+      mockProjectService.removeProject.mockResolvedValue(project);
+
+      await projectController.deleteRemoveProject(req, res, next);
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('should respond with success status and data on removing project', async () => {
+      mockProjectService.removeProject.mockResolvedValue(project);
+
+      await projectController.deleteRemoveProject(req, res, next);
+
+      expect(res._getJSONData()).toHaveProperty('status', 'success');
+      expect(res._getJSONData()).toHaveProperty('data', { project });
+    });
+
+    it('should pass the error to the error handler if removing fails', async () => {
+      const error = new Error('Fail');
+      mockProjectService.removeProject.mockRejectedValue(error);
+
+      await projectController.deleteRemoveProject(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });
