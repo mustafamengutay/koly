@@ -4,6 +4,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import helmet from 'helmet';
+import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import os from 'os';
 import cluster from 'cluster';
@@ -46,6 +47,20 @@ if (cluster.isPrimary) {
     }
   );
 
+  const shouldCompress = (req: express.Request, res: express.Response) => {
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+
+    return compression.filter(req, res);
+  };
+
+  app.use(
+    compression({
+      threshold: 1,
+      filter: shouldCompress,
+    })
+  );
   app.use(cors());
   app.use(helmet());
   app.use(limiter);
