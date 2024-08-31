@@ -16,6 +16,7 @@ import { errorHandler } from './middlewares/errorHandler';
 import authRoutes from './routes/authentication.route';
 import projectRoutes from './routes/project.route';
 import issueRoutes from './routes/issue.route';
+import searchRoutes from './routes/search.route';
 
 if (cluster.isPrimary) {
   console.log(`Cluster Manager ${process.pid} is running`);
@@ -54,6 +55,7 @@ if (cluster.isPrimary) {
   app.use('/api/v1/auth', authRoutes);
   app.use('/api/v1/projects', projectRoutes);
   app.use('/api/v1/projects', issueRoutes);
+  app.use('/api/v1/projects', searchRoutes);
 
   app.use(errorHandler);
 
