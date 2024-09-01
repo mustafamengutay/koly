@@ -266,6 +266,31 @@ export class IssueController {
     }
   };
 
+  public getListIssuesInProgressByUser = async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const projectId = Number(req.params.projectId);
+    const userId = req.userId!;
+
+    try {
+      const issues = await this.issueService.listIssuesInProgressByUser(
+        userId,
+        projectId
+      );
+
+      res.status(200).json({
+        status: 'success',
+        data: {
+          issues,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   public getListIssuesCompletedByUser = async (
     req: CustomRequest,
     res: Response,

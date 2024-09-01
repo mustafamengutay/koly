@@ -154,6 +154,23 @@ describe('IssueService', () => {
     });
   });
 
+  describe('listIssuesInProgressByUser', () => {
+    const mockInProgressIssue = { ...issue, status: IssueStatus.InProgress };
+    const issues: IssueData[] = [mockInProgressIssue, mockInProgressIssue];
+
+    it('should return a list of Issue whose status are in progress and adopted by a user', async () => {
+      (
+        mockProjectRepository.validateUserParticipation as jest.Mock
+      ).mockResolvedValue(true);
+      (mockIssueRepository.findAll as jest.Mock).mockResolvedValue(issues);
+
+      const inProgressIssueIssues =
+        await issueService.listIssuesInProgressByUser(userId, projectId);
+
+      expect(inProgressIssueIssues).toContain(mockInProgressIssue);
+    });
+  });
+
   describe('listIssuesCompletedByUser', () => {
     const mockIssue = {
       ...issue,

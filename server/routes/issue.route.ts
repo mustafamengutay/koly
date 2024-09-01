@@ -48,6 +48,14 @@ router.get(
 );
 
 router.get(
+  '/:projectId/issues/my-reports/in-progress',
+  param('projectId').isInt().withMessage('projectId should be an integer'),
+  inputValidator,
+  verifyUser,
+  issueController.getListIssuesInProgressByUser
+);
+
+router.get(
   '/:projectId/issues/my-reports/completed',
   param('projectId').isInt().withMessage('projectId should be an integer'),
   inputValidator,

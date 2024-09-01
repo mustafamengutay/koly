@@ -73,6 +73,7 @@ export class IssueRepository implements IIssueRepository {
         },
         data: {
           adoptedById: userId,
+          status: IssueStatus.InProgress,
         },
       });
 
@@ -91,6 +92,7 @@ export class IssueRepository implements IIssueRepository {
         },
         data: {
           adoptedById: null,
+          status: IssueStatus.Open,
         },
       });
 

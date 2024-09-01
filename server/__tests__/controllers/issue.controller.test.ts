@@ -30,6 +30,7 @@ describe('Issue Controllers', () => {
     viewIssueDetails: jest.fn(),
     listAllIssues: jest.fn(),
     listIssuesReportedByUser: jest.fn(),
+    listIssuesInProgressByUser: jest.fn(),
     listIssuesCompletedByUser: jest.fn(),
   };
 
@@ -232,6 +233,51 @@ describe('Issue Controllers', () => {
       mockissueService.listIssuesReportedByUser.mockRejectedValue(error);
 
       await issueController.getListIssuesReportedByUser(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe('getListIssuesInProgressByUser', () => {
+    const mockInProgressIssue = {
+      ...mockIssue,
+      status: IssueStatus.InProgress,
+    };
+    const issues = [mockInProgressIssue, mockInProgressIssue];
+
+    beforeEach(() => {
+      req = createRequest({
+        userId: userId,
+        method: 'GET',
+        url: `/api/v1/projects/${projectId}/issues/my-reports/in-progress`,
+        params: {
+          projectId,
+        },
+      });
+    });
+
+    it('should return 200 status code on successful listing', async () => {
+      mockissueService.listIssuesInProgressByUser.mockResolvedValue(issues);
+
+      await issueController.getListIssuesInProgressByUser(req, res, next);
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('should respond with success status and data on issue reporting', async () => {
+      mockissueService.listIssuesInProgressByUser.mockResolvedValue(issues);
+
+      await issueController.getListIssuesInProgressByUser(req, res, next);
+
+      expect(res._getJSONData()).toHaveProperty('status', 'success');
+      expect(res._getJSONData()).toHaveProperty('data', { issues });
+    });
+
+    it('should pass the error to the error handler if listing fails', async () => {
+      const error = new Error('Fail');
+      mockissueService.listIssuesInProgressByUser.mockRejectedValue(error);
+
+      await issueController.getListIssuesInProgressByUser(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });

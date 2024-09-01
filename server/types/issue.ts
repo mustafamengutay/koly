@@ -7,6 +7,7 @@ export type IssueData = Pick<
 
 export const IssueStatus = {
   Open: 'open',
+  InProgress: 'in progress',
   Completed: 'completed',
 } as const;
 

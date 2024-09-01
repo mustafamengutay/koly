@@ -183,8 +183,23 @@ export class IssueService {
   }
 
   /**
-   * Lists all issues completed by a user in a project. If any error occurs, it throws that
-   * specific error.
+   * Lists all issues which are still in progress and adopted by a user in a project.
+   *  If any error occurs, it throws that specific error.
+   * @param projectId Project ID.
+   * @returns Array of issues or an empty array.
+   */
+  public async listIssuesInProgressByUser(userId: number, projectId: number) {
+    await this.projectRepository.validateUserParticipation(userId, projectId);
+    return this.issueRepository.findAll({
+      projectId,
+      status: IssueStatus.InProgress,
+      adoptedById: userId,
+    });
+  }
+
+  /**
+   * Lists all issues completed by a user in a project. If any error occurs,
+   * it throws that specific error.
    * @param projectId Project ID.
    * @returns Array of issues or an empty array.
    */

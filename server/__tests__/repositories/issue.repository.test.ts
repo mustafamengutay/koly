@@ -156,14 +156,10 @@ describe('IssueRepository', () => {
     const issueId = 2;
 
     it('should update the adopter of an issue', async () => {
-      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue({
-        ...issue,
-        adoptedById: null,
-      });
-
       (prisma.issue.update as jest.Mock).mockResolvedValue({
         ...issue,
         adoptedById: userId,
+        status: IssueStatus.InProgress,
       });
 
       const adoptedIssue: Issue = await issueRepository.adopt(issueId, userId);
@@ -171,12 +167,19 @@ describe('IssueRepository', () => {
       expect(adoptedIssue.adoptedById).toBe(userId);
     });
 
-    it('should throw an error if the issue could not be updated', async () => {
-      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue({
+    it('should update the status to "in progress" of an issue', async () => {
+      (prisma.issue.update as jest.Mock).mockResolvedValue({
         ...issue,
-        adoptedById: null,
+        adoptedById: userId,
+        status: IssueStatus.InProgress,
       });
 
+      const adoptedIssue: Issue = await issueRepository.adopt(issueId, userId);
+
+      expect(adoptedIssue.status).toBe(IssueStatus.InProgress);
+    });
+
+    it('should throw an error if the issue could not be updated', async () => {
       const error = new HttpError(
         500,
         'Database Error: Issue could not be updated'
@@ -196,12 +199,10 @@ describe('IssueRepository', () => {
     };
 
     it('should release an issue successfully', async () => {
-      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue({
-        ...issue,
-        adoptedById: userId,
+      (prisma.issue.update as jest.Mock).mockResolvedValue({
+        ...mockReleasedIssue,
+        status: IssueStatus.Open,
       });
-
-      (prisma.issue.update as jest.Mock).mockResolvedValue(mockReleasedIssue);
 
       const releasedIssue: Issue = await issueRepository.release(
         issueId,
@@ -211,12 +212,21 @@ describe('IssueRepository', () => {
       expect(releasedIssue).toEqual(mockReleasedIssue);
     });
 
-    it('should throw an error if the issue could not be updated', async () => {
-      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue({
-        ...issue,
-        adoptedById: userId,
+    it('should update the status to "open" of an issue', async () => {
+      (prisma.issue.update as jest.Mock).mockResolvedValue({
+        ...mockReleasedIssue,
+        status: IssueStatus.Open,
       });
 
+      const releasedIssue: Issue = await issueRepository.release(
+        issueId,
+        userId
+      );
+
+      expect(releasedIssue.status).toEqual(IssueStatus.Open);
+    });
+
+    it('should throw an error if the issue could not be updated', async () => {
       const error = new HttpError(
         500,
         'Database Error: Issue could not be updated'
@@ -231,8 +241,6 @@ describe('IssueRepository', () => {
 
   describe('remove', () => {
     it('should remove an issue successfully', async () => {
-      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue(issue);
-
       (prisma.issue.delete as jest.Mock).mockResolvedValue(issue);
 
       const removedIssue: Issue = await issueRepository.remove(issueId, userId);
@@ -241,8 +249,6 @@ describe('IssueRepository', () => {
     });
 
     it('should throw an error if removing fails', async () => {
-      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue(issue);
-
       const error = new HttpError(
         500,
         'Database Error: Issue could not be deleted'
@@ -263,10 +269,6 @@ describe('IssueRepository', () => {
     };
 
     it('should complete an issue successfully', async () => {
-      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue(
-        mockOpenIssue
-      );
-
       (prisma.issue.update as jest.Mock).mockResolvedValue({
         ...mockOpenIssue,
         status: IssueStatus.Completed,
@@ -284,10 +286,6 @@ describe('IssueRepository', () => {
     });
 
     it('should throw an error if completion fails', async () => {
-      (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue({
-        ...mockOpenIssue,
-      });
-
       const error = new HttpError(
         500,
         'Database Error: Issue could not be updated'
