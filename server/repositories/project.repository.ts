@@ -61,7 +61,7 @@ export class ProjectRepository implements IProjectRepository {
     try {
       const members: Partial<User>[] = await prisma.user.findMany({
         where: {
-          projects: {
+          participatedProjects: {
             some: {
               id: projectId,
             },
@@ -70,6 +70,7 @@ export class ProjectRepository implements IProjectRepository {
         select: {
           name: true,
           surname: true,
+          email: true,
           role: true,
         },
       });
