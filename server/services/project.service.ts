@@ -41,7 +41,7 @@ export class ProjectService {
    * @returns Array of members.
    */
   public async listMembers(userId: number, projectId: number) {
-    await this.validateUserParticipation(userId, projectId);
+    await this.projectRepository.validateUserParticipation(userId, projectId);
     return await this.projectRepository.listMembers(projectId);
   }
 
@@ -88,19 +88,5 @@ export class ProjectService {
   ) {
     await this.projectRepository.validateProjectOwner(userId, projectId);
     return await this.projectRepository.updateName(projectId, name);
-  }
-
-  /**
-   * A utility static method used to check a user is a participant of a project.
-   * If user is not a participant, throws a 403 error. Other errors, will have 500
-   * status code.
-   * @param userId User ID
-   * @param projectId Project ID
-   */
-  public async validateUserParticipation(
-    userId: number,
-    projectId: number
-  ): Promise<void> {
-    await this.projectRepository.validateUserParticipation(userId, projectId);
   }
 }
