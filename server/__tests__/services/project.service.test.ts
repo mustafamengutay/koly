@@ -8,10 +8,7 @@ import { HttpError } from '../../types/errors';
 
 describe('ProjectService', () => {
   let container: Container;
-  let mockProjectRepository: Omit<
-    IProjectRepository,
-    'validateUserParticipation'
-  >;
+  let mockProjectRepository: IProjectRepository;
   let projectService: ProjectService;
 
   beforeEach(() => {
@@ -23,6 +20,7 @@ describe('ProjectService', () => {
       listCreatedProjects: jest.fn(),
       listParticipatedProjects: jest.fn(),
       updateName: jest.fn(),
+      validateUserParticipation: jest.fn(),
       validateProjectOwner: jest.fn(),
     };
 
@@ -31,8 +29,6 @@ describe('ProjectService', () => {
     container.bind(ProjectService).toSelf();
 
     projectService = container.get(ProjectService);
-
-    projectService.validateUserParticipation = jest.fn();
   });
 
   afterEach(() => {
@@ -82,9 +78,9 @@ describe('ProjectService', () => {
     };
 
     it('should return a list of users who are members of a project', async () => {
-      (projectService.validateUserParticipation as jest.Mock).mockResolvedValue(
-        true
-      );
+      (
+        mockProjectRepository.validateUserParticipation as jest.Mock
+      ).mockResolvedValue(true);
       (mockProjectRepository.listMembers as jest.Mock).mockResolvedValue([
         user,
         user,
