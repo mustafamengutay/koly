@@ -87,28 +87,28 @@ describe('ProjectRepository', () => {
     });
   });
 
-  describe('listMembers', () => {
+  describe('listParticipants', () => {
     const projectId = 1;
     const user = {
       name: 'User',
       surname: 'Surname',
     };
 
-    it('should return a list of users who are members of a project', async () => {
+    it('should return a list of users who are participants of a project', async () => {
       (prisma.user.findMany as jest.Mock).mockResolvedValue([user, user]);
 
-      const members = await projectRepository.listMembers(projectId);
+      const participants = await projectRepository.listParticipants(projectId);
 
-      expect(members).toContain(user);
+      expect(participants).toContain(user);
     });
 
-    it('should throw an error if listing members fails', async () => {
+    it('should throw an error if listing participants fails', async () => {
       const error = new HttpError(500, 'Users could not be found');
       (prisma.user.findMany as jest.Mock).mockRejectedValue(error);
 
-      await expect(projectRepository.listMembers(projectId)).rejects.toThrow(
-        error
-      );
+      await expect(
+        projectRepository.listParticipants(projectId)
+      ).rejects.toThrow(error);
     });
   });
 
@@ -176,7 +176,7 @@ describe('ProjectRepository', () => {
       name: 'Project 1',
     };
 
-    it('should return a list of all projects that user is the member of it', async () => {
+    it('should return a list of all projects that user is the participants of them', async () => {
       (prisma.project.findMany as jest.Mock).mockResolvedValue([project]);
 
       const allProjects: Project[] = await projectRepository.listAllProjects(

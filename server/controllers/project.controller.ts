@@ -59,7 +59,7 @@ export class ProjectController {
     }
   };
 
-  public getListMembers = async (
+  public getListParticipants = async (
     req: CustomRequest,
     res: Response,
     next: NextFunction
@@ -68,12 +68,15 @@ export class ProjectController {
     const userId = req.userId!;
 
     try {
-      const members = await this.projectService.listMembers(userId, projectId);
+      const participants = await this.projectService.listProjectParticipants(
+        userId,
+        projectId
+      );
 
       res.status(200).json({
         status: 'success',
         data: {
-          members,
+          participants,
         },
       });
     } catch (error) {

@@ -23,7 +23,7 @@ describe('Project Controllers', () => {
   const mockProjectService = {
     createProject: jest.fn(),
     removeProject: jest.fn(),
-    listMembers: jest.fn(),
+    listProjectParticipants: jest.fn(),
     listAllProjects: jest.fn(),
     listCreatedProjects: jest.fn(),
     listParticipatedProjects: jest.fn(),
@@ -139,21 +139,23 @@ describe('Project Controllers', () => {
     });
   });
 
-  describe('getListMembers', () => {
+  describe('getListParticipants', () => {
     const userId = 1;
     const projectId = 1;
     const user = {
       name: 'User',
       surname: 'Surname',
     };
-    const members = [user, user];
+    const participants = [user, user];
 
     beforeEach(() => {
-      mockProjectService.listMembers = jest.fn().mockResolvedValue(members);
+      mockProjectService.listProjectParticipants = jest
+        .fn()
+        .mockResolvedValue(participants);
       req = createRequest({
         userId: userId,
         method: 'GET',
-        url: '/api/v1/projects/:projectId/members',
+        url: '/api/v1/projects/1/participants',
         params: {
           projectId,
         },
@@ -161,23 +163,25 @@ describe('Project Controllers', () => {
     });
 
     it('should return 200 status code on successful listing', async () => {
-      await projectController.getListMembers(req, res, next);
+      await projectController.getListParticipants(req, res, next);
 
       expect(res.statusCode).toBe(200);
     });
 
     it('should respond with success status and data on successful listing', async () => {
-      await projectController.getListMembers(req, res, next);
+      await projectController.getListParticipants(req, res, next);
 
       expect(res._getJSONData()).toHaveProperty('status', 'success');
-      expect(res._getJSONData()).toHaveProperty('data', { members });
+      expect(res._getJSONData()).toHaveProperty('data', {
+        participants,
+      });
     });
 
     it('should pass the error to the error handler if listing fails', async () => {
       const error = new Error('Fail');
-      mockProjectService.listMembers.mockRejectedValue(error);
+      mockProjectService.listProjectParticipants.mockRejectedValue(error);
 
-      await projectController.getListMembers(req, res, next);
+      await projectController.getListParticipants(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });

@@ -37,18 +37,18 @@ export class ProjectService {
   }
 
   /**
-   * Lists all members of a project. If any error occurs, it throws the error.
+   * Lists all participants of a project. If any error occurs, it throws the error.
    * @param userId User ID.
    * @param projectId Project ID.
-   * @returns Array of members.
+   * @returns Array of participants.
    */
-  public async listMembers(userId: number, projectId: number) {
+  public async listProjectParticipants(userId: number, projectId: number) {
     await this.ensureUserIsParticipant(userId, projectId);
-    return await this.projectRepository.listMembers(projectId);
+    return await this.projectRepository.listParticipants(projectId);
   }
 
   /**
-   * Lists all projects that a user is a member of it. If any error occurs,
+   * Lists all projects that a user is a participant of them. If any error occurs,
    * it throws the error.
    * @param userId User ID
    * @returns List of all projects.

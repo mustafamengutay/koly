@@ -38,11 +38,11 @@ router.get(
 );
 
 router.get(
-  '/:projectId/members',
+  '/:projectId/participants',
   [param('projectId').isInt().withMessage('projectId should be an integer')],
   inputValidator,
   verifyUser,
-  projectController.getListMembers
+  projectController.getListParticipants
 );
 
 router.patch(

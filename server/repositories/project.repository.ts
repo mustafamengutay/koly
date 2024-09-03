@@ -8,7 +8,7 @@ import { HttpError } from '../types/errors';
 export interface IProjectRepository {
   createProject(userId: number, name: string): Promise<Project>;
   removeProject(projectId: number): Promise<Project>;
-  listMembers(projectId: number): Promise<Partial<User>[]>;
+  listParticipants(projectId: number): Promise<Partial<User>[]>;
   listAllProjects(userId: number): Promise<Project[]>;
   listCreatedProjects(userId: number): Promise<Project[]>;
   listParticipatedProjects(userId: number): Promise<Project[]>;
@@ -57,9 +57,9 @@ export class ProjectRepository implements IProjectRepository {
     }
   }
 
-  public async listMembers(projectId: number): Promise<Partial<User>[]> {
+  public async listParticipants(projectId: number): Promise<Partial<User>[]> {
     try {
-      const members: Partial<User>[] = await prisma.user.findMany({
+      const participants: Partial<User>[] = await prisma.user.findMany({
         where: {
           participatedProjects: {
             some: {
@@ -75,7 +75,7 @@ export class ProjectRepository implements IProjectRepository {
         },
       });
 
-      return members;
+      return participants;
     } catch {
       throw new HttpError(500, 'Users could not be found');
     }

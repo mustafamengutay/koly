@@ -15,7 +15,7 @@ describe('ProjectService', () => {
     mockProjectRepository = {
       createProject: jest.fn(),
       removeProject: jest.fn(),
-      listMembers: jest.fn(),
+      listParticipants: jest.fn(),
       listAllProjects: jest.fn(),
       listCreatedProjects: jest.fn(),
       listParticipatedProjects: jest.fn(),
@@ -69,10 +69,10 @@ describe('ProjectService', () => {
     });
   });
 
-  describe('listMembers', () => {
+  describe('listParticipants', () => {
     const userId = 1;
     const projectId = 1;
-    const user = {
+    const participant = {
       name: 'User',
       surname: 'Surname',
     };
@@ -81,18 +81,21 @@ describe('ProjectService', () => {
       projectService.ensureUserIsParticipant = jest.fn();
     });
 
-    it('should return a list of users who are members of a project', async () => {
+    it('should return a list of users who are participants of a project', async () => {
       (projectService.ensureUserIsParticipant as jest.Mock).mockResolvedValue(
         true
       );
-      (mockProjectRepository.listMembers as jest.Mock).mockResolvedValue([
-        user,
-        user,
+      (mockProjectRepository.listParticipants as jest.Mock).mockResolvedValue([
+        participant,
+        participant,
       ]);
 
-      const members = await projectService.listMembers(userId, projectId);
+      const participants = await projectService.listProjectParticipants(
+        userId,
+        projectId
+      );
 
-      expect(members).toContain(user);
+      expect(participants).toContain(participant);
     });
   });
 
@@ -136,7 +139,7 @@ describe('ProjectService', () => {
       name: 'Project 1',
     };
 
-    it('should return a list of all projects that user is the member of it', async () => {
+    it('should return a list of all projects that user is a participants of them', async () => {
       (mockProjectRepository.listAllProjects as jest.Mock).mockResolvedValue([
         project,
       ]);
