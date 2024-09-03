@@ -13,7 +13,7 @@ export interface IProjectRepository {
   listCreatedProjects(userId: number): Promise<Project[]>;
   listParticipatedProjects(userId: number): Promise<Project[]>;
   updateName(projectId: number, name: string): Promise<Project>;
-  validateProjectOwner(userId: number, projectId: number): Promise<void>;
+  findProjectOwner(userId: number, projectId: number): Promise<User | null>;
   findParticipant(userId: number, projectId: number): Promise<User | null>;
 }
 
@@ -164,21 +164,25 @@ export class ProjectRepository implements IProjectRepository {
     }
   }
 
-  public async validateProjectOwner(
+  public async findProjectOwner(
     userId: number,
     projectId: number
-  ): Promise<void> {
+  ): Promise<User | null> {
     try {
-      await prisma.project.findUniqueOrThrow({
+      const owner = await prisma.user.findUnique({
         where: {
-          id: projectId,
-          ownerId: userId,
+          id: userId,
+          participatedProjects: {
+            some: {
+              id: projectId,
+              ownerId: userId,
+            },
+          },
         },
       });
-    } catch (error: any) {
-      if ('code' in error && error.code === 'P2025') {
-        throw new HttpError(403, 'User is not the owner of the project');
-      }
+
+      return owner;
+    } catch {
       throw new HttpError(500, 'User could not be found');
     }
   }

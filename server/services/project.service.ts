@@ -32,7 +32,7 @@ export class ProjectService {
    * @returns Removed Project.
    */
   public async removeProject(userId: number, projectId: number) {
-    await this.projectRepository.validateProjectOwner(userId, projectId);
+    await this.ensureUserIsProjectOwner(userId, projectId);
     return await this.projectRepository.removeProject(projectId);
   }
 
@@ -88,8 +88,18 @@ export class ProjectService {
     projectId: number,
     name: string
   ) {
-    await this.projectRepository.validateProjectOwner(userId, projectId);
+    await this.ensureUserIsProjectOwner(userId, projectId);
     return await this.projectRepository.updateName(projectId, name);
+  }
+
+  public async ensureUserIsProjectOwner(userId: number, projectId: number) {
+    const isOwner = await this.projectRepository.findProjectOwner(
+      userId,
+      projectId
+    );
+    if (!isOwner) {
+      throw new HttpError(409, 'User is not the owner of the project');
+    }
   }
 
   public async ensureUserIsNotParticipant(userId: number, projectId: number) {

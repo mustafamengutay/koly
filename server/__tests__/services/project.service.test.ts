@@ -21,7 +21,7 @@ describe('ProjectService', () => {
       listParticipatedProjects: jest.fn(),
       updateName: jest.fn(),
       findParticipant: jest.fn(),
-      validateProjectOwner: jest.fn(),
+      findProjectOwner: jest.fn(),
     };
 
     container = new Container();
@@ -31,7 +31,7 @@ describe('ProjectService', () => {
     projectService = container.get(ProjectService);
   });
 
-  afterEach(() => {
+  afterAll(() => {
     jest.clearAllMocks();
   });
 
@@ -156,11 +156,15 @@ describe('ProjectService', () => {
       name: 'Project 1',
     };
 
-    it('should throw an error if user is not a project owner', async () => {
-      const error = new HttpError(403, 'User is not the owner of the project');
-      (
-        mockProjectRepository.validateProjectOwner as jest.Mock
-      ).mockRejectedValue(error);
+    beforeEach(() => {
+      projectService.ensureUserIsProjectOwner = jest.fn();
+    });
+
+    it('should throw an error if user is not an owner of the project', async () => {
+      const error = new HttpError(409, 'User is not the owner of the project');
+      (projectService.ensureUserIsProjectOwner as jest.Mock).mockRejectedValue(
+        error
+      );
 
       await expect(
         projectService.updateProjectName(userId, mockProject.id, newProjectName)
@@ -169,9 +173,9 @@ describe('ProjectService', () => {
     });
 
     it('should validate project owner before searching', async () => {
-      (
-        mockProjectRepository.validateProjectOwner as jest.Mock
-      ).mockResolvedValue(true);
+      (projectService.ensureUserIsProjectOwner as jest.Mock).mockResolvedValue(
+        true
+      );
       (mockProjectRepository.updateName as jest.Mock).mockResolvedValue({
         ...mockProject,
         name: newProjectName,
@@ -183,16 +187,16 @@ describe('ProjectService', () => {
         newProjectName
       );
 
-      expect(mockProjectRepository.validateProjectOwner).toHaveBeenCalledWith(
+      expect(projectService.ensureUserIsProjectOwner).toHaveBeenCalledWith(
         userId,
         mockProject.id
       );
     });
 
     it('should call updateName with correct parameters', async () => {
-      (
-        mockProjectRepository.validateProjectOwner as jest.Mock
-      ).mockResolvedValue(true);
+      (projectService.ensureUserIsProjectOwner as jest.Mock).mockResolvedValue(
+        true
+      );
       (mockProjectRepository.updateName as jest.Mock).mockResolvedValue({
         ...mockProject,
         name: newProjectName,
@@ -211,9 +215,9 @@ describe('ProjectService', () => {
     });
 
     it('should return the result from the repository', async () => {
-      (
-        mockProjectRepository.validateProjectOwner as jest.Mock
-      ).mockResolvedValue(true);
+      (projectService.ensureUserIsProjectOwner as jest.Mock).mockResolvedValue(
+        true
+      );
       (mockProjectRepository.updateName as jest.Mock).mockResolvedValue({
         ...mockProject,
         name: newProjectName,
@@ -231,11 +235,15 @@ describe('ProjectService', () => {
   });
 
   describe('removeProject', () => {
+    beforeEach(() => {
+      projectService.ensureUserIsProjectOwner = jest.fn();
+    });
+
     it('should throw an error if user is not a project owner', async () => {
-      const error = new HttpError(403, 'User is not the owner of the project');
-      (
-        mockProjectRepository.validateProjectOwner as jest.Mock
-      ).mockRejectedValue(error);
+      const error = new HttpError(409, 'User is not the owner of the project');
+      (projectService.ensureUserIsProjectOwner as jest.Mock).mockRejectedValue(
+        error
+      );
 
       await expect(
         projectService.removeProject(userId, project.id)
@@ -244,9 +252,9 @@ describe('ProjectService', () => {
     });
 
     it('should validate project owner before removing', async () => {
-      (
-        mockProjectRepository.validateProjectOwner as jest.Mock
-      ).mockResolvedValue(true);
+      (projectService.ensureUserIsProjectOwner as jest.Mock).mockResolvedValue(
+        true
+      );
       (mockProjectRepository.removeProject as jest.Mock).mockResolvedValue(
         project
       );
@@ -259,9 +267,9 @@ describe('ProjectService', () => {
     });
 
     it('should call removeProject with correct parameters', async () => {
-      (
-        mockProjectRepository.validateProjectOwner as jest.Mock
-      ).mockResolvedValue(true);
+      (projectService.ensureUserIsProjectOwner as jest.Mock).mockResolvedValue(
+        true
+      );
       (mockProjectRepository.removeProject as jest.Mock).mockResolvedValue(
         project
       );
@@ -274,9 +282,9 @@ describe('ProjectService', () => {
     });
 
     it('should return the result from the repository', async () => {
-      (
-        mockProjectRepository.validateProjectOwner as jest.Mock
-      ).mockResolvedValue(true);
+      (projectService.ensureUserIsProjectOwner as jest.Mock).mockResolvedValue(
+        true
+      );
       (mockProjectRepository.removeProject as jest.Mock).mockResolvedValue(
         project
       );

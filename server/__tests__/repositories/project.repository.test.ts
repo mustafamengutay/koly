@@ -229,7 +229,37 @@ describe('ProjectRepository', () => {
     });
   });
 
-  describe('findMember', () => {
+  describe('findOwner', () => {
+    const projectId = 1;
+    const userId = 1;
+    const mockOwner = {
+      id: userId,
+      name: 'Jack',
+    };
+
+    beforeEach(() => {
+      prisma.user.findUnique = jest.fn();
+    });
+
+    it('should find a user who is the owner of the project', async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockOwner);
+
+      const owner = await projectRepository.findProjectOwner(userId, projectId);
+
+      expect(owner).toEqual(mockOwner);
+    });
+
+    it('should throw an error if the user is not an owner of the project', async () => {
+      const error = new Error('Fail');
+      (prisma.user.findUnique as jest.Mock).mockRejectedValue(error);
+
+      await expect(
+        projectRepository.findProjectOwner(userId, projectId)
+      ).rejects.toThrow(new HttpError(500, 'User could not be found'));
+    });
+  });
+
+  describe('findParticipant', () => {
     const projectId = 1;
     const userId = 1;
     const mockParticipant = {
