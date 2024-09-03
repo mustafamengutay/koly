@@ -2,6 +2,8 @@ import { injectable, inject } from 'inversify';
 
 import { IProjectRepository } from '../repositories/project.repository';
 
+import { HttpError } from '../types/errors';
+
 @injectable()
 export class ProjectService {
   private projectRepository: IProjectRepository;
@@ -41,7 +43,7 @@ export class ProjectService {
    * @returns Array of members.
    */
   public async listMembers(userId: number, projectId: number) {
-    await this.projectRepository.validateUserParticipation(userId, projectId);
+    await this.ensureUserIsParticipant(userId, projectId);
     return await this.projectRepository.listMembers(projectId);
   }
 
@@ -88,5 +90,25 @@ export class ProjectService {
   ) {
     await this.projectRepository.validateProjectOwner(userId, projectId);
     return await this.projectRepository.updateName(projectId, name);
+  }
+
+  public async ensureUserIsNotParticipant(userId: number, projectId: number) {
+    const isParticipant = await this.projectRepository.findParticipant(
+      userId,
+      projectId
+    );
+    if (isParticipant) {
+      throw new HttpError(403, 'User is already a participant of the project');
+    }
+  }
+
+  public async ensureUserIsParticipant(userId: number, projectId: number) {
+    const isParticipant = await this.projectRepository.findParticipant(
+      userId,
+      projectId
+    );
+    if (!isParticipant) {
+      throw new HttpError(409, 'User is not a participant of the project');
+    }
   }
 }

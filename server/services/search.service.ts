@@ -1,19 +1,19 @@
 import { inject, injectable } from 'inversify';
 
 import { ISearchRepository } from '../repositories/search.repository';
-import { IProjectRepository } from '../repositories/project.repository';
+import { ProjectService } from './project.service';
 
 @injectable()
 export class SearchService {
   private searchRepository: ISearchRepository;
-  private projectRepository: IProjectRepository;
+  private projectService: ProjectService;
 
   public constructor(
     @inject('ISearchRepository') searchRepository: ISearchRepository,
-    @inject('IProjectRepository') projectRepository: IProjectRepository
+    @inject(ProjectService) projectService: ProjectService
   ) {
     this.searchRepository = searchRepository;
-    this.projectRepository = projectRepository;
+    this.projectService = projectService;
   }
 
   /**
@@ -25,7 +25,7 @@ export class SearchService {
    * @returns Array of Issue.
    */
   public async searchIssue(userId: number, projectId: number, query: string) {
-    await this.projectRepository.validateUserParticipation(userId, projectId);
+    await this.projectService.ensureUserIsParticipant(userId, projectId);
     return await this.searchRepository.searchIssue(projectId, query);
   }
 }

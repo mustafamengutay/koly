@@ -2,22 +2,22 @@ import { inject, injectable } from 'inversify';
 
 import { IssueData, IssueStatus } from '../types/issue';
 
-import { IProjectRepository } from '../repositories/project.repository';
 import { IIssueRepository } from '../repositories/issue.repository';
 import { IIssueValidator } from './validators/issueValidator';
+import { ProjectService } from './project.service';
 
 @injectable()
 export class IssueService {
-  private projectRepository: IProjectRepository;
+  private projectService: ProjectService;
   private issueRepository: IIssueRepository;
   private issueValidator: IIssueValidator;
 
   public constructor(
-    @inject('IProjectRepository') projectRepository: IProjectRepository,
+    @inject(ProjectService) projectService: ProjectService,
     @inject('IIssueRepository') issueRepository: IIssueRepository,
     @inject('IIssueValidator') issueValidator: IIssueValidator
   ) {
-    this.projectRepository = projectRepository;
+    this.projectService = projectService;
     this.issueRepository = issueRepository;
     this.issueValidator = issueValidator;
   }
@@ -33,7 +33,7 @@ export class IssueService {
     userId: number,
     projectId: number
   ) {
-    await this.projectRepository.validateUserParticipation(userId, projectId);
+    await this.projectService.ensureUserIsParticipant(userId, projectId);
     return await this.issueRepository.create(issue);
   }
 
@@ -52,7 +52,7 @@ export class IssueService {
     userId: number,
     projectId: number
   ) {
-    await this.projectRepository.validateUserParticipation(userId, projectId);
+    await this.projectService.ensureUserIsParticipant(userId, projectId);
     const issue = await this.issueRepository.findById(issueId, projectId);
     this.issueValidator.validateIssueReporter(issue.reportedById, userId);
 
@@ -72,7 +72,7 @@ export class IssueService {
    * @returns Issue adopted by a user.
    */
   public async adoptIssue(issueId: number, userId: number, projectId: number) {
-    await this.projectRepository.validateUserParticipation(userId, projectId);
+    await this.projectService.ensureUserIsParticipant(userId, projectId);
 
     const issue = await this.issueRepository.findById(issueId, projectId);
     this.issueValidator.validateIssueNotAdopted(issue.adoptedById);
@@ -93,7 +93,7 @@ export class IssueService {
     userId: number,
     projectId: number
   ) {
-    await this.projectRepository.validateUserParticipation(userId, projectId);
+    await this.projectService.ensureUserIsParticipant(userId, projectId);
 
     const issue = await this.issueRepository.findById(issueId, projectId);
     this.issueValidator.validateIssueAdopter(issue.adoptedById, userId);
@@ -114,7 +114,7 @@ export class IssueService {
     userId: number,
     projectId: number
   ) {
-    await this.projectRepository.validateUserParticipation(userId, projectId);
+    await this.projectService.ensureUserIsParticipant(userId, projectId);
 
     const issue = await this.issueRepository.findById(issueId, projectId);
     this.issueValidator.validateIssueReporter(issue.reportedById, userId);
@@ -134,7 +134,7 @@ export class IssueService {
     userId: number,
     projectId: number
   ) {
-    await this.projectRepository.validateUserParticipation(userId, projectId);
+    await this.projectService.ensureUserIsParticipant(userId, projectId);
 
     const issue = await this.issueRepository.findById(issueId, projectId);
     this.issueValidator.validateIssueAdopter(issue.adoptedById, userId);
@@ -156,7 +156,7 @@ export class IssueService {
     userId: number,
     projectId: number
   ) {
-    await this.projectRepository.validateUserParticipation(userId, projectId);
+    await this.projectService.ensureUserIsParticipant(userId, projectId);
     return await this.issueRepository.findById(issueId, projectId);
   }
 
@@ -167,7 +167,7 @@ export class IssueService {
    * @returns Array of issues or an empty array.
    */
   public async listAllIssues(userId: number, projectId: number) {
-    await this.projectRepository.validateUserParticipation(userId, projectId);
+    await this.projectService.ensureUserIsParticipant(userId, projectId);
     return this.issueRepository.findAll({ projectId });
   }
 
@@ -178,7 +178,7 @@ export class IssueService {
    * @returns Array of issues or an empty array.
    */
   public async listIssuesReportedByUser(userId: number, projectId: number) {
-    await this.projectRepository.validateUserParticipation(userId, projectId);
+    await this.projectService.ensureUserIsParticipant(userId, projectId);
     return this.issueRepository.findAll({ projectId, reportedById: userId });
   }
 
@@ -189,7 +189,7 @@ export class IssueService {
    * @returns Array of issues or an empty array.
    */
   public async listIssuesInProgressByUser(userId: number, projectId: number) {
-    await this.projectRepository.validateUserParticipation(userId, projectId);
+    await this.projectService.ensureUserIsParticipant(userId, projectId);
     return this.issueRepository.findAll({
       projectId,
       status: IssueStatus.InProgress,
@@ -204,7 +204,7 @@ export class IssueService {
    * @returns Array of issues or an empty array.
    */
   public async listIssuesCompletedByUser(userId: number, projectId: number) {
-    await this.projectRepository.validateUserParticipation(userId, projectId);
+    await this.projectService.ensureUserIsParticipant(userId, projectId);
     return this.issueRepository.findAll({
       projectId,
       adoptedById: userId,

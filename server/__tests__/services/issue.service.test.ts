@@ -3,29 +3,27 @@ import { Container } from 'inversify';
 
 import { IssueData, IssueType, IssueStatus } from '../../types/issue';
 
-import { IProjectRepository } from '../../repositories/project.repository';
 import { IIssueRepository } from '../../repositories/issue.repository';
 import { IIssueValidator } from '../../services/validators/issueValidator';
+import { ProjectService } from '../../services/project.service';
 import { IssueService } from '../../services/issue.service';
 
 describe('IssueService', () => {
+  type MockProjectServiceType = Pick<
+    ProjectService,
+    'ensureUserIsParticipant' | 'ensureUserIsNotParticipant'
+  >;
+
   let container: Container;
-  let mockProjectRepository: IProjectRepository;
   let mockIssueRepository: IIssueRepository;
   let mockIssueValidator: IIssueValidator;
+  let projectService: MockProjectServiceType;
   let issueService: IssueService;
 
   beforeEach(() => {
-    mockProjectRepository = {
-      createProject: jest.fn(),
-      removeProject: jest.fn(),
-      updateName: jest.fn(),
-      listMembers: jest.fn(),
-      listAllProjects: jest.fn(),
-      listCreatedProjects: jest.fn(),
-      listParticipatedProjects: jest.fn(),
-      validateUserParticipation: jest.fn(),
-      validateProjectOwner: jest.fn(),
+    projectService = {
+      ensureUserIsParticipant: jest.fn(),
+      ensureUserIsNotParticipant: jest.fn(),
     };
 
     mockIssueRepository = {
@@ -47,9 +45,11 @@ describe('IssueService', () => {
     };
 
     container = new Container();
-    container.bind('IProjectRepository').toConstantValue(mockProjectRepository);
     container.bind('IIssueRepository').toConstantValue(mockIssueRepository);
     container.bind('IIssueValidator').toConstantValue(mockIssueValidator);
+    container
+      .bind<MockProjectServiceType>(ProjectService)
+      .toConstantValue(projectService);
     container.bind(IssueService).toSelf();
 
     issueService = container.get(IssueService);
@@ -78,9 +78,9 @@ describe('IssueService', () => {
 
   describe('reportIssue', () => {
     it('should create and return a new Issue on successful issue reporting', async () => {
-      (
-        mockProjectRepository.validateUserParticipation as jest.Mock
-      ).mockResolvedValue(true);
+      (projectService.ensureUserIsParticipant as jest.Mock).mockResolvedValue(
+        true
+      );
       (mockIssueRepository.create as jest.Mock).mockResolvedValue(issue);
 
       const newIssue = await issueService.reportIssue(issue, userId, projectId);
@@ -98,9 +98,9 @@ describe('IssueService', () => {
     };
 
     it('should update and return an Issue on successful updating', async () => {
-      (
-        mockProjectRepository.validateUserParticipation as jest.Mock
-      ).mockResolvedValue(true);
+      (projectService.ensureUserIsParticipant as jest.Mock).mockResolvedValue(
+        true
+      );
       (mockIssueRepository.findById as jest.Mock).mockResolvedValue(issue);
       (mockIssueRepository.update as jest.Mock).mockResolvedValue(
         mockUpdateIssueData
@@ -125,9 +125,9 @@ describe('IssueService', () => {
     const issues: IssueData[] = [issue, issue];
 
     it('should return a list of Issue on a successful call', async () => {
-      (
-        mockProjectRepository.validateUserParticipation as jest.Mock
-      ).mockResolvedValue(true);
+      (projectService.ensureUserIsParticipant as jest.Mock).mockResolvedValue(
+        true
+      );
       (mockIssueRepository.findAll as jest.Mock).mockResolvedValue(issues);
 
       const allIssues = await issueService.listAllIssues(userId, projectId);
@@ -140,9 +140,9 @@ describe('IssueService', () => {
     const issues: IssueData[] = [issue, issue];
 
     it('should return a list of Issue reported by a user on a successful call', async () => {
-      (
-        mockProjectRepository.validateUserParticipation as jest.Mock
-      ).mockResolvedValue(true);
+      (projectService.ensureUserIsParticipant as jest.Mock).mockResolvedValue(
+        true
+      );
       (mockIssueRepository.findAll as jest.Mock).mockResolvedValue(issues);
 
       const allIssues = await issueService.listIssuesReportedByUser(
@@ -159,9 +159,9 @@ describe('IssueService', () => {
     const issues: IssueData[] = [mockInProgressIssue, mockInProgressIssue];
 
     it('should return a list of Issue whose status are in progress and adopted by a user', async () => {
-      (
-        mockProjectRepository.validateUserParticipation as jest.Mock
-      ).mockResolvedValue(true);
+      (projectService.ensureUserIsParticipant as jest.Mock).mockResolvedValue(
+        true
+      );
       (mockIssueRepository.findAll as jest.Mock).mockResolvedValue(issues);
 
       const inProgressIssueIssues =
@@ -183,9 +183,9 @@ describe('IssueService', () => {
     })[] = [mockIssue, mockIssue];
 
     it('should return a list of Issue completed by a user on a successful call', async () => {
-      (
-        mockProjectRepository.validateUserParticipation as jest.Mock
-      ).mockResolvedValue(true);
+      (projectService.ensureUserIsParticipant as jest.Mock).mockResolvedValue(
+        true
+      );
       (mockIssueRepository.findAll as jest.Mock).mockResolvedValue(issues);
 
       const allIssues = await issueService.listIssuesCompletedByUser(
@@ -201,9 +201,9 @@ describe('IssueService', () => {
     const issueId = 2;
 
     it('should update the adopter of an issue', async () => {
-      (
-        mockProjectRepository.validateUserParticipation as jest.Mock
-      ).mockResolvedValue(true);
+      (projectService.ensureUserIsParticipant as jest.Mock).mockResolvedValue(
+        true
+      );
       (mockIssueRepository.findById as jest.Mock).mockResolvedValue({
         ...issue,
         adoptedById: null,
@@ -231,9 +231,9 @@ describe('IssueService', () => {
     };
 
     it('should release an issue successfully', async () => {
-      (
-        mockProjectRepository.validateUserParticipation as jest.Mock
-      ).mockResolvedValue(true);
+      (projectService.ensureUserIsParticipant as jest.Mock).mockResolvedValue(
+        true
+      );
 
       (mockIssueRepository.findById as jest.Mock).mockResolvedValue({
         ...issue,
@@ -257,9 +257,9 @@ describe('IssueService', () => {
 
   describe('removeReportedIssue', () => {
     it('should remove an issue successfully', async () => {
-      (
-        mockProjectRepository.validateUserParticipation as jest.Mock
-      ).mockResolvedValue(true);
+      (projectService.ensureUserIsParticipant as jest.Mock).mockResolvedValue(
+        true
+      );
 
       (mockIssueRepository.findById as jest.Mock).mockResolvedValue(issue);
       (mockIssueRepository.remove as jest.Mock).mockResolvedValue(issue);
@@ -282,9 +282,9 @@ describe('IssueService', () => {
     };
 
     it('should complete an issue successfully', async () => {
-      (
-        mockProjectRepository.validateUserParticipation as jest.Mock
-      ).mockResolvedValue(true);
+      (projectService.ensureUserIsParticipant as jest.Mock).mockResolvedValue(
+        true
+      );
 
       (mockIssueRepository.findById as jest.Mock).mockResolvedValue(
         mockOpenIssue
@@ -309,9 +309,9 @@ describe('IssueService', () => {
 
   describe('viewIssueDetails', () => {
     it('should return an issue successfully', async () => {
-      (
-        mockProjectRepository.validateUserParticipation as jest.Mock
-      ).mockResolvedValue(true);
+      (projectService.ensureUserIsParticipant as jest.Mock).mockResolvedValue(
+        true
+      );
 
       (mockIssueRepository.findById as jest.Mock).mockResolvedValue(issue);
 

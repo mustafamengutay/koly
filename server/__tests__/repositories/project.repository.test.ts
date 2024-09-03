@@ -229,45 +229,36 @@ describe('ProjectRepository', () => {
     });
   });
 
-  describe('Utils', () => {
-    describe('validateUserParticipation', () => {
-      const projectId = 2;
-      const userId = 1;
+  describe('findMember', () => {
+    const projectId = 1;
+    const userId = 1;
+    const mockParticipant = {
+      id: userId,
+      name: 'Jack',
+    };
 
-      beforeEach(() => {
-        prisma.user.findUniqueOrThrow = jest.fn();
-      });
+    beforeEach(() => {
+      prisma.user.findUnique = jest.fn();
+    });
 
-      it('should not throw an error if the user is a participant of the project', async () => {
-        prisma.user.findUniqueOrThrow = jest
-          .fn()
-          .mockResolvedValue({ id: userId });
+    it('should find a user who is a participant of the project', async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockParticipant);
 
-        await expect(
-          projectRepository.validateUserParticipation(userId, projectId)
-        ).resolves.not.toThrow();
-      });
+      const participant = await projectRepository.findParticipant(
+        userId,
+        projectId
+      );
 
-      it('should throw a 403 error if user is not a participant of the project', async () => {
-        const error = new Error();
-        (error as any).code = 'P2025';
-        prisma.user.findUniqueOrThrow = jest.fn().mockRejectedValue(error);
+      expect(participant).toEqual(mockParticipant);
+    });
 
-        await expect(
-          projectRepository.validateUserParticipation(userId, projectId)
-        ).rejects.toThrow(
-          new HttpError(403, 'User is not a participant of the project')
-        );
-      });
+    it('should throw a 500 error if there is a different error', async () => {
+      const error = new Error('Fail');
+      (prisma.user.findUnique as jest.Mock).mockRejectedValue(error);
 
-      it('should throw a 500 error if there is a different error', async () => {
-        const error = new Error('Fail');
-        prisma.user.findUniqueOrThrow = jest.fn().mockRejectedValue(error);
-
-        await expect(
-          projectRepository.validateUserParticipation(userId, projectId)
-        ).rejects.toThrow(new HttpError(500, 'User could not be found'));
-      });
+      await expect(
+        projectRepository.findParticipant(userId, projectId)
+      ).rejects.toThrow(new HttpError(500, 'User could not be found'));
     });
   });
 });

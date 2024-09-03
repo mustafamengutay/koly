@@ -14,7 +14,7 @@ export interface IProjectRepository {
   listParticipatedProjects(userId: number): Promise<Project[]>;
   updateName(projectId: number, name: string): Promise<Project>;
   validateProjectOwner(userId: number, projectId: number): Promise<void>;
-  validateUserParticipation(userId: number, projectId: number): Promise<void>;
+  findParticipant(userId: number, projectId: number): Promise<User | null>;
 }
 
 @injectable()
@@ -183,12 +183,12 @@ export class ProjectRepository implements IProjectRepository {
     }
   }
 
-  public async validateUserParticipation(
+  public async findParticipant(
     userId: number,
     projectId: number
-  ): Promise<void> {
+  ): Promise<User | null> {
     try {
-      await prisma.user.findUniqueOrThrow({
+      const participant = await prisma.user.findUnique({
         where: {
           id: userId,
           participatedProjects: {
@@ -198,10 +198,9 @@ export class ProjectRepository implements IProjectRepository {
           },
         },
       });
-    } catch (error: any) {
-      if ('code' in error && error.code === 'P2025') {
-        throw new HttpError(403, 'User is not a participant of the project');
-      }
+
+      return participant;
+    } catch {
       throw new HttpError(500, 'User could not be found');
     }
   }

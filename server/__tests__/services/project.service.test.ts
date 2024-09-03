@@ -20,7 +20,7 @@ describe('ProjectService', () => {
       listCreatedProjects: jest.fn(),
       listParticipatedProjects: jest.fn(),
       updateName: jest.fn(),
-      validateUserParticipation: jest.fn(),
+      findParticipant: jest.fn(),
       validateProjectOwner: jest.fn(),
     };
 
@@ -77,10 +77,14 @@ describe('ProjectService', () => {
       surname: 'Surname',
     };
 
+    beforeEach(() => {
+      projectService.ensureUserIsParticipant = jest.fn();
+    });
+
     it('should return a list of users who are members of a project', async () => {
-      (
-        mockProjectRepository.validateUserParticipation as jest.Mock
-      ).mockResolvedValue(true);
+      (projectService.ensureUserIsParticipant as jest.Mock).mockResolvedValue(
+        true
+      );
       (mockProjectRepository.listMembers as jest.Mock).mockResolvedValue([
         user,
         user,
