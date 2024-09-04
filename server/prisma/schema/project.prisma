@@ -1,10 +1,11 @@
 model Project {
-  id           Int      @id @default(autoincrement())
-  owner        User     @relation("OwnedProjects", fields: [ownerId], references: [id])
+  id           Int          @id @default(autoincrement())
+  owner        User         @relation("OwnedProjects", fields: [ownerId], references: [id])
   ownerId      Int
   participants User[]
   issues       Issue[]
-  name         String   @unique
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  invitations  Invitation[]
+  name         String       @unique
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
 }
