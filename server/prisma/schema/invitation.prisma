@@ -8,5 +8,4 @@ model Invitation {
   inviteeId Int
   status    String
   createdAt DateTime @default(now())
-  expiresAt DateTime
 }

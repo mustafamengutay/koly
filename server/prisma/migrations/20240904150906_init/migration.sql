@@ -6,7 +6,6 @@ CREATE TABLE "Invitation" (
     "inviteeId" INTEGER NOT NULL,
     "status" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "expiresAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Invitation_pkey" PRIMARY KEY ("id")
 );
