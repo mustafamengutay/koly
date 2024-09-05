@@ -37,6 +37,13 @@ import {
 import { SearchService } from './services/search.service';
 import { SearchController } from './controllers/search.controller';
 
+import {
+  IInvitationRepository,
+  InvitationRepository,
+} from './repositories/invitation.repository';
+import { InvitationService } from './services/invitation.service';
+import { InvitationController } from './controllers/invitation.controller';
+
 const container = new Container();
 
 container.bind<IUserRepository>('IUserRepository').to(UserRepository);
@@ -57,5 +64,11 @@ container.bind<IssueController>(IssueController).toSelf();
 container.bind<ISearchRepository>('ISearchRepository').to(SearchRepository);
 container.bind<SearchService>(SearchService).toSelf();
 container.bind<SearchController>(SearchController).toSelf();
+
+container
+  .bind<IInvitationRepository>('IInvitationRepository')
+  .to(InvitationRepository);
+container.bind<InvitationService>(InvitationService).toSelf();
+container.bind<InvitationController>(InvitationController).toSelf();
 
 export default container;
