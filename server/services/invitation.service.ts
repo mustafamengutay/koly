@@ -48,6 +48,16 @@ export class InvitationService {
     );
   }
 
+  /**
+   * List user's project invitations. If any error occurs, it throws that
+   * specific error.
+   * @param userId User ID.
+   * @returns User's project invitations.
+   */
+  public async listReceivedInvitations(userId: number) {
+    return await this.invitationRepository.findReceivedInvitations(userId);
+  }
+
   public async ensureInvitationIsNotSent(inviteeId: number, projectId: number) {
     const invitation = await this.invitationRepository.findOne(
       projectId,

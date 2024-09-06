@@ -13,6 +13,7 @@ export interface IInvitationRepository {
     inviteeId: number
   ): Promise<any>;
   findOne(projectId: number, inviteeId: number): Promise<Invitation | null>;
+  findReceivedInvitations(userId: number): Promise<any>;
 }
 
 @injectable()
@@ -51,6 +52,35 @@ export class InvitationRepository implements IInvitationRepository {
       return invitation;
     } catch {
       throw new HttpError(500, 'Invitation could not be found');
+    }
+  }
+
+  public async findReceivedInvitations(userId: number) {
+    try {
+      const receivedInvitations = await prisma.invitation.findMany({
+        where: {
+          inviteeId: userId,
+        },
+        select: {
+          project: {
+            select: {
+              name: true,
+            },
+          },
+          inviter: {
+            select: {
+              name: true,
+              surname: true,
+            },
+          },
+          status: true,
+          createdAt: true,
+        },
+      });
+
+      return receivedInvitations;
+    } catch {
+      throw new HttpError(500, 'Received invitations could not be found');
     }
   }
 }

@@ -21,6 +21,7 @@ describe('InvitationService', () => {
     mockInvitationRepository = {
       sendProjectInvitation: jest.fn(),
       findOne: jest.fn(),
+      findReceivedInvitations: jest.fn(),
     };
 
     mockUserRepository = {
@@ -121,6 +122,36 @@ describe('InvitationService', () => {
       expect(
         mockInvitationRepository.sendProjectInvitation as jest.Mock
       ).toHaveBeenCalledWith(inviterId, projectId, inviteeId);
+    });
+  });
+
+  describe('listReceivedInvitations', () => {
+    const userId = 1;
+
+    it('should call findReceivedInvitations with invitee id', async () => {
+      await invitationService.listReceivedInvitations(userId);
+
+      expect(
+        mockInvitationRepository.findReceivedInvitations
+      ).toHaveBeenCalledWith(userId);
+    });
+
+    it('should return received invitations successfully', async () => {
+      const mockInvitation = {
+        id: 1,
+        inviterId: 1,
+        inviteeId: 2,
+      };
+      const mockReceivedInvitations = [mockInvitation, mockInvitation];
+
+      (
+        mockInvitationRepository.findReceivedInvitations as jest.Mock
+      ).mockResolvedValue(mockReceivedInvitations);
+
+      const receivedInvitations =
+        await invitationService.listReceivedInvitations(userId);
+
+      expect(receivedInvitations).toEqual(mockReceivedInvitations);
     });
   });
 

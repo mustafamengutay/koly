@@ -19,6 +19,7 @@ import projectRoutes from './routes/project.route';
 import issueRoutes from './routes/issue.route';
 import searchRoutes from './routes/search.route';
 import invitationRoutes from './routes/invitation.route';
+import userRoutes from './routes/user.route';
 
 if (cluster.isPrimary) {
   console.log(`Cluster Manager ${process.pid} is running`);
@@ -73,6 +74,7 @@ if (cluster.isPrimary) {
   app.use('/api/v1/projects', issueRoutes);
   app.use('/api/v1/projects', searchRoutes);
   app.use('/api/v1/projects', invitationRoutes);
+  app.use('/api/v1/user', userRoutes);
 
   app.use(errorHandler);
 

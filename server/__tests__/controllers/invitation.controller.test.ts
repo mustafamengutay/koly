@@ -23,6 +23,7 @@ describe('InvitationController', () => {
   let mockInvitationService: {
     inviteUserToProject: Function;
     ensureInvitationIsNotSent: Function;
+    listReceivedInvitations: Function;
   };
 
   beforeEach(() => {
@@ -32,6 +33,7 @@ describe('InvitationController', () => {
     mockInvitationService = {
       inviteUserToProject: jest.fn(),
       ensureInvitationIsNotSent: jest.fn(),
+      listReceivedInvitations: jest.fn(),
     };
 
     container = new Container();
@@ -102,6 +104,72 @@ describe('InvitationController', () => {
       ).mockRejectedValue(error);
 
       await invitationController.postInviteUserToProject(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe('getListReceivedInvitations', () => {
+    const userId = 1;
+
+    req = createRequest({
+      userId,
+      method: 'POST',
+      url: '/api/v1/user/invitation',
+    });
+
+    it('should call listReceivedInvitations service with user id', async () => {
+      await invitationController.getListReceivedInvitations(req, res, next);
+
+      expect(
+        mockInvitationService.listReceivedInvitations
+      ).toHaveBeenCalledWith(userId);
+    });
+
+    it('should return 200 status code on successful listing', async () => {
+      const mockInvitation = {
+        id: 1,
+        inviterId: 1,
+        inviteeId: 2,
+      };
+      const mockReceivedInvitations = [mockInvitation, mockInvitation];
+
+      (
+        mockInvitationService.listReceivedInvitations as jest.Mock
+      ).mockResolvedValue(mockReceivedInvitations);
+
+      await invitationController.getListReceivedInvitations(req, res, next);
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('should respond with a success status and data on successful listing', async () => {
+      const mockInvitation = {
+        id: 1,
+        inviterId: 1,
+        inviteeId: 2,
+      };
+      const mockReceivedInvitations = [mockInvitation, mockInvitation];
+
+      (
+        mockInvitationService.listReceivedInvitations as jest.Mock
+      ).mockResolvedValue(mockReceivedInvitations);
+
+      await invitationController.getListReceivedInvitations(req, res, next);
+
+      expect(res._getJSONData()).toHaveProperty('status', 'success');
+      expect(res._getJSONData()).toHaveProperty('data', {
+        receivedInvitations: mockReceivedInvitations,
+      });
+    });
+
+    it('should pass the error to the errorHandler if invitation fails', async () => {
+      const error = new Error('Fail');
+      (
+        mockInvitationService.listReceivedInvitations as jest.Mock
+      ).mockRejectedValue(error);
+
+      await invitationController.getListReceivedInvitations(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });

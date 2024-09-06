@@ -13,6 +13,7 @@ describe('InvitationRepository', () => {
   beforeEach(() => {
     prisma.invitation.create = jest.fn();
     prisma.invitation.findFirst = jest.fn();
+    prisma.invitation.findMany = jest.fn();
 
     invitationRepository = new InvitationRepository();
   });
@@ -97,6 +98,66 @@ describe('InvitationRepository', () => {
 
       await expect(
         invitationRepository.findOne(projectId, inviteeId)
+      ).rejects.toThrow(error);
+    });
+  });
+
+  describe('findReceivedInvitations', () => {
+    const userId = 1;
+
+    it('should call findMany with correct parameters', async () => {
+      await invitationRepository.findReceivedInvitations(userId);
+
+      expect(prisma.invitation.findMany as jest.Mock).toHaveBeenCalledWith({
+        where: {
+          inviteeId: userId,
+        },
+        select: {
+          project: {
+            select: {
+              name: true,
+            },
+          },
+          inviter: {
+            select: {
+              name: true,
+              surname: true,
+            },
+          },
+          status: true,
+          createdAt: true,
+        },
+      });
+    });
+
+    it('should find received invitations successfully', async () => {
+      const mockInvitation = {
+        id: 1,
+        inviterId: 1,
+        inviteeId: 2,
+      };
+      const mockReceivedInvitations = [mockInvitation, mockInvitation];
+
+      (prisma.invitation.findMany as jest.Mock).mockResolvedValue(
+        mockReceivedInvitations
+      );
+
+      const invitations = await invitationRepository.findReceivedInvitations(
+        userId
+      );
+
+      expect(invitations).toContain(mockInvitation);
+    });
+
+    it('should throw HttpError if findMany throws an error', async () => {
+      const error = new HttpError(
+        500,
+        'Received invitations could not be found'
+      );
+      (prisma.invitation.findMany as jest.Mock).mockRejectedValue(error);
+
+      await expect(
+        invitationRepository.findReceivedInvitations(userId)
       ).rejects.toThrow(error);
     });
   });

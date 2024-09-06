@@ -40,4 +40,26 @@ export class InvitationController {
       next(error);
     }
   };
+
+  public getListReceivedInvitations = async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const userId = req.userId!;
+
+    try {
+      const receivedInvitations =
+        await this.invitationService.listReceivedInvitations(userId);
+
+      res.status(200).json({
+        status: 'success',
+        data: {
+          receivedInvitations,
+        },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
