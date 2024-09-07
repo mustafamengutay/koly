@@ -54,16 +54,18 @@ describe('InvitationController', () => {
     const projectId = 1;
     const participantEmail = 'user@email.com';
 
-    req = createRequest({
-      userId,
-      method: 'POST',
-      url: '/api/v1/projects/1/invitation',
-      params: {
-        projectId,
-      },
-      body: {
-        participantEmail,
-      },
+    beforeEach(() => {
+      req = createRequest({
+        userId,
+        method: 'POST',
+        url: '/api/v1/projects/1/invitation',
+        params: {
+          projectId,
+        },
+        body: {
+          participantEmail,
+        },
+      });
     });
 
     it('should call inviteUserToProject service with correct parameters', async () => {
@@ -112,10 +114,12 @@ describe('InvitationController', () => {
   describe('getListReceivedInvitations', () => {
     const userId = 1;
 
-    req = createRequest({
-      userId,
-      method: 'POST',
-      url: '/api/v1/user/invitation',
+    beforeEach(() => {
+      req = createRequest({
+        userId,
+        method: 'POST',
+        url: '/api/v1/user/invitation',
+      });
     });
 
     it('should call listReceivedInvitations service with user id', async () => {
