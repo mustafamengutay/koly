@@ -22,6 +22,7 @@ describe('InvitationService', () => {
       sendProjectInvitation: jest.fn(),
       findOne: jest.fn(),
       findReceivedInvitations: jest.fn(),
+      makeUserProjectParticipant: jest.fn(),
     };
 
     mockUserRepository = {
@@ -152,6 +153,19 @@ describe('InvitationService', () => {
         await invitationService.listReceivedInvitations(userId);
 
       expect(receivedInvitations).toEqual(mockReceivedInvitations);
+    });
+  });
+
+  describe('acceptProjectInvitation', () => {
+    const participantId = 1;
+    const projectId = 1;
+
+    it('should call makeUserProjectParticipant with correct parameters', async () => {
+      await invitationService.acceptProjectInvitation(participantId, projectId);
+
+      expect(
+        mockInvitationRepository.makeUserProjectParticipant
+      ).toHaveBeenCalledWith(participantId, projectId);
     });
   });
 

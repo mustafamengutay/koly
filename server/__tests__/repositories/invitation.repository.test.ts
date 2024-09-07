@@ -14,6 +14,7 @@ describe('InvitationRepository', () => {
     prisma.invitation.create = jest.fn();
     prisma.invitation.findFirst = jest.fn();
     prisma.invitation.findMany = jest.fn();
+    prisma.project.update = jest.fn();
 
     invitationRepository = new InvitationRepository();
   });
@@ -115,6 +116,7 @@ describe('InvitationRepository', () => {
         select: {
           project: {
             select: {
+              id: true,
               name: true,
             },
           },
@@ -158,6 +160,43 @@ describe('InvitationRepository', () => {
 
       await expect(
         invitationRepository.findReceivedInvitations(userId)
+      ).rejects.toThrow(error);
+    });
+  });
+
+  describe('makeUserProjectParticipant', () => {
+    const participantId = 2;
+    const projectId = 1;
+
+    it('should call update with correct parameters', async () => {
+      await invitationRepository.makeUserProjectParticipant(
+        participantId,
+        projectId
+      );
+
+      expect(prisma.project.update as jest.Mock).toHaveBeenCalledWith({
+        where: {
+          id: projectId,
+        },
+        data: {
+          participants: {
+            connect: {
+              id: participantId,
+            },
+          },
+        },
+      });
+    });
+
+    it('should throw HttpError if create throws an error', async () => {
+      const error = new HttpError(500, 'Project could not be updated');
+      (prisma.project.update as jest.Mock).mockRejectedValue(error);
+
+      await expect(
+        invitationRepository.makeUserProjectParticipant(
+          participantId,
+          projectId
+        )
       ).rejects.toThrow(error);
     });
   });

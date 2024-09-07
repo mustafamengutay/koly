@@ -58,6 +58,21 @@ export class InvitationService {
     return await this.invitationRepository.findReceivedInvitations(userId);
   }
 
+  /**
+   * Accept a project invitation. If any error occurs, it throws that
+   * specific error.
+   * @param participantId User ID who is a participant of a project.
+   */
+  public async acceptProjectInvitation(
+    participantId: number,
+    projectId: number
+  ) {
+    await this.invitationRepository.makeUserProjectParticipant(
+      participantId,
+      projectId
+    );
+  }
+
   public async ensureInvitationIsNotSent(inviteeId: number, projectId: number) {
     const invitation = await this.invitationRepository.findOne(
       projectId,

@@ -24,6 +24,7 @@ describe('InvitationController', () => {
     inviteUserToProject: Function;
     ensureInvitationIsNotSent: Function;
     listReceivedInvitations: Function;
+    acceptProjectInvitation: Function;
   };
 
   beforeEach(() => {
@@ -34,6 +35,7 @@ describe('InvitationController', () => {
       inviteUserToProject: jest.fn(),
       ensureInvitationIsNotSent: jest.fn(),
       listReceivedInvitations: jest.fn(),
+      acceptProjectInvitation: jest.fn(),
     };
 
     container = new Container();
@@ -118,7 +120,7 @@ describe('InvitationController', () => {
       req = createRequest({
         userId,
         method: 'POST',
-        url: '/api/v1/user/invitation',
+        url: '/api/v1/user/invitations',
       });
     });
 
@@ -174,6 +176,54 @@ describe('InvitationController', () => {
       ).mockRejectedValue(error);
 
       await invitationController.getListReceivedInvitations(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe('patchAcceptProjectInvitation', () => {
+    const userId = 1;
+    const projectId = 1;
+
+    beforeEach(() => {
+      req = createRequest({
+        userId,
+        method: 'PATCH',
+        url: '/api/v1/user/invitations',
+        body: {
+          projectId,
+        },
+      });
+    });
+
+    it('should call acceptProjectInvitation service with correct parameters', async () => {
+      await invitationController.patchAcceptProjectInvitation(req, res, next);
+
+      expect(
+        mockInvitationService.acceptProjectInvitation
+      ).toHaveBeenCalledWith(userId, projectId);
+    });
+
+    it('should return 200 status code on successful acception', async () => {
+      await invitationController.patchAcceptProjectInvitation(req, res, next);
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('should respond with a success status and data on successful acception', async () => {
+      await invitationController.patchAcceptProjectInvitation(req, res, next);
+
+      expect(res._getJSONData()).toHaveProperty('status', 'success');
+      expect(res._getJSONData()).toHaveProperty('data', null);
+    });
+
+    it('should pass the error to the errorHandler if acception fails', async () => {
+      const error = new Error('Fail');
+      (
+        mockInvitationService.acceptProjectInvitation as jest.Mock
+      ).mockRejectedValue(error);
+
+      await invitationController.patchAcceptProjectInvitation(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });

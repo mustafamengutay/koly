@@ -62,4 +62,24 @@ export class InvitationController {
       next(error);
     }
   };
+
+  public patchAcceptProjectInvitation = async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const userId = req.userId!;
+    const { projectId } = req.body;
+
+    try {
+      await this.invitationService.acceptProjectInvitation(userId, projectId);
+
+      res.status(200).json({
+        status: 'success',
+        data: null,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }
