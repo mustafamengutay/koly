@@ -18,6 +18,7 @@ export interface IInvitationRepository {
     participantId: number,
     projectId: number
   ): Promise<undefined>;
+  removeInvitation(invitationId: number, userId: number): Promise<undefined>;
 }
 
 @injectable()
@@ -66,6 +67,7 @@ export class InvitationRepository implements IInvitationRepository {
           inviteeId: userId,
         },
         select: {
+          id: true,
           project: {
             select: {
               id: true,
@@ -108,6 +110,22 @@ export class InvitationRepository implements IInvitationRepository {
       });
     } catch {
       throw new HttpError(500, 'Project could not be updated');
+    }
+  }
+
+  public async removeInvitation(
+    userId: number,
+    invitationId: number
+  ): Promise<undefined> {
+    try {
+      await prisma.invitation.delete({
+        where: {
+          id: invitationId,
+          inviteeId: userId,
+        },
+      });
+    } catch {
+      throw new HttpError(500, 'Invitation could not be deleted');
     }
   }
 }

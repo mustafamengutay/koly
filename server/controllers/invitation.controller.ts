@@ -82,4 +82,27 @@ export class InvitationController {
       next(error);
     }
   };
+
+  public deleteRejectProjectInvitation = async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const invitationId = Number(req.params.invitationId);
+    const userId = req.userId!;
+
+    try {
+      await this.invitationService.rejectProjectInvitation(
+        userId,
+        invitationId
+      );
+
+      res.status(200).json({
+        status: 'success',
+        data: null,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

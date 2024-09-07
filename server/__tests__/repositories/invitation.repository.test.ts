@@ -12,6 +12,7 @@ describe('InvitationRepository', () => {
 
   beforeEach(() => {
     prisma.invitation.create = jest.fn();
+    prisma.invitation.delete = jest.fn();
     prisma.invitation.findFirst = jest.fn();
     prisma.invitation.findMany = jest.fn();
     prisma.project.update = jest.fn();
@@ -114,6 +115,7 @@ describe('InvitationRepository', () => {
           inviteeId: userId,
         },
         select: {
+          id: true,
           project: {
             select: {
               id: true,
@@ -188,7 +190,7 @@ describe('InvitationRepository', () => {
       });
     });
 
-    it('should throw HttpError if create throws an error', async () => {
+    it('should throw HttpError if update throws an error', async () => {
       const error = new HttpError(500, 'Project could not be updated');
       (prisma.project.update as jest.Mock).mockRejectedValue(error);
 
@@ -197,6 +199,31 @@ describe('InvitationRepository', () => {
           participantId,
           projectId
         )
+      ).rejects.toThrow(error);
+    });
+  });
+
+  describe('removeInvitation', () => {
+    const invitationId = 2;
+    const userId = 1;
+
+    it('should call delete with correct parameters', async () => {
+      await invitationRepository.removeInvitation(userId, invitationId);
+
+      expect(prisma.invitation.delete as jest.Mock).toHaveBeenCalledWith({
+        where: {
+          id: invitationId,
+          inviteeId: userId,
+        },
+      });
+    });
+
+    it('should throw HttpError if delete throws an error', async () => {
+      const error = new HttpError(500, 'Invitation could not be deleted');
+      (prisma.invitation.delete as jest.Mock).mockRejectedValue(error);
+
+      await expect(
+        invitationRepository.removeInvitation(userId, invitationId)
       ).rejects.toThrow(error);
     });
   });

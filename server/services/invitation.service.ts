@@ -61,7 +61,7 @@ export class InvitationService {
   /**
    * Accept a project invitation. If any error occurs, it throws that
    * specific error.
-   * @param participantId User ID who is a participant of a project.
+   * @param participantId User ID who received an invitation
    */
   public async acceptProjectInvitation(
     participantId: number,
@@ -71,6 +71,15 @@ export class InvitationService {
       participantId,
       projectId
     );
+  }
+
+  /**
+   * Reject a project invitation. If any error occurs, it throws that
+   * specific error.
+   * @param participantId User ID who received an invitation.
+   */
+  public async rejectProjectInvitation(userId: number, invitationId: number) {
+    await this.invitationRepository.removeInvitation(invitationId, userId);
   }
 
   public async ensureInvitationIsNotSent(inviteeId: number, projectId: number) {

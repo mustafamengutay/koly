@@ -23,6 +23,7 @@ describe('InvitationService', () => {
       findOne: jest.fn(),
       findReceivedInvitations: jest.fn(),
       makeUserProjectParticipant: jest.fn(),
+      removeInvitation: jest.fn(),
     };
 
     mockUserRepository = {
@@ -166,6 +167,20 @@ describe('InvitationService', () => {
       expect(
         mockInvitationRepository.makeUserProjectParticipant
       ).toHaveBeenCalledWith(participantId, projectId);
+    });
+  });
+
+  describe('rejectProjectInvitation', () => {
+    const invitationId = 1;
+    const userId = 1;
+
+    it('should call removeInvitation with correct parameters', async () => {
+      await invitationService.rejectProjectInvitation(userId, invitationId);
+
+      expect(mockInvitationRepository.removeInvitation).toHaveBeenCalledWith(
+        invitationId,
+        userId
+      );
     });
   });
 

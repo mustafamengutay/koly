@@ -25,6 +25,7 @@ describe('InvitationController', () => {
     ensureInvitationIsNotSent: Function;
     listReceivedInvitations: Function;
     acceptProjectInvitation: Function;
+    rejectProjectInvitation: Function;
   };
 
   beforeEach(() => {
@@ -36,6 +37,7 @@ describe('InvitationController', () => {
       ensureInvitationIsNotSent: jest.fn(),
       listReceivedInvitations: jest.fn(),
       acceptProjectInvitation: jest.fn(),
+      rejectProjectInvitation: jest.fn(),
     };
 
     container = new Container();
@@ -224,6 +226,54 @@ describe('InvitationController', () => {
       ).mockRejectedValue(error);
 
       await invitationController.patchAcceptProjectInvitation(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe('deleteRejectProjectInvitation', () => {
+    const invitationId = 1;
+    const userId = 1;
+
+    beforeEach(() => {
+      req = createRequest({
+        userId,
+        method: 'DELETE',
+        url: '/api/v1/user/invitations/1',
+        params: {
+          invitationId,
+        },
+      });
+    });
+
+    it('should call rejectProjectInvitation service with correct parameters', async () => {
+      await invitationController.deleteRejectProjectInvitation(req, res, next);
+
+      expect(
+        mockInvitationService.rejectProjectInvitation
+      ).toHaveBeenCalledWith(userId, invitationId);
+    });
+
+    it('should return 200 status code on successful rejection', async () => {
+      await invitationController.deleteRejectProjectInvitation(req, res, next);
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('should respond with a success status and data on successful rejection', async () => {
+      await invitationController.deleteRejectProjectInvitation(req, res, next);
+
+      expect(res._getJSONData()).toHaveProperty('status', 'success');
+      expect(res._getJSONData()).toHaveProperty('data', null);
+    });
+
+    it('should pass the error to the errorHandler if rejection fails', async () => {
+      const error = new Error('Fail');
+      (
+        mockInvitationService.rejectProjectInvitation as jest.Mock
+      ).mockRejectedValue(error);
+
+      await invitationController.deleteRejectProjectInvitation(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });
