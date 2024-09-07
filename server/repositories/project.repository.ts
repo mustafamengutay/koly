@@ -13,6 +13,10 @@ export interface IProjectRepository {
   listCreatedProjects(userId: number): Promise<Project[]>;
   listParticipatedProjects(userId: number): Promise<Project[]>;
   updateName(projectId: number, name: string): Promise<Project>;
+  disconnectParticipantFromProject(
+    participantId: number,
+    projectId: number
+  ): Promise<undefined>;
   findProjectOwner(userId: number, projectId: number): Promise<User | null>;
   findParticipant(userId: number, projectId: number): Promise<User | null>;
 }
@@ -161,6 +165,26 @@ export class ProjectRepository implements IProjectRepository {
       return updatedProject;
     } catch {
       throw new HttpError(500, 'Project could not be updated');
+    }
+  }
+
+  public async disconnectParticipantFromProject(
+    participantId: number,
+    projectId: number
+  ): Promise<undefined> {
+    try {
+      await prisma.user.update({
+        where: {
+          id: participantId,
+        },
+        data: {
+          participatedProjects: {
+            disconnect: [{ id: projectId }],
+          },
+        },
+      });
+    } catch {
+      throw new HttpError(500, 'User could not be removed from the project');
     }
   }
 

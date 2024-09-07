@@ -15,6 +15,7 @@ describe('ProjectRepository', () => {
     prisma.project.update = jest.fn();
     prisma.project.findMany = jest.fn();
     prisma.user.findMany = jest.fn();
+    prisma.user.update = jest.fn();
 
     projectRepository = new ProjectRepository();
   });
@@ -289,6 +290,44 @@ describe('ProjectRepository', () => {
       await expect(
         projectRepository.findParticipant(userId, projectId)
       ).rejects.toThrow(new HttpError(500, 'User could not be found'));
+    });
+  });
+
+  describe('disconnectParticipantFromProject', () => {
+    const participantId = 1;
+    const projectId = 1;
+
+    it('should call update with correct parameters', async () => {
+      await projectRepository.disconnectParticipantFromProject(
+        participantId,
+        projectId
+      );
+
+      expect(prisma.user.update as jest.Mock).toHaveBeenCalledWith({
+        where: {
+          id: participantId,
+        },
+        data: {
+          participatedProjects: {
+            disconnect: [{ id: projectId }],
+          },
+        },
+      });
+    });
+
+    it('should throw HttpError if update throws an error', async () => {
+      const error = new HttpError(
+        500,
+        'User could not be removed from the project'
+      );
+      (prisma.user.update as jest.Mock).mockRejectedValue(error);
+
+      await expect(
+        projectRepository.disconnectParticipantFromProject(
+          participantId,
+          projectId
+        )
+      ).rejects.toThrow(error);
     });
   });
 });

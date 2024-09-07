@@ -92,6 +92,24 @@ export class ProjectService {
     return await this.projectRepository.updateName(projectId, name);
   }
 
+  /**
+   * Remove participant from the project. If any error occurs, it throws the error.
+   * @param name Owner ID.
+   * @param projectId Project ID.
+   * @param participantId User ID who is a participant of the project.
+   */
+  public async removeParticipantFromProject(
+    ownerId: number,
+    projectId: number,
+    participantId: number
+  ) {
+    await this.ensureUserIsProjectOwner(ownerId, projectId);
+    return await this.projectRepository.disconnectParticipantFromProject(
+      participantId,
+      projectId
+    );
+  }
+
   public async ensureUserIsProjectOwner(userId: number, projectId: number) {
     const isOwner = await this.projectRepository.findProjectOwner(
       userId,

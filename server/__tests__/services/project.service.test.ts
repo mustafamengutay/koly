@@ -20,6 +20,7 @@ describe('ProjectService', () => {
       listCreatedProjects: jest.fn(),
       listParticipatedProjects: jest.fn(),
       updateName: jest.fn(),
+      disconnectParticipantFromProject: jest.fn(),
       findParticipant: jest.fn(),
       findProjectOwner: jest.fn(),
     };
@@ -298,6 +299,41 @@ describe('ProjectService', () => {
       );
 
       expect(removedProject).toEqual(project);
+    });
+  });
+
+  describe('removeParticipantFromProject', () => {
+    const ownerId = 1;
+    const projectId = 1;
+    const participantId = 1;
+
+    beforeEach(() => {
+      projectService.ensureUserIsProjectOwner = jest.fn();
+    });
+
+    it('should call ensureUserIsProjectOwner with ownerId', async () => {
+      await projectService.removeParticipantFromProject(
+        ownerId,
+        projectId,
+        participantId
+      );
+
+      expect(projectService.ensureUserIsProjectOwner).toHaveBeenCalledWith(
+        ownerId,
+        projectId
+      );
+    });
+
+    it('should call disconnectParticipantFromProject with correct parameters', async () => {
+      await projectService.removeParticipantFromProject(
+        ownerId,
+        projectId,
+        participantId
+      );
+
+      expect(
+        mockProjectRepository.disconnectParticipantFromProject
+      ).toHaveBeenCalledWith(participantId, projectId);
     });
   });
 });

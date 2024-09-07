@@ -29,6 +29,7 @@ describe('Project Controllers', () => {
     listParticipatedProjects: jest.fn(),
     updateProjectName: jest.fn(),
     validateUserParticipation: jest.fn(),
+    removeParticipantFromProject: jest.fn(),
   };
 
   beforeEach(() => {
@@ -382,6 +383,70 @@ describe('Project Controllers', () => {
       mockProjectService.updateProjectName.mockRejectedValue(error);
 
       await projectController.patchUpdateProjectName(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe('deleteRemoveParticipantFromProject', () => {
+    const userId = 1;
+    const projectId = 1;
+    const participantId = 2;
+
+    beforeEach(() => {
+      req = createRequest({
+        userId: userId,
+        method: 'DELETE',
+        url: '/api/v1/projects/1/participants/2',
+        params: {
+          projectId,
+          participantId,
+        },
+      });
+    });
+
+    it('should call removeParticipantFromProject service with correct parameters', async () => {
+      await projectController.deleteRemoveParticipantFromProject(
+        req,
+        res,
+        next
+      );
+
+      expect(
+        mockProjectService.removeParticipantFromProject
+      ).toHaveBeenCalledWith(userId, projectId, participantId);
+    });
+
+    it('should return 200 status code successful deleting', async () => {
+      await projectController.deleteRemoveParticipantFromProject(
+        req,
+        res,
+        next
+      );
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('should respond with success status and data on successful deleting', async () => {
+      await projectController.deleteRemoveParticipantFromProject(
+        req,
+        res,
+        next
+      );
+
+      expect(res._getJSONData()).toHaveProperty('status', 'success');
+      expect(res._getJSONData()).toHaveProperty('data', null);
+    });
+
+    it('should pass the error to the error handler if deleting fails', async () => {
+      const error = new Error('Fail');
+      mockProjectService.removeParticipantFromProject.mockRejectedValue(error);
+
+      await projectController.deleteRemoveParticipantFromProject(
+        req,
+        res,
+        next
+      );
 
       expect(next).toHaveBeenCalledWith(error);
     });
