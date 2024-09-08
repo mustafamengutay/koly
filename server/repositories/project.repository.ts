@@ -72,6 +72,7 @@ export class ProjectRepository implements IProjectRepository {
           },
         },
         select: {
+          id: true,
           name: true,
           surname: true,
           email: true,
