@@ -12,13 +12,13 @@ export interface IInvitationRepository {
     projectId: number,
     inviteeId: number
   ): Promise<any>;
-  findOne(projectId: number, inviteeId: number): Promise<Invitation | null>;
+  findOne(inviteeId: number, projectId: number): Promise<Invitation | null>;
   findReceivedInvitations(userId: number): Promise<any>;
   makeUserProjectParticipant(
     participantId: number,
     projectId: number
   ): Promise<undefined>;
-  removeInvitation(invitationId: number, userId: number): Promise<undefined>;
+  removeInvitation(userId: number, invitationId: number): Promise<undefined>;
 }
 
 @injectable()
@@ -43,8 +43,8 @@ export class InvitationRepository implements IInvitationRepository {
   }
 
   public async findOne(
-    projectId: number,
-    inviteeId: number
+    inviteeId: number,
+    projectId: number
   ): Promise<Invitation | null> {
     try {
       const invitation = await prisma.invitation.findFirst({

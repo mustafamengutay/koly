@@ -71,6 +71,16 @@ export class InvitationService {
       participantId,
       projectId
     );
+
+    const invitation = await this.invitationRepository.findOne(
+      participantId,
+      projectId
+    );
+
+    await this.invitationRepository.removeInvitation(
+      participantId,
+      invitation!.id
+    );
   }
 
   /**
@@ -84,8 +94,8 @@ export class InvitationService {
 
   public async ensureInvitationIsNotSent(inviteeId: number, projectId: number) {
     const invitation = await this.invitationRepository.findOne(
-      projectId,
-      inviteeId
+      inviteeId,
+      projectId
     );
     if (invitation) {
       throw new HttpError(409, 'Invitation is already sent to the user');

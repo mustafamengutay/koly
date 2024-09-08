@@ -160,6 +160,13 @@ describe('InvitationService', () => {
   describe('acceptProjectInvitation', () => {
     const participantId = 1;
     const projectId = 1;
+    const invitation = { id: 1 };
+
+    beforeEach(() => {
+      (mockInvitationRepository.findOne as jest.Mock).mockResolvedValue(
+        invitation
+      );
+    });
 
     it('should call makeUserProjectParticipant with correct parameters', async () => {
       await invitationService.acceptProjectInvitation(participantId, projectId);
@@ -167,6 +174,24 @@ describe('InvitationService', () => {
       expect(
         mockInvitationRepository.makeUserProjectParticipant
       ).toHaveBeenCalledWith(participantId, projectId);
+    });
+
+    it('should call findOne with correct parameters', async () => {
+      await invitationService.acceptProjectInvitation(participantId, projectId);
+
+      expect(mockInvitationRepository.findOne).toHaveBeenCalledWith(
+        participantId,
+        projectId
+      );
+    });
+
+    it('should call removeInvitation with correct parameters', async () => {
+      await invitationService.acceptProjectInvitation(participantId, projectId);
+
+      expect(mockInvitationRepository.removeInvitation).toHaveBeenCalledWith(
+        invitation.id,
+        participantId
+      );
     });
   });
 
@@ -203,7 +228,7 @@ describe('InvitationService', () => {
 
       expect(
         mockInvitationRepository.findOne as jest.Mock
-      ).toHaveBeenCalledWith(projectId, inviteeId);
+      ).toHaveBeenCalledWith(inviteeId, projectId);
     });
 
     it('should call pass the method if there is no invitation', async () => {
