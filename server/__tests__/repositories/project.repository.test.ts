@@ -29,7 +29,7 @@ describe('ProjectRepository', () => {
     const userId: number = 1;
     const project = {
       id: 1,
-      ownerId: userId,
+      leaders: [userId],
       name: 'Project 1',
     };
 
@@ -58,7 +58,7 @@ describe('ProjectRepository', () => {
   describe('removeProject', () => {
     const project = {
       id: 1,
-      ownerId: 1,
+      leaders: [1],
       name: 'Project 1',
     };
     const projects = [project];
@@ -117,7 +117,7 @@ describe('ProjectRepository', () => {
     const userId: number = 1;
     const project = {
       id: 1,
-      ownerId: userId,
+      leaders: [userId],
       name: 'Project 1',
     };
 
@@ -145,7 +145,7 @@ describe('ProjectRepository', () => {
     const userId = 1;
     const project = {
       id: 1,
-      ownerId: 3,
+      leaders: [3],
       name: 'Project 1',
     };
 
@@ -173,7 +173,7 @@ describe('ProjectRepository', () => {
     const userId = 1;
     const project = {
       id: 1,
-      ownerId: 3,
+      leaders: [3],
       name: 'Project 1',
     };
 
@@ -202,7 +202,7 @@ describe('ProjectRepository', () => {
     const newProjectName = 'new name';
     const project = {
       id: 1,
-      ownerId: 3,
+      leaders: [3],
       name: 'Project 1',
     };
 
@@ -230,10 +230,10 @@ describe('ProjectRepository', () => {
     });
   });
 
-  describe('findOwner', () => {
+  describe('findProjectLeader', () => {
     const projectId = 1;
     const userId = 1;
-    const mockOwner = {
+    const projectLeader = {
       id: userId,
       name: 'Jack',
     };
@@ -242,20 +242,23 @@ describe('ProjectRepository', () => {
       prisma.user.findUnique = jest.fn();
     });
 
-    it('should find a user who is the owner of the project', async () => {
-      (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockOwner);
+    it('should find a user who is a project leader of the project', async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue(projectLeader);
 
-      const owner = await projectRepository.findProjectOwner(userId, projectId);
+      const isProjectLeader = await projectRepository.findProjectLeader(
+        userId,
+        projectId
+      );
 
-      expect(owner).toEqual(mockOwner);
+      expect(projectLeader).toEqual(projectLeader);
     });
 
-    it('should throw an error if the user is not an owner of the project', async () => {
+    it('should throw an error if the user is not a project leader of the project', async () => {
       const error = new Error('Fail');
       (prisma.user.findUnique as jest.Mock).mockRejectedValue(error);
 
       await expect(
-        projectRepository.findProjectOwner(userId, projectId)
+        projectRepository.findProjectLeader(userId, projectId)
       ).rejects.toThrow(new HttpError(500, 'User could not be found'));
     });
   });

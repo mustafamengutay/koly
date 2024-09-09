@@ -5,7 +5,7 @@ model User {
   email                String       @unique
   password             String
   role                 String?
-  projects             Project[]    @relation("OwnedProjects")
+  projects             Project[]    @relation("LeadingProjects")
   participatedProjects Project[]
   reportedIssues       Issue[]      @relation("ReportedIssues")
   adoptedIssues        Issue[]      @relation("AdoptedIssues")

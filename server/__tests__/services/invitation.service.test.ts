@@ -13,7 +13,7 @@ describe('InvitationService', () => {
 
   let mockInvitationRepository: IInvitationRepository;
   let mockUserRepository: Pick<IUserRepository, 'findUserByEmail'>;
-  let mockProjectService: Pick<ProjectService, 'ensureUserIsProjectOwner'>;
+  let mockProjectService: Pick<ProjectService, 'ensureUserIsProjectLeader'>;
 
   let invitationService: InvitationService;
 
@@ -31,7 +31,7 @@ describe('InvitationService', () => {
     };
 
     mockProjectService = {
-      ensureUserIsProjectOwner: jest.fn(),
+      ensureUserIsProjectLeader: jest.fn(),
     };
 
     container = new Container();
@@ -40,7 +40,7 @@ describe('InvitationService', () => {
       .toConstantValue(mockInvitationRepository);
     container.bind('IUserRepository').toConstantValue(mockUserRepository);
     container
-      .bind<Pick<ProjectService, 'ensureUserIsProjectOwner'>>(ProjectService)
+      .bind<Pick<ProjectService, 'ensureUserIsProjectLeader'>>(ProjectService)
       .toConstantValue(mockProjectService);
     container.bind(InvitationService).toSelf();
 
@@ -64,7 +64,7 @@ describe('InvitationService', () => {
       invitationService.ensureInvitationIsNotSent = jest.fn();
     });
 
-    it('should call ensureUserIsProjectOwner with correct parameters', async () => {
+    it('should call ensureUserIsProjectLeader with correct parameters', async () => {
       await invitationService.inviteUserToProject(
         inviterId,
         projectId,
@@ -72,7 +72,7 @@ describe('InvitationService', () => {
       );
 
       expect(
-        mockProjectService.ensureUserIsProjectOwner as jest.Mock
+        mockProjectService.ensureUserIsProjectLeader as jest.Mock
       ).toHaveBeenCalledWith(inviterId, projectId);
     });
 

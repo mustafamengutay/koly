@@ -17,7 +17,7 @@ export interface IProjectRepository {
     participantId: number,
     projectId: number
   ): Promise<undefined>;
-  findProjectOwner(userId: number, projectId: number): Promise<User | null>;
+  findProjectLeader(userId: number, projectId: number): Promise<User | null>;
   findParticipant(userId: number, projectId: number): Promise<User | null>;
 }
 
@@ -28,7 +28,7 @@ export class ProjectRepository implements IProjectRepository {
       const newProject: Project = await prisma.project.create({
         data: {
           name,
-          owner: {
+          leaders: {
             connect: {
               id: userId,
             },
@@ -111,8 +111,10 @@ export class ProjectRepository implements IProjectRepository {
     try {
       const createdProjects: Project[] = await prisma.project.findMany({
         where: {
-          owner: {
-            id: userId,
+          leaders: {
+            some: {
+              id: userId,
+            },
           },
         },
         orderBy: {
@@ -135,9 +137,11 @@ export class ProjectRepository implements IProjectRepository {
               id: userId,
             },
           },
-          owner: {
-            isNot: {
-              id: userId,
+          leaders: {
+            some: {
+              id: {
+                not: userId,
+              },
             },
           },
         },
@@ -189,24 +193,28 @@ export class ProjectRepository implements IProjectRepository {
     }
   }
 
-  public async findProjectOwner(
+  public async findProjectLeader(
     userId: number,
     projectId: number
   ): Promise<User | null> {
     try {
-      const owner = await prisma.user.findUnique({
+      const projectLeader = await prisma.user.findUnique({
         where: {
           id: userId,
           participatedProjects: {
             some: {
               id: projectId,
-              ownerId: userId,
+              leaders: {
+                some: {
+                  id: userId,
+                },
+              },
             },
           },
         },
       });
 
-      return owner;
+      return projectLeader;
     } catch {
       throw new HttpError(500, 'User could not be found');
     }

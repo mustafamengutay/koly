@@ -32,7 +32,7 @@ export class ProjectService {
    * @returns Removed Project.
    */
   public async removeProject(userId: number, projectId: number) {
-    await this.ensureUserIsProjectOwner(userId, projectId);
+    await this.ensureUserIsProjectLeader(userId, projectId);
     return await this.projectRepository.removeProject(projectId);
   }
 
@@ -88,35 +88,35 @@ export class ProjectService {
     projectId: number,
     name: string
   ) {
-    await this.ensureUserIsProjectOwner(userId, projectId);
+    await this.ensureUserIsProjectLeader(userId, projectId);
     return await this.projectRepository.updateName(projectId, name);
   }
 
   /**
    * Remove participant from the project. If any error occurs, it throws the error.
-   * @param name Owner ID.
+   * @param projectLeaderId Project Leader ID.
    * @param projectId Project ID.
    * @param participantId User ID who is a participant of the project.
    */
   public async removeParticipantFromProject(
-    ownerId: number,
+    projectLeaderId: number,
     projectId: number,
     participantId: number
   ) {
-    await this.ensureUserIsProjectOwner(ownerId, projectId);
+    await this.ensureUserIsProjectLeader(projectLeaderId, projectId);
     return await this.projectRepository.disconnectParticipantFromProject(
       participantId,
       projectId
     );
   }
 
-  public async ensureUserIsProjectOwner(userId: number, projectId: number) {
-    const isOwner = await this.projectRepository.findProjectOwner(
+  public async ensureUserIsProjectLeader(userId: number, projectId: number) {
+    const isProjectLeader = await this.projectRepository.findProjectLeader(
       userId,
       projectId
     );
-    if (!isOwner) {
-      throw new HttpError(409, 'User is not the owner of the project');
+    if (!isProjectLeader) {
+      throw new HttpError(409, 'User is not the project leader of the project');
     }
   }
 

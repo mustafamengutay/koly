@@ -24,16 +24,19 @@ export class InvitationService {
 
   /**
    * Invite a user to a project. If any error occurs, it throws the error.
-   * @param ownerId User ID who is the owner of the project.
+   * @param projectLeaderId User ID who is the project leader of the project.
    * @param projectId Project ID.
    * @param participantEmail Participant Email.
    */
   public async inviteUserToProject(
-    ownerId: number,
+    projectLeaderId: number,
     projectId: number,
     participantEmail: string
   ) {
-    await this.projectService.ensureUserIsProjectOwner(ownerId, projectId);
+    await this.projectService.ensureUserIsProjectLeader(
+      projectLeaderId,
+      projectId
+    );
 
     const user = await this.userRepository.findUserByEmail(participantEmail);
     if (!user) {
@@ -42,7 +45,7 @@ export class InvitationService {
 
     await this.ensureInvitationIsNotSent(user.id, projectId);
     await this.invitationRepository.sendProjectInvitation(
-      ownerId,
+      projectLeaderId,
       projectId,
       user.id
     );

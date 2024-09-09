@@ -29,7 +29,6 @@ CREATE TABLE "Issue" (
 -- CreateTable
 CREATE TABLE "Project" (
     "id" SERIAL NOT NULL,
-    "ownerId" INTEGER NOT NULL,
     "name" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -52,6 +51,12 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
+CREATE TABLE "_LeadingProjects" (
+    "A" INTEGER NOT NULL,
+    "B" INTEGER NOT NULL
+);
+
+-- CreateTable
 CREATE TABLE "_ProjectToUser" (
     "A" INTEGER NOT NULL,
     "B" INTEGER NOT NULL
@@ -62,6 +67,12 @@ CREATE UNIQUE INDEX "Project_name_key" ON "Project"("name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_LeadingProjects_AB_unique" ON "_LeadingProjects"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_LeadingProjects_B_index" ON "_LeadingProjects"("B");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "_ProjectToUser_AB_unique" ON "_ProjectToUser"("A", "B");
@@ -88,7 +99,10 @@ ALTER TABLE "Issue" ADD CONSTRAINT "Issue_reportedById_fkey" FOREIGN KEY ("repor
 ALTER TABLE "Issue" ADD CONSTRAINT "Issue_adoptedById_fkey" FOREIGN KEY ("adoptedById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Project" ADD CONSTRAINT "Project_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "_LeadingProjects" ADD CONSTRAINT "_LeadingProjects_A_fkey" FOREIGN KEY ("A") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_LeadingProjects" ADD CONSTRAINT "_LeadingProjects_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_ProjectToUser" ADD CONSTRAINT "_ProjectToUser_A_fkey" FOREIGN KEY ("A") REFERENCES "Project"("id") ON DELETE CASCADE ON UPDATE CASCADE;

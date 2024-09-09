@@ -1,7 +1,6 @@
 model Project {
   id           Int          @id @default(autoincrement())
-  owner        User         @relation("OwnedProjects", fields: [ownerId], references: [id])
-  ownerId      Int
+  leaders      User[]       @relation("LeadingProjects")
   participants User[]
   issues       Issue[]
   invitations  Invitation[]

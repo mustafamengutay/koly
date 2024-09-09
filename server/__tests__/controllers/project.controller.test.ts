@@ -52,7 +52,7 @@ describe('Project Controllers', () => {
 
     const project = {
       id: 1,
-      ownerId: userId,
+      leaders: [userId],
       name: 'project1',
     };
 
@@ -97,7 +97,7 @@ describe('Project Controllers', () => {
     const userId = 3;
     const project = {
       id: 1,
-      ownerId: userId,
+      leaders: [userId],
       name: 'project1',
     };
 
@@ -194,12 +194,12 @@ describe('Project Controllers', () => {
     const projects = [
       {
         id: 1,
-        ownerId: userId,
+        leaders: [userId],
         name: 'project1',
       },
       {
         id: 2,
-        ownerId: userId,
+        leaders: [userId],
         name: 'project2',
       },
     ];
@@ -243,7 +243,7 @@ describe('Project Controllers', () => {
 
     const project = {
       id: 1,
-      ownerId: 1,
+      leaders: [1],
       name: 'Project 1',
     };
 
@@ -288,7 +288,7 @@ describe('Project Controllers', () => {
 
     const project = {
       id: 1,
-      ownerId: 1,
+      leaders: [1],
       name: 'Project 1',
     };
 
@@ -332,7 +332,7 @@ describe('Project Controllers', () => {
     const userId = 3;
     const project = {
       id: 1,
-      ownerId: 1,
+      leaders: [1],
       name: 'Project 1',
     };
     const newProjectName = 'New Project Name';
