@@ -89,7 +89,7 @@ export class InvitationService {
    * @param participantId User ID who received an invitation.
    */
   public async rejectProjectInvitation(userId: number, invitationId: number) {
-    await this.invitationRepository.removeInvitation(invitationId, userId);
+    await this.invitationRepository.removeInvitation(userId, invitationId);
   }
 
   public async ensureInvitationIsNotSent(inviteeId: number, projectId: number) {
