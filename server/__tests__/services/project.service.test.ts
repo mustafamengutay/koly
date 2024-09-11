@@ -83,9 +83,6 @@ describe('ProjectService', () => {
     });
 
     it('should return a list of users who are participants of a project', async () => {
-      (projectService.ensureUserIsParticipant as jest.Mock).mockResolvedValue(
-        true
-      );
       (mockProjectRepository.listParticipants as jest.Mock).mockResolvedValue([
         participant,
         participant,
@@ -180,9 +177,6 @@ describe('ProjectService', () => {
     });
 
     it('should validate project leader before searching', async () => {
-      (projectService.ensureUserIsProjectLeader as jest.Mock).mockResolvedValue(
-        true
-      );
       (mockProjectRepository.updateName as jest.Mock).mockResolvedValue({
         ...mockProject,
         name: newProjectName,
@@ -201,9 +195,6 @@ describe('ProjectService', () => {
     });
 
     it('should call updateName with correct parameters', async () => {
-      (projectService.ensureUserIsProjectLeader as jest.Mock).mockResolvedValue(
-        true
-      );
       (mockProjectRepository.updateName as jest.Mock).mockResolvedValue({
         ...mockProject,
         name: newProjectName,
@@ -222,9 +213,6 @@ describe('ProjectService', () => {
     });
 
     it('should return the result from the repository', async () => {
-      (projectService.ensureUserIsProjectLeader as jest.Mock).mockResolvedValue(
-        true
-      );
       (mockProjectRepository.updateName as jest.Mock).mockResolvedValue({
         ...mockProject,
         name: newProjectName,
@@ -259,24 +247,16 @@ describe('ProjectService', () => {
     });
 
     it('should validate project leader before removing', async () => {
-      (projectService.ensureUserIsProjectLeader as jest.Mock).mockResolvedValue(
-        true
-      );
       (mockProjectRepository.removeProject as jest.Mock).mockResolvedValue(
         project
       );
 
       await projectService.removeProject(userId, project.id);
 
-      expect(mockProjectRepository.removeProject).toHaveBeenCalledWith(
-        project.id
-      );
+      expect(projectService.ensureUserIsProjectLeader).toHaveBeenCalled();
     });
 
     it('should call removeProject with correct parameters', async () => {
-      (projectService.ensureUserIsProjectLeader as jest.Mock).mockResolvedValue(
-        true
-      );
       (mockProjectRepository.removeProject as jest.Mock).mockResolvedValue(
         project
       );
@@ -289,9 +269,6 @@ describe('ProjectService', () => {
     });
 
     it('should return the result from the repository', async () => {
-      (projectService.ensureUserIsProjectLeader as jest.Mock).mockResolvedValue(
-        true
-      );
       (mockProjectRepository.removeProject as jest.Mock).mockResolvedValue(
         project
       );
