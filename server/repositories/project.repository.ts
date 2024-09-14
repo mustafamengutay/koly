@@ -18,6 +18,7 @@ export interface IProjectRepository {
     projectId: number
   ): Promise<undefined>;
   findProjectLeader(userId: number, projectId: number): Promise<User | null>;
+  findAllProjectLeaders(projectId: number): Promise<any[] | null>;
   findParticipant(userId: number, projectId: number): Promise<User | null>;
 }
 
@@ -217,6 +218,29 @@ export class ProjectRepository implements IProjectRepository {
       return projectLeader;
     } catch {
       throw new HttpError(500, 'User could not be found');
+    }
+  }
+
+  public async findAllProjectLeaders(projectId: number): Promise<any[] | null> {
+    try {
+      const projectLeaders = await prisma.project.findMany({
+        where: {
+          id: projectId,
+        },
+        select: {
+          leaders: {
+            select: {
+              id: true,
+              name: true,
+              surname: true,
+            },
+          },
+        },
+      });
+
+      return projectLeaders;
+    } catch {
+      throw new HttpError(500, 'Project Leaders could not be found');
     }
   }
 

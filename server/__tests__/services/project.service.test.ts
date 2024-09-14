@@ -23,6 +23,7 @@ describe('ProjectService', () => {
       disconnectParticipantFromProject: jest.fn(),
       findParticipant: jest.fn(),
       findProjectLeader: jest.fn(),
+      findAllProjectLeaders: jest.fn(),
     };
 
     container = new Container();
@@ -304,6 +305,54 @@ describe('ProjectService', () => {
       );
     });
 
+    it('should call findProjectLeader with correct parameters', async () => {
+      await projectService.removeParticipantFromProject(
+        projectLeaderId,
+        projectId,
+        participantId
+      );
+
+      expect(mockProjectRepository.findProjectLeader).toHaveBeenCalledWith(
+        participantId,
+        projectId
+      );
+    });
+
+    it('should call findAllProjectLeaders with projectId if a project leader exist', async () => {
+      (mockProjectRepository.findProjectLeader as jest.Mock).mockResolvedValue({
+        id: 1,
+      });
+      (
+        mockProjectRepository.findAllProjectLeaders as jest.Mock
+      ).mockResolvedValue([{ id: 1 }, { id: 2 }]);
+
+      await projectService.removeParticipantFromProject(
+        projectLeaderId,
+        projectId,
+        participantId
+      );
+
+      expect(mockProjectRepository.findAllProjectLeaders).toHaveBeenCalledWith(
+        projectId
+      );
+    });
+
+    it('should not call findAllProjectLeaders if participant is not a project leader', async () => {
+      (mockProjectRepository.findProjectLeader as jest.Mock).mockResolvedValue(
+        null
+      );
+
+      await projectService.removeParticipantFromProject(
+        projectLeaderId,
+        projectId,
+        participantId
+      );
+
+      expect(
+        mockProjectRepository.findAllProjectLeaders
+      ).not.toHaveBeenCalled();
+    });
+
     it('should call disconnectParticipantFromProject with correct parameters', async () => {
       await projectService.removeParticipantFromProject(
         projectLeaderId,
@@ -314,6 +363,58 @@ describe('ProjectService', () => {
       expect(
         mockProjectRepository.disconnectParticipantFromProject
       ).toHaveBeenCalledWith(participantId, projectId);
+    });
+
+    it('should successfully remove a project leader if more than one project leader exists', async () => {
+      (mockProjectRepository.findProjectLeader as jest.Mock).mockResolvedValue({
+        id: 1,
+      });
+      (
+        mockProjectRepository.findAllProjectLeaders as jest.Mock
+      ).mockResolvedValue([{ id: 1 }, { id: 2 }]);
+
+      await projectService.removeParticipantFromProject(
+        projectLeaderId,
+        projectId,
+        participantId
+      );
+
+      expect(
+        mockProjectRepository.disconnectParticipantFromProject
+      ).toHaveBeenCalledWith(participantId, projectId);
+    });
+
+    it('should throw an error if only one project leader remains', async () => {
+      (mockProjectRepository.findProjectLeader as jest.Mock).mockResolvedValue({
+        id: 1,
+      });
+      (
+        mockProjectRepository.findAllProjectLeaders as jest.Mock
+      ).mockResolvedValue([{ id: 1 }]);
+
+      await expect(
+        projectService.removeParticipantFromProject(
+          projectLeaderId,
+          projectId,
+          participantId
+        )
+      ).rejects.toThrow(
+        'Project leader cannot leave the project unless they add a new project leader.'
+      );
+    });
+
+    it('should throw an error if ensureUserIsProjectLeader throws an error', async () => {
+      (projectService.ensureUserIsProjectLeader as jest.Mock).mockRejectedValue(
+        new Error('Not a project leader')
+      );
+
+      await expect(
+        projectService.removeParticipantFromProject(
+          projectLeaderId,
+          projectId,
+          participantId
+        )
+      ).rejects.toThrow('Not a project leader');
     });
   });
 });

@@ -245,10 +245,7 @@ describe('ProjectRepository', () => {
     it('should find a user who is a project leader of the project', async () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(projectLeader);
 
-      const isProjectLeader = await projectRepository.findProjectLeader(
-        userId,
-        projectId
-      );
+      await projectRepository.findProjectLeader(userId, projectId);
 
       expect(projectLeader).toEqual(projectLeader);
     });
@@ -330,6 +327,38 @@ describe('ProjectRepository', () => {
           participantId,
           projectId
         )
+      ).rejects.toThrow(error);
+    });
+  });
+
+  describe('findAllProjectLeaders', () => {
+    const projectId = 1;
+
+    it('should call findMany with correct parameters', async () => {
+      await projectRepository.findAllProjectLeaders(projectId);
+
+      expect(prisma.project.findMany as jest.Mock).toHaveBeenCalledWith({
+        where: {
+          id: projectId,
+        },
+        select: {
+          leaders: {
+            select: {
+              id: true,
+              name: true,
+              surname: true,
+            },
+          },
+        },
+      });
+    });
+
+    it('should throw HttpError if findMany throws an error', async () => {
+      const error = new HttpError(500, 'Project Leaders could not be found');
+      (prisma.project.findMany as jest.Mock).mockRejectedValue(error);
+
+      await expect(
+        projectRepository.findAllProjectLeaders(projectId)
       ).rejects.toThrow(error);
     });
   });

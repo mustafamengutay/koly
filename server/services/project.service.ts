@@ -104,6 +104,22 @@ export class ProjectService {
     participantId: number
   ) {
     await this.ensureUserIsProjectLeader(projectLeaderId, projectId);
+
+    const IsParticipantProjectLeader =
+      await this.projectRepository.findProjectLeader(participantId, projectId);
+
+    if (IsParticipantProjectLeader) {
+      const allProjectLeaders =
+        await this.projectRepository.findAllProjectLeaders(projectId);
+
+      if (allProjectLeaders!.length === 1) {
+        throw new HttpError(
+          409,
+          'Project leader cannot leave the project unless they add a new project leader.'
+        );
+      }
+    }
+
     return await this.projectRepository.disconnectParticipantFromProject(
       participantId,
       projectId
