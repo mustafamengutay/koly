@@ -2,10 +2,10 @@ import 'reflect-metadata';
 
 import prisma from '../../configs/database';
 
-import { HttpError } from '../../types/errors';
-
 import { InvitationRepository } from '../../repositories/invitation.repository';
 import { InvitationStatus } from '../../types/invitation';
+
+import { HttpError } from '../../types/errors';
 
 describe('InvitationRepository', () => {
   let invitationRepository: InvitationRepository;
@@ -65,7 +65,7 @@ describe('InvitationRepository', () => {
     const inviteeId = 1;
 
     it('should call findFirst with correct parameters', async () => {
-      await invitationRepository.findOne(projectId, inviteeId);
+      await invitationRepository.findOne(inviteeId, projectId);
 
       expect(prisma.invitation.findFirst as jest.Mock).toHaveBeenCalledWith({
         where: {
@@ -87,8 +87,8 @@ describe('InvitationRepository', () => {
       );
 
       const invitation = await invitationRepository.findOne(
-        projectId,
-        inviteeId
+        inviteeId,
+        projectId
       );
 
       expect(invitation).toEqual(mockInvitation);
@@ -99,7 +99,7 @@ describe('InvitationRepository', () => {
       (prisma.invitation.findFirst as jest.Mock).mockRejectedValue(error);
 
       await expect(
-        invitationRepository.findOne(projectId, inviteeId)
+        invitationRepository.findOne(inviteeId, projectId)
       ).rejects.toThrow(error);
     });
   });
