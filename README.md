@@ -57,12 +57,6 @@ npm i
 npx prisma generate
 ```
 
-- Build the project
-
-```bash
-# Will be added soon...
-```
-
 - Run the server in the development mode
 
 ```bash
