@@ -59,6 +59,19 @@ router.delete(
 );
 
 router.patch(
+  '/:projectId/participants/:participantId',
+  [
+    param('projectId').isInt().withMessage('projectId should be an integer'),
+    param('participantId')
+      .isInt()
+      .withMessage('participantId should be an integer'),
+  ],
+  inputValidator,
+  verifyUser,
+  projectController.patchMakeParticipantProjectLeader
+);
+
+router.patch(
   '/:projectId/rename',
   [param('projectId').isInt().withMessage('projectId should be an integer')],
   inputValidator,

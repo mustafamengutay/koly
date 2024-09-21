@@ -93,6 +93,22 @@ export class ProjectService {
   }
 
   /**
+   * Make participant the project leader. If any error occurs, it throws the error.
+   * @param userId User ID.
+   * @param projectId Project ID.
+   */
+  public async makeParticipantProjectLeader(
+    userId: number,
+    projectId: number,
+    participantId: number
+  ) {
+    await this.ensureUserIsProjectLeader(userId, projectId);
+    await this.ensureUserIsParticipant(participantId, projectId);
+    await this.ensureUserIsNotProjectLeader(participantId, projectId);
+    await this.projectRepository.addNewProjectLeader(participantId, projectId);
+  }
+
+  /**
    * Remove participant from the project. If any error occurs, it throws the error.
    * @param projectLeaderId Project Leader ID.
    * @param projectId Project ID.
@@ -133,6 +149,22 @@ export class ProjectService {
     );
     if (!isProjectLeader) {
       throw new HttpError(409, 'User is not the project leader of the project');
+    }
+  }
+
+  public async ensureUserIsNotProjectLeader(
+    participantId: number,
+    projectId: number
+  ) {
+    const isProjectLeader = await this.projectRepository.findProjectLeader(
+      participantId,
+      projectId
+    );
+    if (isProjectLeader) {
+      throw new HttpError(
+        409,
+        'User is already a project leader of the project'
+      );
     }
   }
 

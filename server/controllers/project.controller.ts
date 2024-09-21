@@ -201,4 +201,29 @@ export class ProjectController {
       next(error);
     }
   };
+
+  public patchMakeParticipantProjectLeader = async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const projectId = Number(req.params.projectId);
+    const participantId = Number(req.params.participantId);
+    const userId = req.userId!;
+
+    try {
+      await this.projectService.makeParticipantProjectLeader(
+        userId,
+        projectId,
+        participantId
+      );
+
+      res.status(200).json({
+        status: 'success',
+        data: null,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
 }

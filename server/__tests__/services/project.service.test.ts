@@ -21,6 +21,7 @@ describe('ProjectService', () => {
       listParticipatedProjects: jest.fn(),
       updateName: jest.fn(),
       disconnectParticipantFromProject: jest.fn(),
+      addNewProjectLeader: jest.fn(),
       findParticipant: jest.fn(),
       findProjectLeader: jest.fn(),
       findAllProjectLeaders: jest.fn(),
@@ -415,6 +416,57 @@ describe('ProjectService', () => {
           participantId
         )
       ).rejects.toThrow('Not a project leader');
+    });
+  });
+
+  describe('makeParticipantProjectLeader', () => {
+    const userId = 1;
+    const participantId = 2;
+    const projectId = 1;
+
+    beforeEach(() => {
+      projectService.ensureUserIsProjectLeader = jest.fn();
+      projectService.ensureUserIsParticipant = jest.fn();
+      projectService.ensureUserIsNotProjectLeader = jest.fn();
+    });
+
+    it('should call ensureUserIsParticipant with correct parameters', async () => {
+      await projectService.makeParticipantProjectLeader(
+        userId,
+        projectId,
+        participantId
+      );
+
+      expect(projectService.ensureUserIsParticipant).toHaveBeenCalledWith(
+        participantId,
+        projectId
+      );
+    });
+
+    it('should call ensureUserIsNotProjectLeader with correct parameters', async () => {
+      await projectService.makeParticipantProjectLeader(
+        userId,
+        projectId,
+        participantId
+      );
+
+      expect(projectService.ensureUserIsNotProjectLeader).toHaveBeenCalledWith(
+        participantId,
+        projectId
+      );
+    });
+
+    it('should call addNewProjectLeader with correct parameters', async () => {
+      await projectService.makeParticipantProjectLeader(
+        userId,
+        projectId,
+        participantId
+      );
+
+      expect(mockProjectRepository.addNewProjectLeader).toHaveBeenCalledWith(
+        participantId,
+        projectId
+      );
     });
   });
 });

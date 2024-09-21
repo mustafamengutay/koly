@@ -30,6 +30,7 @@ describe('Project Controllers', () => {
     updateProjectName: jest.fn(),
     validateUserParticipation: jest.fn(),
     removeParticipantFromProject: jest.fn(),
+    makeParticipantProjectLeader: jest.fn(),
   };
 
   beforeEach(() => {
@@ -447,6 +448,54 @@ describe('Project Controllers', () => {
         res,
         next
       );
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe('patchMakeParticipantProjectLeader', () => {
+    const userId = 1;
+    const participantId = 2;
+    const projectId = 1;
+
+    beforeEach(() => {
+      req = createRequest({
+        userId: userId,
+        method: 'PATCH',
+        url: '/api/v1/projects/1/participants/2',
+        params: {
+          projectId,
+          participantId,
+        },
+      });
+    });
+
+    it('should call makeParticipantProjectLeader service with correct parameters', async () => {
+      await projectController.patchMakeParticipantProjectLeader(req, res, next);
+
+      expect(
+        mockProjectService.makeParticipantProjectLeader
+      ).toHaveBeenCalledWith(userId, projectId, participantId);
+    });
+
+    it('should return 200 status code successful updating', async () => {
+      await projectController.patchMakeParticipantProjectLeader(req, res, next);
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('should respond with success status and data on successful updating', async () => {
+      await projectController.patchMakeParticipantProjectLeader(req, res, next);
+
+      expect(res._getJSONData()).toHaveProperty('status', 'success');
+      expect(res._getJSONData()).toHaveProperty('data', null);
+    });
+
+    it('should pass the error to the error handler if updating fails', async () => {
+      const error = new Error('Fail');
+      mockProjectService.makeParticipantProjectLeader.mockRejectedValue(error);
+
+      await projectController.patchMakeParticipantProjectLeader(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });

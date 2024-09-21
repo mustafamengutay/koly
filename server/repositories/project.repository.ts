@@ -17,6 +17,7 @@ export interface IProjectRepository {
     participantId: number,
     projectId: number
   ): Promise<undefined>;
+  addNewProjectLeader(userId: number, projectId: number): Promise<undefined>;
   findProjectLeader(userId: number, projectId: number): Promise<User | null>;
   findAllProjectLeaders(projectId: number): Promise<any[] | null>;
   findParticipant(userId: number, projectId: number): Promise<User | null>;
@@ -191,6 +192,28 @@ export class ProjectRepository implements IProjectRepository {
       });
     } catch {
       throw new HttpError(500, 'User could not be removed from the project');
+    }
+  }
+
+  public async addNewProjectLeader(
+    userId: number,
+    projectId: number
+  ): Promise<undefined> {
+    try {
+      await prisma.project.update({
+        where: {
+          id: projectId,
+        },
+        data: {
+          leaders: {
+            connect: {
+              id: userId,
+            },
+          },
+        },
+      });
+    } catch {
+      throw new HttpError(500, 'New project leader could not be added');
     }
   }
 

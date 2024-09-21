@@ -331,6 +331,35 @@ describe('ProjectRepository', () => {
     });
   });
 
+  describe('addNewProjectLeader', () => {
+    const userId = 1;
+    const projectId = 1;
+
+    it('should call update with correct parameters', async () => {
+      await projectRepository.addNewProjectLeader(userId, projectId);
+
+      expect(prisma.project.update as jest.Mock).toHaveBeenCalledWith({
+        where: {
+          id: projectId,
+        },
+        data: {
+          leaders: {
+            connect: { id: userId },
+          },
+        },
+      });
+    });
+
+    it('should throw HttpError if update throws an error', async () => {
+      const error = new HttpError(500, 'New project leader could not be added');
+      (prisma.project.update as jest.Mock).mockRejectedValue(error);
+
+      await expect(
+        projectRepository.addNewProjectLeader(userId, projectId)
+      ).rejects.toThrow(error);
+    });
+  });
+
   describe('findAllProjectLeaders', () => {
     const projectId = 1;
 
