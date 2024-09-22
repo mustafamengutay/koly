@@ -246,7 +246,7 @@ export class ProjectRepository implements IProjectRepository {
 
   public async findAllProjectLeaders(projectId: number): Promise<any[] | null> {
     try {
-      const projectLeaders = await prisma.project.findMany({
+      const projectLeaders = await prisma.project.findUnique({
         where: {
           id: projectId,
         },
@@ -261,7 +261,7 @@ export class ProjectRepository implements IProjectRepository {
         },
       });
 
-      return projectLeaders;
+      return projectLeaders!.leaders;
     } catch {
       throw new HttpError(500, 'Project Leaders could not be found');
     }

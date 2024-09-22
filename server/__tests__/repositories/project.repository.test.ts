@@ -14,6 +14,7 @@ describe('ProjectRepository', () => {
     prisma.project.create = jest.fn();
     prisma.project.update = jest.fn();
     prisma.project.findMany = jest.fn();
+    prisma.project.findUnique = jest.fn();
     prisma.user.findMany = jest.fn();
     prisma.user.update = jest.fn();
 
@@ -363,10 +364,16 @@ describe('ProjectRepository', () => {
   describe('findAllProjectLeaders', () => {
     const projectId = 1;
 
-    it('should call findMany with correct parameters', async () => {
+    beforeEach(() => {
+      prisma.project.findUnique = jest
+        .fn()
+        .mockResolvedValue([{ id: 1 }, { id: 2 }]);
+    });
+
+    it('should call findUnique with correct parameters', async () => {
       await projectRepository.findAllProjectLeaders(projectId);
 
-      expect(prisma.project.findMany as jest.Mock).toHaveBeenCalledWith({
+      expect(prisma.project.findUnique as jest.Mock).toHaveBeenCalledWith({
         where: {
           id: projectId,
         },
@@ -382,9 +389,9 @@ describe('ProjectRepository', () => {
       });
     });
 
-    it('should throw HttpError if findMany throws an error', async () => {
+    it('should throw HttpError if findUnique throws an error', async () => {
       const error = new HttpError(500, 'Project Leaders could not be found');
-      (prisma.project.findMany as jest.Mock).mockRejectedValue(error);
+      (prisma.project.findUnique as jest.Mock).mockRejectedValue(error);
 
       await expect(
         projectRepository.findAllProjectLeaders(projectId)
