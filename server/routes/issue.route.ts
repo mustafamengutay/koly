@@ -117,6 +117,20 @@ router.patch(
 );
 
 router.patch(
+  '/:projectId/issues/:issueId/assign/:participantId',
+  [
+    param('projectId').isInt().withMessage('projectId should be an integer'),
+    param('issueId').isInt().withMessage('issueId should be an integer'),
+    param('participantId')
+      .isInt()
+      .withMessage('participantId should be an integer'),
+  ],
+  inputValidator,
+  verifyUser,
+  issueController.patchAssignIssueByProjectLeader
+);
+
+router.patch(
   '/:projectId/issues/:issueId/release',
   [
     param('projectId').isInt().withMessage('projectId should be an integer'),
@@ -125,6 +139,20 @@ router.patch(
   inputValidator,
   verifyUser,
   issueController.patchReleaseIssue
+);
+
+router.patch(
+  '/:projectId/issues/:issueId/release/:participantId',
+  [
+    param('projectId').isInt().withMessage('projectId should be an integer'),
+    param('issueId').isInt().withMessage('issueId should be an integer'),
+    param('participantId')
+      .isInt()
+      .withMessage('participantId should be an integer'),
+  ],
+  inputValidator,
+  verifyUser,
+  issueController.patchReleaseIssueByProjectLeader
 );
 
 router.patch(

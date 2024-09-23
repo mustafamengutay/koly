@@ -111,6 +111,32 @@ export class IssueController {
     }
   };
 
+  public patchAssignIssueByProjectLeader = async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const projectId = Number(req.params.projectId);
+    const issueId = Number(req.params.issueId);
+    const participantId = Number(req.params.participantId);
+    const userId = req.userId!;
+
+    try {
+      await this.issueService.assignIssueByProjectLeader(issueId, {
+        projectId,
+        participantId,
+        projectLeaderId: userId,
+      });
+
+      res.status(200).json({
+        status: 'success',
+        data: null,
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
   public patchReleaseIssue = async (
     req: CustomRequest,
     res: Response,
@@ -132,6 +158,32 @@ export class IssueController {
         data: {
           issue: releasedIssue,
         },
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  public patchReleaseIssueByProjectLeader = async (
+    req: CustomRequest,
+    res: Response,
+    next: NextFunction
+  ) => {
+    const projectId = Number(req.params.projectId);
+    const issueId = Number(req.params.issueId);
+    const participantId = Number(req.params.participantId);
+    const userId = req.userId!;
+
+    try {
+      await this.issueService.releaseIssueByProjectLeader(issueId, {
+        projectId,
+        participantId,
+        projectLeaderId: userId,
+      });
+
+      res.status(200).json({
+        status: 'success',
+        data: null,
       });
     } catch (error) {
       next(error);

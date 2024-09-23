@@ -81,6 +81,31 @@ export class IssueService {
   }
 
   /**
+   * Assign an issue to a project participant by a project leader.
+   * If any error occurs, it throws that specific error.
+   * @param issueId Issue ID.
+   * @param assignmentDetails Object includes details about the assignment.
+   */
+  public async assignIssueByProjectLeader(
+    issueId: number,
+    assignmentDetails: {
+      projectId: number;
+      projectLeaderId: number;
+      participantId: number;
+    }
+  ) {
+    await this.projectService.ensureUserIsProjectLeader(
+      assignmentDetails.projectLeaderId,
+      assignmentDetails.projectId
+    );
+    await this.adoptIssue(
+      issueId,
+      assignmentDetails.participantId,
+      assignmentDetails.projectId
+    );
+  }
+
+  /**
    * Release an issue by a user, and returns the released issue.
    * If any error occurs, it throws that specific error.
    * @param issueId Issue ID.
@@ -99,6 +124,31 @@ export class IssueService {
     this.issueValidator.validateIssueAdopter(issue.adoptedById, userId);
 
     return this.issueRepository.release(issue.id, userId);
+  }
+
+  /**
+   * Release an issue from a project participant by a project leader.
+   * If any error occurs, it throws that specific error.
+   * @param issueId Issue ID.
+   * @param assignmentDetails Object includes details about the assignment.
+   */
+  public async releaseIssueByProjectLeader(
+    issueId: number,
+    assignmentDetails: {
+      projectId: number;
+      projectLeaderId: number;
+      participantId: number;
+    }
+  ) {
+    await this.projectService.ensureUserIsProjectLeader(
+      assignmentDetails.projectLeaderId,
+      assignmentDetails.projectId
+    );
+    await this.releaseIssue(
+      issueId,
+      assignmentDetails.participantId,
+      assignmentDetails.projectId
+    );
   }
 
   /**

@@ -11,7 +11,9 @@ import { IssueService } from '../../services/issue.service';
 describe('IssueService', () => {
   type MockProjectServiceType = Pick<
     ProjectService,
-    'ensureUserIsParticipant' | 'ensureUserIsNotParticipant'
+    | 'ensureUserIsParticipant'
+    | 'ensureUserIsNotParticipant'
+    | 'ensureUserIsProjectLeader'
   >;
 
   let container: Container;
@@ -24,6 +26,7 @@ describe('IssueService', () => {
     projectService = {
       ensureUserIsParticipant: jest.fn(),
       ensureUserIsNotParticipant: jest.fn(),
+      ensureUserIsProjectLeader: jest.fn(),
     };
 
     mockIssueRepository = {
@@ -322,6 +325,86 @@ describe('IssueService', () => {
       );
 
       expect(issueDetails).toBe(issue);
+    });
+  });
+
+  describe('assignIssueToParticipant', () => {
+    const issueId = 1;
+    const assignmentDetails = {
+      projectId: 1,
+      projectLeaderId: 1,
+      participantId: 2,
+    };
+
+    beforeEach(() => {
+      (projectService.ensureUserIsProjectLeader as jest.Mock).mockResolvedValue(
+        true
+      );
+      issueService.adoptIssue = jest.fn().mockResolvedValue(issue);
+    });
+
+    it('should call ensureUserIsProjectLeader with correct parameters', async () => {
+      await issueService.assignIssueByProjectLeader(issueId, assignmentDetails);
+
+      expect(
+        projectService.ensureUserIsProjectLeader as jest.Mock
+      ).toHaveBeenCalledWith(
+        assignmentDetails.projectLeaderId,
+        assignmentDetails.projectId
+      );
+    });
+
+    it('should call adoptIssue service with correct parameters', async () => {
+      await issueService.assignIssueByProjectLeader(issueId, assignmentDetails);
+
+      expect(issueService.adoptIssue as jest.Mock).toHaveBeenCalledWith(
+        issueId,
+        assignmentDetails.participantId,
+        assignmentDetails.projectId
+      );
+    });
+  });
+
+  describe('releaseIssueFromParticipant', () => {
+    const issueId = 1;
+    const assignmentDetails = {
+      projectId: 1,
+      projectLeaderId: 1,
+      participantId: 2,
+    };
+
+    beforeEach(() => {
+      (projectService.ensureUserIsProjectLeader as jest.Mock).mockResolvedValue(
+        true
+      );
+      issueService.releaseIssue = jest.fn().mockResolvedValue(issue);
+    });
+
+    it('should call ensureUserIsProjectLeader with correct parameters', async () => {
+      await issueService.releaseIssueByProjectLeader(
+        issueId,
+        assignmentDetails
+      );
+
+      expect(
+        projectService.ensureUserIsProjectLeader as jest.Mock
+      ).toHaveBeenCalledWith(
+        assignmentDetails.projectLeaderId,
+        assignmentDetails.projectId
+      );
+    });
+
+    it('should call releaseIssue service with correct parameters', async () => {
+      await issueService.releaseIssueByProjectLeader(
+        issueId,
+        assignmentDetails
+      );
+
+      expect(issueService.releaseIssue as jest.Mock).toHaveBeenCalledWith(
+        issueId,
+        assignmentDetails.participantId,
+        assignmentDetails.projectId
+      );
     });
   });
 });

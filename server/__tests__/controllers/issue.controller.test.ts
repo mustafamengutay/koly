@@ -32,6 +32,8 @@ describe('Issue Controllers', () => {
     listIssuesReportedByUser: jest.fn(),
     listIssuesInProgressByUser: jest.fn(),
     listIssuesCompletedByUser: jest.fn(),
+    assignIssueByProjectLeader: jest.fn(),
+    releaseIssueByProjectLeader: jest.fn(),
   };
 
   beforeEach(() => {
@@ -542,6 +544,120 @@ describe('Issue Controllers', () => {
       mockissueService.viewIssueDetails.mockRejectedValue(error);
 
       await issueController.getViewIssueDetails(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe('patchAssignIssueByProjectLeader', () => {
+    const userId = 1;
+    const projectId = 1;
+    const issueId = 2;
+    const participantId = 3;
+
+    beforeEach(() => {
+      req = createRequest({
+        userId,
+        method: 'PATCH',
+        url: '/api/v1/projects/1/issues/2/assign/3',
+        params: {
+          projectId,
+          issueId,
+          participantId,
+        },
+      });
+    });
+
+    it('should call assignIssueByProjectLeader service with correct parameters', async () => {
+      await issueController.patchAssignIssueByProjectLeader(req, res, next);
+
+      expect(mockissueService.assignIssueByProjectLeader).toHaveBeenCalledWith(
+        issueId,
+        {
+          projectId,
+          participantId,
+          projectLeaderId: userId,
+        }
+      );
+    });
+
+    it('should return 200 status code on successful assignment', async () => {
+      await issueController.patchAssignIssueByProjectLeader(req, res, next);
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('should respond with a success status and data on successful assignment', async () => {
+      await issueController.patchAssignIssueByProjectLeader(req, res, next);
+
+      expect(res._getJSONData()).toHaveProperty('status', 'success');
+      expect(res._getJSONData()).toHaveProperty('data', null);
+    });
+
+    it('should pass the error to the errorHandler if assignment fails', async () => {
+      const error = new Error('Fail');
+      (
+        mockissueService.assignIssueByProjectLeader as jest.Mock
+      ).mockRejectedValue(error);
+
+      await issueController.patchAssignIssueByProjectLeader(req, res, next);
+
+      expect(next).toHaveBeenCalledWith(error);
+    });
+  });
+
+  describe('patchReleaseIssueByProjectLeader', () => {
+    const userId = 1;
+    const projectId = 1;
+    const issueId = 2;
+    const participantId = 3;
+
+    beforeEach(() => {
+      req = createRequest({
+        userId,
+        method: 'PATCH',
+        url: '/api/v1/projects/1/issues/2/release/3',
+        params: {
+          projectId,
+          issueId,
+          participantId,
+        },
+      });
+    });
+
+    it('should call releaseIssueByProjectLeader service with correct parameters', async () => {
+      await issueController.patchReleaseIssueByProjectLeader(req, res, next);
+
+      expect(mockissueService.releaseIssueByProjectLeader).toHaveBeenCalledWith(
+        issueId,
+        {
+          projectId,
+          participantId,
+          projectLeaderId: userId,
+        }
+      );
+    });
+
+    it('should return 200 status code on successful release', async () => {
+      await issueController.patchReleaseIssueByProjectLeader(req, res, next);
+
+      expect(res.statusCode).toBe(200);
+    });
+
+    it('should respond with a success status and data on successful release', async () => {
+      await issueController.patchReleaseIssueByProjectLeader(req, res, next);
+
+      expect(res._getJSONData()).toHaveProperty('status', 'success');
+      expect(res._getJSONData()).toHaveProperty('data', null);
+    });
+
+    it('should pass the error to the errorHandler if release fails', async () => {
+      const error = new Error('Fail');
+      (
+        mockissueService.releaseIssueByProjectLeader as jest.Mock
+      ).mockRejectedValue(error);
+
+      await issueController.patchReleaseIssueByProjectLeader(req, res, next);
 
       expect(next).toHaveBeenCalledWith(error);
     });
