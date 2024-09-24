@@ -140,10 +140,8 @@ export class ProjectRepository implements IProjectRepository {
             },
           },
           leaders: {
-            some: {
-              id: {
-                not: userId,
-              },
+            none: {
+              id: userId,
             },
           },
         },
@@ -185,8 +183,15 @@ export class ProjectRepository implements IProjectRepository {
           id: participantId,
         },
         data: {
+          projects: {
+            disconnect: {
+              id: projectId,
+            },
+          },
           participatedProjects: {
-            disconnect: [{ id: projectId }],
+            disconnect: {
+              id: projectId,
+            },
           },
         },
       });

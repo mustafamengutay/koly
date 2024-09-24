@@ -136,7 +136,7 @@ export class ProjectService {
       }
     }
 
-    return await this.projectRepository.disconnectParticipantFromProject(
+    await this.projectRepository.disconnectParticipantFromProject(
       participantId,
       projectId
     );

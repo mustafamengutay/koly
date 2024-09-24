@@ -309,8 +309,15 @@ describe('ProjectRepository', () => {
           id: participantId,
         },
         data: {
+          projects: {
+            disconnect: {
+              id: projectId,
+            },
+          },
           participatedProjects: {
-            disconnect: [{ id: projectId }],
+            disconnect: {
+              id: projectId,
+            },
           },
         },
       });
