@@ -7,6 +7,7 @@ The main idea of “koly” is to provide a dynamic issue report for projects an
 ## Pre-requisites
 
 - Install [Node.js](https://nodejs.org/en/) version 20.16.0 or later.
+- Install [Redis](https://redis.io/downloads/) version 7.2.5 or later.
 - Install [PostgreSQL](https://www.postgresql.org/download/) version 16.0 or later.
 
 ## .env File Documentation
@@ -18,6 +19,7 @@ This file contains configuration settings for the tool. Each environment variabl
 | PORT         | The port on which the server will listen    | 3000                                                        |
 | DATABASE_URL | The address of your database server         | postgresql://USER:PASSWORD@HOST:PORT/DATABASE?schema=public |
 | JWT_SECRET   | A secret key for the authentication feature | any text                                                    |
+| REDIS_URI    | The address of the redis server             | redis://127.0.0.1:6379                                      |
 
 ### DATABASE_URL Format
 
@@ -45,15 +47,12 @@ git clone  https://github.com/mustafamengutay/koly.git
 - Install dependencies
 
 ```bash
-# First
 cd koly
 npm i
 
-# Second
 cd koly/server
 npm i
 
-# Third
 npx prisma generate
 ```
 
@@ -61,6 +60,8 @@ npx prisma generate
 
 ```bash
 cd koly/server
+
+# 1. Run the redis/redis-stack server. Eg: redis-stack-server
 
 npm run dev
 ```
