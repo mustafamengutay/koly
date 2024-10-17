@@ -33,6 +33,18 @@ if (cluster.isPrimary) {
     console.log(`worker ${worker.process.pid} died`);
     cluster.fork();
   });
+
+  const gracefullyShutdown = () => {
+    for (const id in cluster.workers) {
+      cluster.workers[id]?.send('shutdown');
+      // for IPC Connection
+      cluster.workers[id]?.disconnect();
+    }
+    process.exit(0);
+  };
+
+  process.on('SIGTERM', gracefullyShutdown);
+  process.on('SIGINT', gracefullyShutdown);
 } else {
   const app = express();
 
@@ -78,7 +90,29 @@ if (cluster.isPrimary) {
 
   app.use(errorHandler);
 
-  app.listen(process.env.PORT);
-
+  const server = app.listen(process.env.PORT);
   console.log('Server is running');
+
+  // Worker can be closed gracefully by Cluster Manager.
+  process.on('message', (msg) => {
+    if (msg === 'shutdown') {
+      console.log('Child process received shutdown message, closing server...');
+      server.close(() => {
+        console.log('Worker shutting down gracefully');
+        process.exit(0);
+      });
+    }
+  });
+
+  const shutdownChildProcess = () => {
+    console.log('Worker received shutdown signal, closing server...');
+    server.close(() => {
+      process.exit(0);
+    });
+  };
+
+  // Worker can be closed gracefully by external sources
+  // or directly by "kill" command.
+  process.on('SIGTERM', shutdownChildProcess);
+  process.on('SIGINT', shutdownChildProcess);
 }
