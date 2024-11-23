@@ -1,32 +1,30 @@
-import { RedisClientType, createClient } from 'redis';
+import { createClient } from 'redis';
 import { checkEnvironmentVariables } from '../utils/environmentUtils';
 
 const redisEnvironments: string[] = ['REDIS_URI'];
 
-/**
- * @description RedisClient class is used to create a single Redis Client instance.
- * After getting the instance, it should be connected to the Redis Server via `.connect()`
- * method.
- */
-class RedisClient {
-  private static instance: RedisClientType;
-
-  private constructor() {}
-
-  public static getInstance(): RedisClientType {
-    if (!RedisClient.instance) {
-      try {
-        checkEnvironmentVariables(redisEnvironments);
-        RedisClient.instance = createClient({ url: process.env.REDIS_URI });
-      } catch (error) {
-        throw new Error('Failed to create Redis Client instance: ' + error);
-      }
-    }
-    return RedisClient.instance;
-  }
+try {
+  checkEnvironmentVariables(redisEnvironments);
+} catch {
+  throw new Error('REDIS_URI environment variable is not defined');
 }
 
-const redisClient = RedisClient.getInstance();
-console.log('Redis is running');
+const redisClient = createClient({
+  url: process.env.REDIS_URI,
+});
+redisClient.on('error', (error) => {
+  console.error('Redis Client Error:', error);
+});
+
+(async () => {
+  try {
+    if (!redisClient.isOpen) {
+      await redisClient.connect();
+      console.log('Redis client is running');
+    }
+  } catch (error) {
+    throw new Error('Failed to connect Redis: ' + error);
+  }
+})();
 
 export default redisClient;
