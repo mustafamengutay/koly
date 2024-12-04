@@ -1,8 +1,11 @@
+import { BrowserRouter } from 'react-router';
+import Router from './pages/router';
+
 function App() {
   return (
-    <div>
-      <p>Koly</p>
-    </div>
+    <BrowserRouter>
+      <Router />
+    </BrowserRouter>
   );
 }
 
