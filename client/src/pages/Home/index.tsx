@@ -1,8 +1,13 @@
+import { Box } from '@chakra-ui/react';
+import Header from '../../components/Header/Header';
+// import Hero from '../../components/Hero/Hero';
+
 function Home() {
   return (
-    <div>
-      <h1>Home</h1>
-    </div>
+    <Box>
+      <Header />
+      {/* <Hero /> */}
+    </Box>
   );
 }
 
