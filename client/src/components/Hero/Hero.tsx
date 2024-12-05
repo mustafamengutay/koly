@@ -1,6 +1,7 @@
 import { Box, Flex, Text } from '@chakra-ui/react';
 import { Button } from '../ui/button';
 import PricingAlert from './PricingAlert';
+import { Link } from 'react-router';
 
 export default function Hero() {
   return (
@@ -35,9 +36,11 @@ export default function Hero() {
           <Button variant='outline' size='lg' borderRadius='lg'>
             Explore
           </Button>
-          <Button size='lg' borderRadius='lg'>
-            Start for free
-          </Button>
+          <Link to='/signup' style={{ width: '100%' }}>
+            <Button size='lg' borderRadius='lg'>
+              Start for free
+            </Button>
+          </Link>
         </Flex>
       </Flex>
     </Box>

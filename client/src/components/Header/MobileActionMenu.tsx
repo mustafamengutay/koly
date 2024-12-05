@@ -1,4 +1,10 @@
-import { Box, IconButton, Stack, Text } from '@chakra-ui/react';
+import {
+  Box,
+  IconButton,
+  Stack,
+  Text,
+  Link as ChakraLink,
+} from '@chakra-ui/react';
 import {
   DrawerBackdrop,
   DrawerBody,
@@ -13,6 +19,7 @@ import {
 import { Button } from '../ui/button';
 import { RxHamburgerMenu } from 'react-icons/rx';
 import { FaGithub } from 'react-icons/fa';
+import { Link } from 'react-router';
 
 export default function MobileActionMenu() {
   return (
@@ -30,12 +37,25 @@ export default function MobileActionMenu() {
           </DrawerHeader>
           <DrawerBody marginLeft='12' marginRight='12'>
             <Stack gap='4'>
-              <Button variant='outline'>Sign in</Button>
-              <Button>Sign up</Button>
-              <IconButton variant='outline'>
-                <FaGithub />
-                Github
-              </IconButton>
+              <Link to='/login'>
+                <Button variant='outline' width='full' borderRadius='lg'>
+                  Login
+                </Button>
+              </Link>
+              <Link to='/signup'>
+                <Button width='full' borderRadius='lg'>
+                  Sign up
+                </Button>
+              </Link>
+              <ChakraLink
+                href='https://github.com/mustafamengutay/koly'
+                target='_blank'
+              >
+                <IconButton width='full' variant='outline' borderRadius='lg'>
+                  <FaGithub />
+                  Github
+                </IconButton>
+              </ChakraLink>
             </Stack>
           </DrawerBody>
           <DrawerFooter display='flex' justifyContent='center'>
