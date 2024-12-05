@@ -16,7 +16,7 @@ export default function Navigation() {
       gap='2'
     >
       <li>
-        <Button as='a' variant='ghost'>
+        <Button as='a' variant='ghost' borderRadius='lg'>
           Features
         </Button>
       </li>
@@ -24,7 +24,7 @@ export default function Navigation() {
         <Separator orientation='vertical' height='4' />
       </li>
       <li>
-        <Button as='a' variant='ghost'>
+        <Button as='a' variant='ghost' borderRadius='lg'>
           Pricing
         </Button>
       </li>
@@ -32,7 +32,7 @@ export default function Navigation() {
         <Separator orientation='vertical' height='4' />
       </li>
       <li>
-        <Button as='a' variant='ghost'>
+        <Button as='a' variant='ghost' borderRadius='lg'>
           Updates
         </Button>
       </li>

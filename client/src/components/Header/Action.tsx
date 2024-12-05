@@ -5,10 +5,12 @@ import { FaGithub } from 'react-icons/fa';
 export default function Actions() {
   return (
     <Flex display={{ base: 'none', lg: 'flex' }} gap='2'>
-      <Button variant='ghost'>Sign in</Button>
-      <Button>Sign up</Button>
+      <Button variant='ghost' borderRadius='lg'>
+        Sign in
+      </Button>
+      <Button borderRadius='lg'>Sign up</Button>
       <Link href='https://github.com/mustafamengutay/koly' target='_blank'>
-        <IconButton variant='ghost'>
+        <IconButton variant='ghost' borderRadius='lg'>
           <FaGithub />
         </IconButton>
       </Link>
