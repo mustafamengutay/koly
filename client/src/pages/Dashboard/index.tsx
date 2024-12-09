@@ -1,8 +1,13 @@
+import DashboardLayout from '../../components/layouts/DashboardLayout';
+import StatOverview from '../../components/Stats/StatOverview';
+import ProjectContainer from '../../components/Project/ProjectContainer';
+
 function Dashboard() {
   return (
-    <div>
-      <h1>Dashboard</h1>
-    </div>
+    <DashboardLayout>
+      <StatOverview />
+      <ProjectContainer />
+    </DashboardLayout>
   );
 }
 
