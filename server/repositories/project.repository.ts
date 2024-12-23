@@ -158,7 +158,7 @@ export class ProjectRepository implements IProjectRepository {
   public async disconnectParticipantFromProject(
     participantId: number,
     projectId: number
-  ): Promise<undefined> {
+  ): Promise<void> {
     try {
       await prisma.user.update({
         where: {
@@ -185,7 +185,7 @@ export class ProjectRepository implements IProjectRepository {
   public async addNewProjectLeader(
     userId: number,
     projectId: number
-  ): Promise<undefined> {
+  ): Promise<void> {
     try {
       await prisma.project.update({
         where: {

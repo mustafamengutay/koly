@@ -12,7 +12,7 @@ export class InvitationRepository implements IInvitationRepository {
     inviterId: number,
     projectId: number,
     inviteeId: number
-  ): Promise<any> {
+  ): Promise<void> {
     try {
       await prisma.invitation.create({
         data: {
@@ -79,7 +79,7 @@ export class InvitationRepository implements IInvitationRepository {
   public async makeUserProjectParticipant(
     participantId: number,
     projectId: number
-  ): Promise<undefined> {
+  ): Promise<void> {
     try {
       await prisma.project.update({
         where: {
@@ -101,7 +101,7 @@ export class InvitationRepository implements IInvitationRepository {
   public async removeInvitation(
     userId: number,
     invitationId: number
-  ): Promise<undefined> {
+  ): Promise<void> {
     try {
       await prisma.invitation.delete({
         where: {

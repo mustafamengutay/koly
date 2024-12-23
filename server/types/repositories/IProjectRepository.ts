@@ -11,8 +11,8 @@ export default interface IProjectRepository {
   disconnectParticipantFromProject(
     participantId: number,
     projectId: number
-  ): Promise<undefined>;
-  addNewProjectLeader(userId: number, projectId: number): Promise<undefined>;
+  ): Promise<void>;
+  addNewProjectLeader(userId: number, projectId: number): Promise<void>;
   findProjectLeader(userId: number, projectId: number): Promise<User | null>;
   findAllProjectLeaders(projectId: number): Promise<any[] | null>;
   findParticipant(userId: number, projectId: number): Promise<User | null>;
