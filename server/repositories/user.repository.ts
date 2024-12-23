@@ -7,7 +7,7 @@ import { HttpError } from '../types/errors';
 
 @injectable()
 export class UserRepository implements IUserRepository {
-  public async createUser(
+  public async create(
     name: string,
     surname: string,
     email: string,
@@ -29,7 +29,7 @@ export class UserRepository implements IUserRepository {
     }
   }
 
-  public async findUserByEmail(email: string): Promise<User | null> {
+  public async findByEmail(email: string): Promise<User | null> {
     try {
       const user = await prisma.user.findUnique({
         where: {

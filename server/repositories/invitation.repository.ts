@@ -8,7 +8,7 @@ import { HttpError } from '../types/errors';
 
 @injectable()
 export class InvitationRepository implements IInvitationRepository {
-  public async sendProjectInvitation(
+  public async invite(
     inviterId: number,
     projectId: number,
     inviteeId: number
@@ -27,7 +27,7 @@ export class InvitationRepository implements IInvitationRepository {
     }
   }
 
-  public async findOne(
+  public async findById(
     inviteeId: number,
     projectId: number
   ): Promise<Invitation | null> {
@@ -45,7 +45,7 @@ export class InvitationRepository implements IInvitationRepository {
     }
   }
 
-  public async findReceivedInvitations(userId: number) {
+  public async getReceived(userId: number) {
     try {
       const receivedInvitations = await prisma.invitation.findMany({
         where: {
@@ -76,7 +76,7 @@ export class InvitationRepository implements IInvitationRepository {
     }
   }
 
-  public async makeUserProjectParticipant(
+  public async addParticipant(
     participantId: number,
     projectId: number
   ): Promise<void> {
@@ -98,10 +98,7 @@ export class InvitationRepository implements IInvitationRepository {
     }
   }
 
-  public async removeInvitation(
-    userId: number,
-    invitationId: number
-  ): Promise<void> {
+  public async remove(userId: number, invitationId: number): Promise<void> {
     try {
       await prisma.invitation.delete({
         where: {

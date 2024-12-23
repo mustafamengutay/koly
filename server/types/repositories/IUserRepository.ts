@@ -1,12 +1,12 @@
 import { User } from '@prisma/client';
 
 export default interface IUserRepository {
-  createUser(
+  create(
     name: string,
     surname: string,
     email: string,
     hashedPassword: string
   ): Promise<User>;
-  findUserByEmail(email: string): Promise<User | null>;
+  findByEmail(email: string): Promise<User | null>;
   isEmailExist(email: string): Promise<boolean>;
 }

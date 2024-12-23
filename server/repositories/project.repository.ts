@@ -7,7 +7,7 @@ import { HttpError } from '../types/errors';
 
 @injectable()
 export class ProjectRepository implements IProjectRepository {
-  public async createProject(userId: number, name: string): Promise<Project> {
+  public async create(userId: number, name: string): Promise<Project> {
     try {
       const newProject: Project = await prisma.project.create({
         data: {
@@ -31,7 +31,7 @@ export class ProjectRepository implements IProjectRepository {
     }
   }
 
-  public async removeProject(projectId: number): Promise<Project> {
+  public async remove(projectId: number): Promise<Project> {
     try {
       const removedProject: Project = await prisma.project.delete({
         where: {
@@ -45,7 +45,7 @@ export class ProjectRepository implements IProjectRepository {
     }
   }
 
-  public async listParticipants(projectId: number): Promise<Partial<User>[]> {
+  public async getParticipants(projectId: number): Promise<Partial<User>[]> {
     try {
       const participants: Partial<User>[] = await prisma.user.findMany({
         where: {
@@ -70,7 +70,7 @@ export class ProjectRepository implements IProjectRepository {
     }
   }
 
-  public async listAllProjects(userId: number): Promise<Project[]> {
+  public async getAllProjects(userId: number): Promise<Project[]> {
     try {
       const allProjects: Project[] = await prisma.project.findMany({
         where: {
@@ -91,7 +91,7 @@ export class ProjectRepository implements IProjectRepository {
     }
   }
 
-  public async listCreatedProjects(userId: number): Promise<Project[]> {
+  public async getCreatedProjects(userId: number): Promise<Project[]> {
     try {
       const createdProjects: Project[] = await prisma.project.findMany({
         where: {
@@ -112,7 +112,7 @@ export class ProjectRepository implements IProjectRepository {
     }
   }
 
-  public async listParticipatedProjects(userId: number): Promise<Project[]> {
+  public async getParticipatedProjects(userId: number): Promise<Project[]> {
     try {
       const participatedProject: Project[] = await prisma.project.findMany({
         where: {
@@ -155,7 +155,7 @@ export class ProjectRepository implements IProjectRepository {
     }
   }
 
-  public async disconnectParticipantFromProject(
+  public async removeParticipant(
     participantId: number,
     projectId: number
   ): Promise<void> {
@@ -182,10 +182,7 @@ export class ProjectRepository implements IProjectRepository {
     }
   }
 
-  public async addNewProjectLeader(
-    userId: number,
-    projectId: number
-  ): Promise<void> {
+  public async addLeader(userId: number, projectId: number): Promise<void> {
     try {
       await prisma.project.update({
         where: {
@@ -204,7 +201,7 @@ export class ProjectRepository implements IProjectRepository {
     }
   }
 
-  public async findProjectLeader(
+  public async findLeader(
     userId: number,
     projectId: number
   ): Promise<User | null> {
@@ -231,7 +228,7 @@ export class ProjectRepository implements IProjectRepository {
     }
   }
 
-  public async findAllProjectLeaders(projectId: number): Promise<any[] | null> {
+  public async getAllLeaders(projectId: number): Promise<any[] | null> {
     try {
       const projectLeaders = await prisma.project.findUnique({
         where: {

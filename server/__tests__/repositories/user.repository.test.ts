@@ -34,7 +34,7 @@ describe('UserRepository', () => {
     jest.clearAllMocks();
   });
 
-  describe('createUser', () => {
+  describe('create', () => {
     const name = 'test';
     const surname = 'data';
     const email = 'test@gmail.com';
@@ -43,7 +43,7 @@ describe('UserRepository', () => {
     it('should create a user and return it successfully', async () => {
       (prisma.user.create as jest.Mock).mockResolvedValue(mockUser);
 
-      const user: User = await userRepository.createUser(
+      const user: User = await userRepository.create(
         name,
         surname,
         email,
@@ -60,18 +60,18 @@ describe('UserRepository', () => {
       );
 
       await expect(
-        userRepository.createUser(name, surname, email, password)
+        userRepository.create(name, surname, email, password)
       ).rejects.toThrow(new HttpError(500, 'The user could not be created'));
     });
   });
 
-  describe('findUserByEmail', () => {
+  describe('findByEmail', () => {
     const email = 'test@gmail.com';
 
     it('should find a user and return it successfully', async () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockUser);
 
-      const user = await userRepository.findUserByEmail(email);
+      const user = await userRepository.findByEmail(email);
 
       expect(user).toBe(mockUser);
     });
@@ -81,7 +81,7 @@ describe('UserRepository', () => {
         new Error('Fail')
       );
 
-      await expect(userRepository.findUserByEmail(email)).rejects.toThrow(
+      await expect(userRepository.findByEmail(email)).rejects.toThrow(
         new HttpError(500, 'The user could not be found')
       );
     });

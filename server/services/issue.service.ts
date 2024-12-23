@@ -190,7 +190,7 @@ export class IssueService {
     this.issueValidator.validateIssueAdopter(issue.adoptedById, userId);
     this.issueValidator.validateIssueCompleted(issue.status);
 
-    return this.issueRepository.complete(issue.id, userId);
+    return this.issueRepository.markAsComplete(issue.id, userId);
   }
 
   /**

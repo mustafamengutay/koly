@@ -1,19 +1,16 @@
 import { Project, User } from '@prisma/client';
 
 export default interface IProjectRepository {
-  createProject(userId: number, name: string): Promise<Project>;
-  removeProject(projectId: number): Promise<Project>;
-  listParticipants(projectId: number): Promise<Partial<User>[]>;
-  listAllProjects(userId: number): Promise<Project[]>;
-  listCreatedProjects(userId: number): Promise<Project[]>;
-  listParticipatedProjects(userId: number): Promise<Project[]>;
+  create(userId: number, name: string): Promise<Project>;
+  remove(projectId: number): Promise<Project>;
+  getParticipants(projectId: number): Promise<Partial<User>[]>;
+  getAllProjects(userId: number): Promise<Project[]>;
+  getCreatedProjects(userId: number): Promise<Project[]>;
+  getParticipatedProjects(userId: number): Promise<Project[]>;
   updateName(projectId: number, name: string): Promise<Project>;
-  disconnectParticipantFromProject(
-    participantId: number,
-    projectId: number
-  ): Promise<void>;
-  addNewProjectLeader(userId: number, projectId: number): Promise<void>;
-  findProjectLeader(userId: number, projectId: number): Promise<User | null>;
-  findAllProjectLeaders(projectId: number): Promise<any[] | null>;
+  removeParticipant(participantId: number, projectId: number): Promise<void>;
+  addLeader(userId: number, projectId: number): Promise<void>;
+  findLeader(userId: number, projectId: number): Promise<User | null>;
+  getAllLeaders(projectId: number): Promise<any[] | null>;
   findParticipant(userId: number, projectId: number): Promise<User | null>;
 }

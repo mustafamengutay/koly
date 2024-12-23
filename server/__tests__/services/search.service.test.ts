@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { Container } from 'inversify';
 
-import { ISearchRepository } from '../../repositories/search.repository';
+import ISearchRepository from '../../types/repositories/ISearchRepository';
 import { SearchService } from '../../services/search.service';
 import { ProjectService } from '../../services/project.service';
 

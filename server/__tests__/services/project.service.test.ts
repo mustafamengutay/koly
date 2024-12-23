@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { Container } from 'inversify';
 
-import { IProjectRepository } from '../../repositories/project.repository';
+import IProjectRepository from '../../types/repositories/IProjectRepository';
 import { ProjectService } from '../../services/project.service';
 
 import { HttpError } from '../../types/errors';
@@ -13,18 +13,18 @@ describe('ProjectService', () => {
 
   beforeEach(() => {
     mockProjectRepository = {
-      createProject: jest.fn(),
-      removeProject: jest.fn(),
-      listParticipants: jest.fn(),
-      listAllProjects: jest.fn(),
-      listCreatedProjects: jest.fn(),
-      listParticipatedProjects: jest.fn(),
+      create: jest.fn(),
+      remove: jest.fn(),
+      getParticipants: jest.fn(),
+      getAllProjects: jest.fn(),
+      getCreatedProjects: jest.fn(),
+      getParticipatedProjects: jest.fn(),
       updateName: jest.fn(),
-      disconnectParticipantFromProject: jest.fn(),
-      addNewProjectLeader: jest.fn(),
+      removeParticipant: jest.fn(),
+      addLeader: jest.fn(),
       findParticipant: jest.fn(),
-      findProjectLeader: jest.fn(),
-      findAllProjectLeaders: jest.fn(),
+      findLeader: jest.fn(),
+      getAllLeaders: jest.fn(),
     };
 
     container = new Container();
@@ -49,9 +49,7 @@ describe('ProjectService', () => {
     const projectName: string = 'new project';
 
     it('should return a new project on successful project creation', async () => {
-      (mockProjectRepository.createProject as jest.Mock).mockResolvedValue(
-        project
-      );
+      (mockProjectRepository.create as jest.Mock).mockResolvedValue(project);
 
       const newProject = await projectService.createProject(
         userId,
@@ -62,7 +60,7 @@ describe('ProjectService', () => {
     });
 
     it('should throw an error when project creation fails', async () => {
-      (mockProjectRepository.createProject as jest.Mock).mockRejectedValue(
+      (mockProjectRepository.create as jest.Mock).mockRejectedValue(
         new HttpError(500, 'The project could not be created')
       );
 
@@ -85,7 +83,7 @@ describe('ProjectService', () => {
     });
 
     it('should return a list of users who are participants of a project', async () => {
-      (mockProjectRepository.listParticipants as jest.Mock).mockResolvedValue([
+      (mockProjectRepository.getParticipants as jest.Mock).mockResolvedValue([
         participant,
         participant,
       ]);
@@ -101,9 +99,9 @@ describe('ProjectService', () => {
 
   describe('listCreatedProjects', () => {
     it('should return a list of user created projects', async () => {
-      (
-        mockProjectRepository.listCreatedProjects as jest.Mock
-      ).mockResolvedValue([project]);
+      (mockProjectRepository.getCreatedProjects as jest.Mock).mockResolvedValue(
+        [project]
+      );
 
       const createdProjects = await projectService.listCreatedProjects(userId);
 
@@ -121,7 +119,7 @@ describe('ProjectService', () => {
 
     it('should return a list of user participated projects', async () => {
       (
-        mockProjectRepository.listParticipatedProjects as jest.Mock
+        mockProjectRepository.getParticipatedProjects as jest.Mock
       ).mockResolvedValue([project]);
 
       const participatedProjects =
@@ -140,7 +138,7 @@ describe('ProjectService', () => {
     };
 
     it('should return a list of all projects that user is a participants of them', async () => {
-      (mockProjectRepository.listAllProjects as jest.Mock).mockResolvedValue([
+      (mockProjectRepository.getAllProjects as jest.Mock).mockResolvedValue([
         project,
       ]);
 
@@ -245,13 +243,11 @@ describe('ProjectService', () => {
       await expect(
         projectService.removeProject(userId, project.id)
       ).rejects.toThrow(error);
-      expect(mockProjectRepository.removeProject).not.toHaveBeenCalled();
+      expect(mockProjectRepository.remove).not.toHaveBeenCalled();
     });
 
     it('should validate project leader before removing', async () => {
-      (mockProjectRepository.removeProject as jest.Mock).mockResolvedValue(
-        project
-      );
+      (mockProjectRepository.remove as jest.Mock).mockResolvedValue(project);
 
       await projectService.removeProject(userId, project.id);
 
@@ -259,21 +255,15 @@ describe('ProjectService', () => {
     });
 
     it('should call removeProject with correct parameters', async () => {
-      (mockProjectRepository.removeProject as jest.Mock).mockResolvedValue(
-        project
-      );
+      (mockProjectRepository.remove as jest.Mock).mockResolvedValue(project);
 
       await projectService.removeProject(userId, project.id);
 
-      expect(mockProjectRepository.removeProject).toHaveBeenCalledWith(
-        project.id
-      );
+      expect(mockProjectRepository.remove).toHaveBeenCalledWith(project.id);
     });
 
     it('should return the result from the repository', async () => {
-      (mockProjectRepository.removeProject as jest.Mock).mockResolvedValue(
-        project
-      );
+      (mockProjectRepository.remove as jest.Mock).mockResolvedValue(project);
 
       const removedProject = await projectService.removeProject(
         userId,
@@ -313,19 +303,20 @@ describe('ProjectService', () => {
         participantId
       );
 
-      expect(mockProjectRepository.findProjectLeader).toHaveBeenCalledWith(
+      expect(mockProjectRepository.findLeader).toHaveBeenCalledWith(
         participantId,
         projectId
       );
     });
 
     it('should call findAllProjectLeaders with projectId if a project leader exist', async () => {
-      (mockProjectRepository.findProjectLeader as jest.Mock).mockResolvedValue({
+      (mockProjectRepository.findLeader as jest.Mock).mockResolvedValue({
         id: 1,
       });
-      (
-        mockProjectRepository.findAllProjectLeaders as jest.Mock
-      ).mockResolvedValue([{ id: 1 }, { id: 2 }]);
+      (mockProjectRepository.getAllLeaders as jest.Mock).mockResolvedValue([
+        { id: 1 },
+        { id: 2 },
+      ]);
 
       await projectService.removeParticipantFromProject(
         projectLeaderId,
@@ -333,15 +324,13 @@ describe('ProjectService', () => {
         participantId
       );
 
-      expect(mockProjectRepository.findAllProjectLeaders).toHaveBeenCalledWith(
+      expect(mockProjectRepository.getAllLeaders).toHaveBeenCalledWith(
         projectId
       );
     });
 
     it('should not call findAllProjectLeaders if participant is not a project leader', async () => {
-      (mockProjectRepository.findProjectLeader as jest.Mock).mockResolvedValue(
-        null
-      );
+      (mockProjectRepository.findLeader as jest.Mock).mockResolvedValue(null);
 
       await projectService.removeParticipantFromProject(
         projectLeaderId,
@@ -349,9 +338,7 @@ describe('ProjectService', () => {
         participantId
       );
 
-      expect(
-        mockProjectRepository.findAllProjectLeaders
-      ).not.toHaveBeenCalled();
+      expect(mockProjectRepository.getAllLeaders).not.toHaveBeenCalled();
     });
 
     it('should call disconnectParticipantFromProject with correct parameters', async () => {
@@ -361,18 +348,20 @@ describe('ProjectService', () => {
         participantId
       );
 
-      expect(
-        mockProjectRepository.disconnectParticipantFromProject
-      ).toHaveBeenCalledWith(participantId, projectId);
+      expect(mockProjectRepository.removeParticipant).toHaveBeenCalledWith(
+        participantId,
+        projectId
+      );
     });
 
     it('should successfully remove a project leader if more than one project leader exists', async () => {
-      (mockProjectRepository.findProjectLeader as jest.Mock).mockResolvedValue({
+      (mockProjectRepository.findLeader as jest.Mock).mockResolvedValue({
         id: 1,
       });
-      (
-        mockProjectRepository.findAllProjectLeaders as jest.Mock
-      ).mockResolvedValue([{ id: 1 }, { id: 2 }]);
+      (mockProjectRepository.getAllLeaders as jest.Mock).mockResolvedValue([
+        { id: 1 },
+        { id: 2 },
+      ]);
 
       await projectService.removeParticipantFromProject(
         projectLeaderId,
@@ -380,18 +369,19 @@ describe('ProjectService', () => {
         participantId
       );
 
-      expect(
-        mockProjectRepository.disconnectParticipantFromProject
-      ).toHaveBeenCalledWith(participantId, projectId);
+      expect(mockProjectRepository.removeParticipant).toHaveBeenCalledWith(
+        participantId,
+        projectId
+      );
     });
 
     it('should throw an error if only one project leader remains', async () => {
-      (mockProjectRepository.findProjectLeader as jest.Mock).mockResolvedValue({
+      (mockProjectRepository.findLeader as jest.Mock).mockResolvedValue({
         id: 1,
       });
-      (
-        mockProjectRepository.findAllProjectLeaders as jest.Mock
-      ).mockResolvedValue([{ id: 1 }]);
+      (mockProjectRepository.getAllLeaders as jest.Mock).mockResolvedValue([
+        { id: 1 },
+      ]);
 
       await expect(
         projectService.removeParticipantFromProject(
@@ -463,7 +453,7 @@ describe('ProjectService', () => {
         participantId
       );
 
-      expect(mockProjectRepository.addNewProjectLeader).toHaveBeenCalledWith(
+      expect(mockProjectRepository.addLeader).toHaveBeenCalledWith(
         participantId,
         projectId
       );

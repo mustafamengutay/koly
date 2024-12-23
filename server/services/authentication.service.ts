@@ -43,7 +43,7 @@ export class AuthenticationService {
     }
 
     const hashedPassword = await this.encryptionService.hashPassword(password);
-    const newUser = await this.userRepository.createUser(
+    const newUser = await this.userRepository.create(
       name,
       surname,
       email,
@@ -61,7 +61,7 @@ export class AuthenticationService {
    * @returns A login token
    */
   public async login(email: string, password: string): Promise<string> {
-    const user = await this.userRepository.findUserByEmail(email);
+    const user = await this.userRepository.findByEmail(email);
     if (!user) {
       throw new HttpError(404, 'The user does not exist');
     }

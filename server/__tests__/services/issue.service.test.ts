@@ -3,7 +3,7 @@ import { Container } from 'inversify';
 
 import { IssueData, IssueType, IssueStatus } from '../../types/issue';
 
-import { IIssueRepository } from '../../repositories/issue.repository';
+import IIssueRepository from '../../types/repositories/IIssueRepository';
 import { IIssueValidator } from '../../services/validators/issueValidator';
 import { ProjectService } from '../../services/project.service';
 import { IssueService } from '../../services/issue.service';
@@ -31,7 +31,7 @@ describe('IssueService', () => {
 
     mockIssueRepository = {
       adopt: jest.fn(),
-      complete: jest.fn(),
+      markAsComplete: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
       findAll: jest.fn(),
@@ -284,7 +284,7 @@ describe('IssueService', () => {
       adoptedById: userId,
     };
 
-    it('should complete an issue successfully', async () => {
+    it('should mark as complete an issue successfully', async () => {
       (projectService.ensureUserIsParticipant as jest.Mock).mockResolvedValue(
         true
       );
@@ -292,7 +292,7 @@ describe('IssueService', () => {
       (mockIssueRepository.findById as jest.Mock).mockResolvedValue(
         mockOpenIssue
       );
-      (mockIssueRepository.complete as jest.Mock).mockResolvedValue({
+      (mockIssueRepository.markAsComplete as jest.Mock).mockResolvedValue({
         ...mockOpenIssue,
         status: IssueStatus.Completed,
       });

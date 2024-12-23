@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { Container } from 'inversify';
 
-import { IUserRepository } from '../../repositories/user.repository';
+import IUserRepository from '../../types/repositories/IUserRepository';
 import { ITokenService } from '../../services/token.service';
 import { IEncryptionService } from '../../services/encryption.service';
 import { AuthenticationService } from '../../services/authentication.service';
@@ -17,8 +17,8 @@ describe('AuthenticationService', () => {
 
   beforeEach(() => {
     mockUserRepository = {
-      createUser: jest.fn(),
-      findUserByEmail: jest.fn(),
+      create: jest.fn(),
+      findByEmail: jest.fn(),
       isEmailExist: jest.fn(),
     };
     mockTokenService = {
@@ -50,7 +50,7 @@ describe('AuthenticationService', () => {
 
     it('should create a user if the email does not exist', async () => {
       (mockUserRepository.isEmailExist as jest.Mock).mockResolvedValue(false);
-      (mockUserRepository.createUser as jest.Mock).mockResolvedValue({
+      (mockUserRepository.create as jest.Mock).mockResolvedValue({
         name: 'test',
         surname: 'data',
         email: 'test@gmail.com',
@@ -97,7 +97,7 @@ describe('AuthenticationService', () => {
       mockEncryptionService.hashPassword = jest
         .fn()
         .mockResolvedValue('hashedPassword');
-      mockUserRepository.createUser = jest.fn().mockRejectedValue(mockError);
+      mockUserRepository.create = jest.fn().mockRejectedValue(mockError);
 
       await expect(
         authenticationService.signUp(name, surname, email, password)
@@ -116,7 +116,7 @@ describe('AuthenticationService', () => {
         .fn()
         .mockResolvedValue(true);
       mockTokenService.createLoginToken = jest.fn().mockReturnValue(token);
-      mockUserRepository.findUserByEmail = jest.fn().mockResolvedValue({
+      mockUserRepository.findByEmail = jest.fn().mockResolvedValue({
         email,
         password,
       });
@@ -127,7 +127,7 @@ describe('AuthenticationService', () => {
     });
 
     it('should throw an Http error if the user does not exist', async () => {
-      mockUserRepository.findUserByEmail = jest.fn().mockResolvedValue(null);
+      mockUserRepository.findByEmail = jest.fn().mockResolvedValue(null);
 
       await expect(
         authenticationService.login(email, password)
@@ -135,7 +135,7 @@ describe('AuthenticationService', () => {
     });
 
     it('should throw an error if the password is incorrect', async () => {
-      mockUserRepository.findUserByEmail = jest.fn().mockResolvedValue({
+      mockUserRepository.findByEmail = jest.fn().mockResolvedValue({
         email,
         password,
       });

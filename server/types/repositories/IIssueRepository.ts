@@ -11,7 +11,7 @@ export default interface IIssueRepository {
   adopt(issueId: number, userId: number): Promise<Issue>;
   release(issueId: number, userId: number): Promise<Issue>;
   remove(issueId: number, userId: number): Promise<Issue>;
-  complete(issueId: number, userId: number): Promise<Issue>;
+  markAsComplete(issueId: number, userId: number): Promise<Issue>;
   findById(issueId: number, projectId: number): Promise<Issue>;
   findAll(where?: {
     type?: string;

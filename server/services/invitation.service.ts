@@ -38,17 +38,13 @@ export class InvitationService {
       projectId
     );
 
-    const user = await this.userRepository.findUserByEmail(participantEmail);
+    const user = await this.userRepository.findByEmail(participantEmail);
     if (!user) {
       throw new HttpError(404, 'The user does not exist');
     }
 
     await this.ensureInvitationIsNotSent(user.id, projectId);
-    await this.invitationRepository.sendProjectInvitation(
-      projectLeaderId,
-      projectId,
-      user.id
-    );
+    await this.invitationRepository.invite(projectLeaderId, projectId, user.id);
   }
 
   /**
@@ -58,7 +54,7 @@ export class InvitationService {
    * @returns User's project invitations.
    */
   public async listReceivedInvitations(userId: number) {
-    return await this.invitationRepository.findReceivedInvitations(userId);
+    return await this.invitationRepository.getReceived(userId);
   }
 
   /**
@@ -70,20 +66,14 @@ export class InvitationService {
     participantId: number,
     projectId: number
   ) {
-    await this.invitationRepository.makeUserProjectParticipant(
+    await this.invitationRepository.addParticipant(participantId, projectId);
+
+    const invitation = await this.invitationRepository.findById(
       participantId,
       projectId
     );
 
-    const invitation = await this.invitationRepository.findOne(
-      participantId,
-      projectId
-    );
-
-    await this.invitationRepository.removeInvitation(
-      participantId,
-      invitation!.id
-    );
+    await this.invitationRepository.remove(participantId, invitation!.id);
   }
 
   /**
@@ -92,11 +82,11 @@ export class InvitationService {
    * @param participantId User ID who received an invitation.
    */
   public async rejectProjectInvitation(userId: number, invitationId: number) {
-    await this.invitationRepository.removeInvitation(userId, invitationId);
+    await this.invitationRepository.remove(userId, invitationId);
   }
 
   public async ensureInvitationIsNotSent(inviteeId: number, projectId: number) {
-    const invitation = await this.invitationRepository.findOne(
+    const invitation = await this.invitationRepository.findById(
       inviteeId,
       projectId
     );

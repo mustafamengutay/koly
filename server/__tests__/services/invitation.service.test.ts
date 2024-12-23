@@ -1,8 +1,8 @@
 import 'reflect-metadata';
 import { Container } from 'inversify';
 
-import { IUserRepository } from '../../repositories/user.repository';
-import { IInvitationRepository } from '../../repositories/invitation.repository';
+import IUserRepository from '../../types/repositories/IUserRepository';
+import IInvitationRepository from '../../types/repositories/IInvitationRepository';
 import { ProjectService } from '../../services/project.service';
 import { InvitationService } from '../../services/invitation.service';
 
@@ -12,22 +12,22 @@ describe('InvitationService', () => {
   let container: Container;
 
   let mockInvitationRepository: IInvitationRepository;
-  let mockUserRepository: Pick<IUserRepository, 'findUserByEmail'>;
+  let mockUserRepository: Pick<IUserRepository, 'findByEmail'>;
   let mockProjectService: Pick<ProjectService, 'ensureUserIsProjectLeader'>;
 
   let invitationService: InvitationService;
 
   beforeEach(() => {
     mockInvitationRepository = {
-      sendProjectInvitation: jest.fn(),
-      findOne: jest.fn(),
-      findReceivedInvitations: jest.fn(),
-      makeUserProjectParticipant: jest.fn(),
-      removeInvitation: jest.fn(),
+      invite: jest.fn(),
+      findById: jest.fn(),
+      getReceived: jest.fn(),
+      addParticipant: jest.fn(),
+      remove: jest.fn(),
     };
 
     mockUserRepository = {
-      findUserByEmail: jest.fn(),
+      findByEmail: jest.fn(),
     };
 
     mockProjectService = {
@@ -58,7 +58,7 @@ describe('InvitationService', () => {
     const inviteeEmail = 'user@email.com';
 
     beforeEach(() => {
-      (mockUserRepository.findUserByEmail as jest.Mock).mockResolvedValue({
+      (mockUserRepository.findByEmail as jest.Mock).mockResolvedValue({
         id: inviteeId,
       });
       invitationService.ensureInvitationIsNotSent = jest.fn();
@@ -76,20 +76,20 @@ describe('InvitationService', () => {
       ).toHaveBeenCalledWith(inviterId, projectId);
     });
 
-    it('should call findUserByEmail with a participant email', async () => {
+    it('should call findByEmail with a participant email', async () => {
       await invitationService.inviteUserToProject(
         inviterId,
         projectId,
         inviteeEmail
       );
 
-      expect(
-        mockUserRepository.findUserByEmail as jest.Mock
-      ).toHaveBeenCalledWith(inviteeEmail);
+      expect(mockUserRepository.findByEmail as jest.Mock).toHaveBeenCalledWith(
+        inviteeEmail
+      );
     });
 
     it('should throw an error if the user cannot be found', async () => {
-      (mockUserRepository.findUserByEmail as jest.Mock).mockResolvedValue(
+      (mockUserRepository.findByEmail as jest.Mock).mockResolvedValue(
         undefined
       );
 
@@ -114,28 +114,28 @@ describe('InvitationService', () => {
       ).toHaveBeenCalledWith(inviteeId, projectId);
     });
 
-    it('should call sendProjectInvitation with correct parameters', async () => {
+    it('should call invite with correct parameters', async () => {
       await invitationService.inviteUserToProject(
         inviterId,
         projectId,
         inviteeEmail
       );
 
-      expect(
-        mockInvitationRepository.sendProjectInvitation as jest.Mock
-      ).toHaveBeenCalledWith(inviterId, projectId, inviteeId);
+      expect(mockInvitationRepository.invite as jest.Mock).toHaveBeenCalledWith(
+        inviterId,
+        projectId,
+        inviteeId
+      );
     });
   });
 
   describe('listReceivedInvitations', () => {
     const userId = 1;
 
-    it('should call findReceivedInvitations with invitee id', async () => {
+    it('should call getReceived with invitee id', async () => {
       await invitationService.listReceivedInvitations(userId);
 
-      expect(
-        mockInvitationRepository.findReceivedInvitations
-      ).toHaveBeenCalledWith(userId);
+      expect(mockInvitationRepository.getReceived).toHaveBeenCalledWith(userId);
     });
 
     it('should return received invitations successfully', async () => {
@@ -146,9 +146,9 @@ describe('InvitationService', () => {
       };
       const mockReceivedInvitations = [mockInvitation, mockInvitation];
 
-      (
-        mockInvitationRepository.findReceivedInvitations as jest.Mock
-      ).mockResolvedValue(mockReceivedInvitations);
+      (mockInvitationRepository.getReceived as jest.Mock).mockResolvedValue(
+        mockReceivedInvitations
+      );
 
       const receivedInvitations =
         await invitationService.listReceivedInvitations(userId);
@@ -163,32 +163,33 @@ describe('InvitationService', () => {
     const invitation = { id: 1 };
 
     beforeEach(() => {
-      (mockInvitationRepository.findOne as jest.Mock).mockResolvedValue(
+      (mockInvitationRepository.findById as jest.Mock).mockResolvedValue(
         invitation
       );
     });
 
-    it('should call makeUserProjectParticipant with correct parameters', async () => {
+    it('should call addParticipant with correct parameters', async () => {
       await invitationService.acceptProjectInvitation(participantId, projectId);
 
-      expect(
-        mockInvitationRepository.makeUserProjectParticipant
-      ).toHaveBeenCalledWith(participantId, projectId);
-    });
-
-    it('should call findOne with correct parameters', async () => {
-      await invitationService.acceptProjectInvitation(participantId, projectId);
-
-      expect(mockInvitationRepository.findOne).toHaveBeenCalledWith(
+      expect(mockInvitationRepository.addParticipant).toHaveBeenCalledWith(
         participantId,
         projectId
       );
     });
 
-    it('should call removeInvitation with correct parameters', async () => {
+    it('should call findById with correct parameters', async () => {
       await invitationService.acceptProjectInvitation(participantId, projectId);
 
-      expect(mockInvitationRepository.removeInvitation).toHaveBeenCalledWith(
+      expect(mockInvitationRepository.findById).toHaveBeenCalledWith(
+        participantId,
+        projectId
+      );
+    });
+
+    it('should call remove with correct parameters', async () => {
+      await invitationService.acceptProjectInvitation(participantId, projectId);
+
+      expect(mockInvitationRepository.remove).toHaveBeenCalledWith(
         invitation.id,
         participantId
       );
@@ -199,10 +200,10 @@ describe('InvitationService', () => {
     const invitationId = 1;
     const userId = 1;
 
-    it('should call removeInvitation with correct parameters', async () => {
+    it('should call remove with correct parameters', async () => {
       await invitationService.rejectProjectInvitation(userId, invitationId);
 
-      expect(mockInvitationRepository.removeInvitation).toHaveBeenCalledWith(
+      expect(mockInvitationRepository.remove).toHaveBeenCalledWith(
         invitationId,
         userId
       );
@@ -220,19 +221,19 @@ describe('InvitationService', () => {
     };
 
     beforeEach(() => {
-      mockInvitationRepository.findOne = jest.fn();
+      mockInvitationRepository.findById = jest.fn();
     });
 
-    it('should call findOne with correct parameters', async () => {
+    it('should call findById with correct parameters', async () => {
       await invitationService.ensureInvitationIsNotSent(inviteeId, projectId);
 
       expect(
-        mockInvitationRepository.findOne as jest.Mock
+        mockInvitationRepository.findById as jest.Mock
       ).toHaveBeenCalledWith(inviteeId, projectId);
     });
 
     it('should call pass the method if there is no invitation', async () => {
-      (mockInvitationRepository.findOne as jest.Mock).mockResolvedValue(
+      (mockInvitationRepository.findById as jest.Mock).mockResolvedValue(
         undefined
       );
 
@@ -242,7 +243,7 @@ describe('InvitationService', () => {
     });
 
     it('should throw HttpError if invitation is already exist', async () => {
-      (mockInvitationRepository.findOne as jest.Mock).mockResolvedValue(
+      (mockInvitationRepository.findById as jest.Mock).mockResolvedValue(
         mockInvitation
       );
 

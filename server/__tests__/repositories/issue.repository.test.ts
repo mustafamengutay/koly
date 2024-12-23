@@ -268,13 +268,13 @@ describe('IssueRepository', () => {
       adoptedById: userId,
     };
 
-    it('should complete an issue successfully', async () => {
+    it('should mark as complete an issue successfully', async () => {
       (prisma.issue.update as jest.Mock).mockResolvedValue({
         ...mockOpenIssue,
         status: IssueStatus.Completed,
       });
 
-      const completedIssue: Issue = await issueRepository.complete(
+      const completedIssue: Issue = await issueRepository.markAsComplete(
         issueId,
         userId
       );
@@ -292,9 +292,9 @@ describe('IssueRepository', () => {
       );
       (prisma.issue.update as jest.Mock).mockRejectedValue(error);
 
-      await expect(issueRepository.complete(issueId, userId)).rejects.toThrow(
-        error
-      );
+      await expect(
+        issueRepository.markAsComplete(issueId, userId)
+      ).rejects.toThrow(error);
     });
   });
 

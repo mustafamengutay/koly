@@ -21,7 +21,7 @@ export class ProjectService {
    * @returns New project object.
    */
   public async createProject(userId: number, name: string) {
-    return await this.projectRepository.createProject(userId, name);
+    return await this.projectRepository.create(userId, name);
   }
 
   /**
@@ -32,7 +32,7 @@ export class ProjectService {
    */
   public async removeProject(userId: number, projectId: number) {
     await this.ensureUserIsProjectLeader(userId, projectId);
-    return await this.projectRepository.removeProject(projectId);
+    return await this.projectRepository.remove(projectId);
   }
 
   /**
@@ -43,7 +43,7 @@ export class ProjectService {
    */
   public async listProjectParticipants(userId: number, projectId: number) {
     await this.ensureUserIsParticipant(userId, projectId);
-    return await this.projectRepository.listParticipants(projectId);
+    return await this.projectRepository.getParticipants(projectId);
   }
 
   /**
@@ -53,7 +53,7 @@ export class ProjectService {
    * @returns List of all projects.
    */
   public async listAllProjects(userId: number) {
-    return await this.projectRepository.listAllProjects(userId);
+    return await this.projectRepository.getAllProjects(userId);
   }
 
   /**
@@ -62,7 +62,7 @@ export class ProjectService {
    * @returns List of user projects.
    */
   public async listCreatedProjects(userId: number) {
-    return await this.projectRepository.listCreatedProjects(userId);
+    return await this.projectRepository.getCreatedProjects(userId);
   }
 
   /**
@@ -72,7 +72,7 @@ export class ProjectService {
    * @returns List of participated projects of a user.
    */
   public async listParticipatedProjects(userId: number) {
-    return await this.projectRepository.listParticipatedProjects(userId);
+    return await this.projectRepository.getParticipatedProjects(userId);
   }
 
   /**
@@ -104,7 +104,7 @@ export class ProjectService {
     await this.ensureUserIsProjectLeader(userId, projectId);
     await this.ensureUserIsParticipant(participantId, projectId);
     await this.ensureUserIsNotProjectLeader(participantId, projectId);
-    await this.projectRepository.addNewProjectLeader(participantId, projectId);
+    await this.projectRepository.addLeader(participantId, projectId);
   }
 
   /**
@@ -120,12 +120,15 @@ export class ProjectService {
   ) {
     await this.ensureUserIsProjectLeader(projectLeaderId, projectId);
 
-    const IsParticipantProjectLeader =
-      await this.projectRepository.findProjectLeader(participantId, projectId);
+    const IsParticipantProjectLeader = await this.projectRepository.findLeader(
+      participantId,
+      projectId
+    );
 
     if (IsParticipantProjectLeader) {
-      const allProjectLeaders =
-        await this.projectRepository.findAllProjectLeaders(projectId);
+      const allProjectLeaders = await this.projectRepository.getAllLeaders(
+        projectId
+      );
 
       if (allProjectLeaders!.length === 1) {
         throw new HttpError(
@@ -135,14 +138,11 @@ export class ProjectService {
       }
     }
 
-    await this.projectRepository.disconnectParticipantFromProject(
-      participantId,
-      projectId
-    );
+    await this.projectRepository.removeParticipant(participantId, projectId);
   }
 
   public async ensureUserIsProjectLeader(userId: number, projectId: number) {
-    const isProjectLeader = await this.projectRepository.findProjectLeader(
+    const isProjectLeader = await this.projectRepository.findLeader(
       userId,
       projectId
     );
@@ -155,7 +155,7 @@ export class ProjectService {
     participantId: number,
     projectId: number
   ) {
-    const isProjectLeader = await this.projectRepository.findProjectLeader(
+    const isProjectLeader = await this.projectRepository.findLeader(
       participantId,
       projectId
     );

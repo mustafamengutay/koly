@@ -97,7 +97,7 @@ export class IssueRepository implements IIssueRepository {
     }
   }
 
-  public async complete(issueId: number, userId: number): Promise<Issue> {
+  public async markAsComplete(issueId: number, userId: number): Promise<Issue> {
     try {
       const completedIssue: Issue = await prisma.issue.update({
         where: {
