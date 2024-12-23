@@ -1,9 +1,8 @@
 import { Container } from 'inversify';
 
-import {
-  IUserRepository,
-  UserRepository,
-} from './repositories/user.repository';
+import { UserRepository } from './repositories/user.repository';
+import IUserRepository from './types/repositories/IUserRepository';
+
 import { ITokenService, TokenService } from './services/token.service';
 import {
   EncryptionService,
@@ -12,17 +11,13 @@ import {
 import { AuthenticationService } from './services/authentication.service';
 import { AuthenticationController } from './controllers/authentication.controller';
 
-import {
-  IProjectRepository,
-  ProjectRepository,
-} from './repositories/project.repository';
+import IProjectRepository from './types/repositories/IProjectRepository';
+import { ProjectRepository } from './repositories/project.repository';
 import { ProjectService } from './services/project.service';
 import { ProjectController } from './controllers/project.controller';
 
-import {
-  IIssueRepository,
-  IssueRepository,
-} from './repositories/issue.repository';
+import IIssueRepository from './types/repositories/IIssueRepository';
+import { IssueRepository } from './repositories/issue.repository';
 import { IssueService } from './services/issue.service';
 import {
   IIssueValidator,
@@ -30,17 +25,13 @@ import {
 } from './services/validators/issueValidator';
 import { IssueController } from './controllers/issue.controller';
 
-import {
-  ISearchRepository,
-  SearchRepository,
-} from './repositories/search.repository';
+import ISearchRepository from './types/repositories/ISearchRepository';
+import { SearchRepository } from './repositories/search.repository';
 import { SearchService } from './services/search.service';
 import { SearchController } from './controllers/search.controller';
 
-import {
-  IInvitationRepository,
-  InvitationRepository,
-} from './repositories/invitation.repository';
+import IInvitationRepository from './types/repositories/IInvitationRepository';
+import { InvitationRepository } from './repositories/invitation.repository';
 import { InvitationService } from './services/invitation.service';
 import { InvitationController } from './controllers/invitation.controller';
 

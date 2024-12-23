@@ -1,9 +1,9 @@
 import { inject, injectable } from 'inversify';
 
 import { ITokenService } from './token.service';
-import { IUserRepository } from '../repositories/user.repository';
 import { IEncryptionService } from './encryption.service';
 
+import IUserRepository from '../types/repositories/IUserRepository';
 import { HttpError } from '../types/errors';
 
 @injectable()

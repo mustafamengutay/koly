@@ -1,30 +1,10 @@
 import { injectable } from 'inversify';
-
 import prisma from '../configs/database';
 import { Issue } from '@prisma/client';
+
 import { IssueData, IssueStatus } from '../types/issue';
-
+import IIssueRepository from '../types/repositories/IIssueRepository';
 import { HttpError } from '../types/errors';
-
-export interface IIssueRepository {
-  create(issue: IssueData): Promise<Issue>;
-  update(
-    issueId: number,
-    data: { title?: string; description?: string; type?: string }
-  ): Promise<Issue>;
-  adopt(issueId: number, userId: number): Promise<Issue>;
-  release(issueId: number, userId: number): Promise<Issue>;
-  remove(issueId: number, userId: number): Promise<Issue>;
-  complete(issueId: number, userId: number): Promise<Issue>;
-  findById(issueId: number, projectId: number): Promise<Issue>;
-  findAll(where?: {
-    type?: string;
-    status?: string;
-    projectId?: number;
-    adoptedById?: number;
-    reportedById?: number;
-  }): Promise<Issue[]>;
-}
 
 @injectable()
 export class IssueRepository implements IIssueRepository {

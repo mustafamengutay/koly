@@ -1,9 +1,9 @@
 import { inject, injectable } from 'inversify';
 
-import { IInvitationRepository } from '../repositories/invitation.repository';
-import { IUserRepository } from '../repositories/user.repository';
 import { ProjectService } from './project.service';
 
+import IUserRepository from '../types/repositories/IUserRepository';
+import IInvitationRepository from '../types/repositories/IInvitationRepository';
 import { HttpError } from '../types/errors';
 
 @injectable()

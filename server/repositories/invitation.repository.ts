@@ -1,25 +1,10 @@
 import { injectable } from 'inversify';
-
 import prisma from '../configs/database';
 import { Invitation } from '@prisma/client';
+
 import { InvitationStatus } from '../types/invitation';
-
+import IInvitationRepository from '../types/repositories/IInvitationRepository';
 import { HttpError } from '../types/errors';
-
-export interface IInvitationRepository {
-  sendProjectInvitation(
-    inviterId: number,
-    projectId: number,
-    inviteeId: number
-  ): Promise<any>;
-  findOne(inviteeId: number, projectId: number): Promise<Invitation | null>;
-  findReceivedInvitations(userId: number): Promise<any>;
-  makeUserProjectParticipant(
-    participantId: number,
-    projectId: number
-  ): Promise<undefined>;
-  removeInvitation(userId: number, invitationId: number): Promise<undefined>;
-}
 
 @injectable()
 export class InvitationRepository implements IInvitationRepository {

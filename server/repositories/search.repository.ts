@@ -1,13 +1,9 @@
 import { injectable } from 'inversify';
-
 import prisma from '../configs/database';
 import { Issue } from '@prisma/client';
 
+import ISearchRepository from '../types/repositories/ISearchRepository';
 import { HttpError } from '../types/errors';
-
-export interface ISearchRepository {
-  searchIssue(projectId: number, query: string): Promise<Issue[]>;
-}
 
 @injectable()
 export class SearchRepository implements ISearchRepository {

@@ -1,7 +1,8 @@
 import { inject, injectable } from 'inversify';
 
-import { ISearchRepository } from '../repositories/search.repository';
 import { ProjectService } from './project.service';
+
+import ISearchRepository from '../types/repositories/ISearchRepository';
 
 @injectable()
 export class SearchService {

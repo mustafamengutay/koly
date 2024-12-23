@@ -1,7 +1,6 @@
 import { injectable, inject } from 'inversify';
 
-import { IProjectRepository } from '../repositories/project.repository';
-
+import IProjectRepository from '../types/repositories/IProjectRepository';
 import { HttpError } from '../types/errors';
 
 @injectable()

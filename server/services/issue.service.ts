@@ -1,10 +1,10 @@
 import { inject, injectable } from 'inversify';
 
-import { IssueData, IssueStatus } from '../types/issue';
-
-import { IIssueRepository } from '../repositories/issue.repository';
-import { IIssueValidator } from './validators/issueValidator';
 import { ProjectService } from './project.service';
+import { IIssueValidator } from './validators/issueValidator';
+
+import { IssueData, IssueStatus } from '../types/issue';
+import IIssueRepository from '../types/repositories/IIssueRepository';
 
 @injectable()
 export class IssueService {
