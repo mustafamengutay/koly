@@ -89,10 +89,10 @@ describe('SearchService', () => {
 
       await searchService.searchIssue(userId, projectId, query);
 
-      expect(mockSearchRepository.searchIssue).toHaveBeenCalledWith(
+      expect(mockSearchRepository.searchIssue).toHaveBeenCalledWith({
         projectId,
-        query
-      );
+        query,
+      });
     });
 
     it('should return the result from the repository', async () => {

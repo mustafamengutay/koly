@@ -38,10 +38,10 @@ describe('SearchRepository', () => {
     it('should return a list of Issue on a successful call', async () => {
       (prisma.issue.findMany as jest.Mock).mockResolvedValue(issues);
 
-      const results: Issue[] = await searchRepository.searchIssue(
+      const results: Issue[] = await searchRepository.searchIssue({
         projectId,
-        query
-      );
+        query,
+      });
 
       expect(results).toContain(issue);
     });
@@ -49,10 +49,10 @@ describe('SearchRepository', () => {
     it('should return an empty list if the query does not match with an Issue', async () => {
       (prisma.issue.findMany as jest.Mock).mockResolvedValue([]);
 
-      const results: Issue[] = await searchRepository.searchIssue(
+      const results: Issue[] = await searchRepository.searchIssue({
         projectId,
-        'Does not match'
-      );
+        query: 'Does not match',
+      });
 
       expect(results).toHaveLength(0);
     });
@@ -62,7 +62,7 @@ describe('SearchRepository', () => {
       (prisma.issue.findMany as jest.Mock).mockRejectedValue(error);
 
       await expect(
-        searchRepository.searchIssue(projectId, query)
+        searchRepository.searchIssue({ projectId, query })
       ).rejects.toThrow(error);
     });
   });

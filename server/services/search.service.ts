@@ -27,6 +27,6 @@ export class SearchService {
    */
   public async searchIssue(userId: number, projectId: number, query: string) {
     await this.projectService.ensureUserIsParticipant(userId, projectId);
-    return await this.searchRepository.searchIssue(projectId, query);
+    return await this.searchRepository.searchIssue({ projectId, query });
   }
 }

@@ -7,15 +7,18 @@ import { HttpError } from '../types/errors';
 
 @injectable()
 export class SearchRepository implements ISearchRepository {
-  public async searchIssue(projectId: number, query: string): Promise<Issue[]> {
+  public async searchIssue(data: {
+    projectId: number;
+    query: string;
+  }): Promise<Issue[]> {
     try {
       const issues: Issue[] = await prisma.issue.findMany({
         where: {
           project: {
-            id: projectId,
+            id: data.projectId,
           },
           title: {
-            contains: query,
+            contains: data.query,
             mode: 'insensitive',
           },
         },

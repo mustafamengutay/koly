@@ -5,6 +5,10 @@ export type IssueData = Pick<
   'title' | 'description' | 'type' | 'projectId' | 'reportedById'
 >;
 
+export type UpdateIssueData = Partial<
+  Pick<Issue, 'title' | 'description' | 'type'>
+>;
+
 export const IssueStatus = {
   Open: 'open',
   InProgress: 'in progress',

@@ -122,9 +122,7 @@ describe('InvitationService', () => {
       );
 
       expect(mockInvitationRepository.invite as jest.Mock).toHaveBeenCalledWith(
-        inviterId,
-        projectId,
-        inviteeId
+        { inviterId, projectId, inviteeId }
       );
     });
   });
@@ -171,28 +169,28 @@ describe('InvitationService', () => {
     it('should call addParticipant with correct parameters', async () => {
       await invitationService.acceptProjectInvitation(participantId, projectId);
 
-      expect(mockInvitationRepository.addParticipant).toHaveBeenCalledWith(
+      expect(mockInvitationRepository.addParticipant).toHaveBeenCalledWith({
         participantId,
-        projectId
-      );
+        projectId,
+      });
     });
 
     it('should call findById with correct parameters', async () => {
       await invitationService.acceptProjectInvitation(participantId, projectId);
 
-      expect(mockInvitationRepository.findById).toHaveBeenCalledWith(
-        participantId,
-        projectId
-      );
+      expect(mockInvitationRepository.findById).toHaveBeenCalledWith({
+        inviteeId: participantId,
+        projectId,
+      });
     });
 
     it('should call remove with correct parameters', async () => {
       await invitationService.acceptProjectInvitation(participantId, projectId);
 
-      expect(mockInvitationRepository.remove).toHaveBeenCalledWith(
-        invitation.id,
-        participantId
-      );
+      expect(mockInvitationRepository.remove).toHaveBeenCalledWith({
+        userId: invitation.id,
+        invitationId: participantId,
+      });
     });
   });
 
@@ -203,10 +201,10 @@ describe('InvitationService', () => {
     it('should call remove with correct parameters', async () => {
       await invitationService.rejectProjectInvitation(userId, invitationId);
 
-      expect(mockInvitationRepository.remove).toHaveBeenCalledWith(
+      expect(mockInvitationRepository.remove).toHaveBeenCalledWith({
+        userId,
         invitationId,
-        userId
-      );
+      });
     });
   });
 
@@ -229,7 +227,7 @@ describe('InvitationService', () => {
 
       expect(
         mockInvitationRepository.findById as jest.Mock
-      ).toHaveBeenCalledWith(inviteeId, projectId);
+      ).toHaveBeenCalledWith({ inviteeId, projectId });
     });
 
     it('should call pass the method if there is no invitation', async () => {

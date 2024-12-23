@@ -53,13 +53,16 @@ export class IssueService {
     projectId: number
   ) {
     await this.projectService.ensureUserIsParticipant(userId, projectId);
-    const issue = await this.issueRepository.findById(issueId, projectId);
+    const issue = await this.issueRepository.findById({ issueId, projectId });
     this.issueValidator.validateIssueReporter(issue.reportedById, userId);
 
-    return await this.issueRepository.update(issue.id, {
-      title: issueData.title,
-      description: issueData.description,
-      type: issueData.type,
+    return await this.issueRepository.update({
+      issueId: issue.id,
+      updateData: {
+        title: issueData.title,
+        description: issueData.description,
+        type: issueData.type,
+      },
     });
   }
 
@@ -74,10 +77,10 @@ export class IssueService {
   public async adoptIssue(issueId: number, userId: number, projectId: number) {
     await this.projectService.ensureUserIsParticipant(userId, projectId);
 
-    const issue = await this.issueRepository.findById(issueId, projectId);
+    const issue = await this.issueRepository.findById({ issueId, projectId });
     this.issueValidator.validateIssueNotAdopted(issue.adoptedById);
 
-    return await this.issueRepository.adopt(issue.id, userId);
+    return await this.issueRepository.adopt({ issueId: issue.id, userId });
   }
 
   /**
@@ -120,10 +123,10 @@ export class IssueService {
   ) {
     await this.projectService.ensureUserIsParticipant(userId, projectId);
 
-    const issue = await this.issueRepository.findById(issueId, projectId);
+    const issue = await this.issueRepository.findById({ issueId, projectId });
     this.issueValidator.validateIssueAdopter(issue.adoptedById, userId);
 
-    return this.issueRepository.release(issue.id, userId);
+    return this.issueRepository.release({ issueId: issue.id, userId });
   }
 
   /**
@@ -166,10 +169,10 @@ export class IssueService {
   ) {
     await this.projectService.ensureUserIsParticipant(userId, projectId);
 
-    const issue = await this.issueRepository.findById(issueId, projectId);
+    const issue = await this.issueRepository.findById({ issueId, projectId });
     this.issueValidator.validateIssueReporter(issue.reportedById, userId);
 
-    return this.issueRepository.remove(issue.id, userId);
+    return this.issueRepository.remove({ issueId: issue.id, userId });
   }
 
   /**
@@ -186,11 +189,11 @@ export class IssueService {
   ) {
     await this.projectService.ensureUserIsParticipant(userId, projectId);
 
-    const issue = await this.issueRepository.findById(issueId, projectId);
+    const issue = await this.issueRepository.findById({ issueId, projectId });
     this.issueValidator.validateIssueAdopter(issue.adoptedById, userId);
     this.issueValidator.validateIssueCompleted(issue.status);
 
-    return this.issueRepository.markAsComplete(issue.id, userId);
+    return this.issueRepository.markAsComplete({ issueId: issue.id, userId });
   }
 
   /**
@@ -207,7 +210,7 @@ export class IssueService {
     projectId: number
   ) {
     await this.projectService.ensureUserIsParticipant(userId, projectId);
-    return await this.issueRepository.findById(issueId, projectId);
+    return await this.issueRepository.findById({ issueId, projectId });
   }
 
   /**

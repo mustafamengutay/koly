@@ -206,10 +206,10 @@ describe('ProjectService', () => {
         newProjectName
       );
 
-      expect(mockProjectRepository.updateName).toHaveBeenCalledWith(
-        mockProject.id,
-        newProjectName
-      );
+      expect(mockProjectRepository.updateName).toHaveBeenCalledWith({
+        projectId: mockProject.id,
+        name: newProjectName,
+      });
     });
 
     it('should return the result from the repository', async () => {
@@ -303,10 +303,10 @@ describe('ProjectService', () => {
         participantId
       );
 
-      expect(mockProjectRepository.findLeader).toHaveBeenCalledWith(
-        participantId,
-        projectId
-      );
+      expect(mockProjectRepository.findLeader).toHaveBeenCalledWith({
+        userId: participantId,
+        projectId,
+      });
     });
 
     it('should call findAllProjectLeaders with projectId if a project leader exist', async () => {
@@ -341,17 +341,17 @@ describe('ProjectService', () => {
       expect(mockProjectRepository.getAllLeaders).not.toHaveBeenCalled();
     });
 
-    it('should call disconnectParticipantFromProject with correct parameters', async () => {
+    it('should call removeParticipant with correct parameters', async () => {
       await projectService.removeParticipantFromProject(
         projectLeaderId,
         projectId,
         participantId
       );
 
-      expect(mockProjectRepository.removeParticipant).toHaveBeenCalledWith(
+      expect(mockProjectRepository.removeParticipant).toHaveBeenCalledWith({
         participantId,
-        projectId
-      );
+        projectId,
+      });
     });
 
     it('should successfully remove a project leader if more than one project leader exists', async () => {
@@ -369,10 +369,10 @@ describe('ProjectService', () => {
         participantId
       );
 
-      expect(mockProjectRepository.removeParticipant).toHaveBeenCalledWith(
+      expect(mockProjectRepository.removeParticipant).toHaveBeenCalledWith({
         participantId,
-        projectId
-      );
+        projectId,
+      });
     });
 
     it('should throw an error if only one project leader remains', async () => {
@@ -453,10 +453,10 @@ describe('ProjectService', () => {
         participantId
       );
 
-      expect(mockProjectRepository.addLeader).toHaveBeenCalledWith(
-        participantId,
-        projectId
-      );
+      expect(mockProjectRepository.addLeader).toHaveBeenCalledWith({
+        userId: participantId,
+        projectId,
+      });
     });
   });
 });

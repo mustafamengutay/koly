@@ -8,17 +8,17 @@ import { HttpError } from '../types/errors';
 
 @injectable()
 export class InvitationRepository implements IInvitationRepository {
-  public async invite(
-    inviterId: number,
-    projectId: number,
-    inviteeId: number
-  ): Promise<void> {
+  public async invite(data: {
+    inviterId: number;
+    projectId: number;
+    inviteeId: number;
+  }): Promise<void> {
     try {
       await prisma.invitation.create({
         data: {
-          inviterId,
-          projectId,
-          inviteeId,
+          inviterId: data.inviterId,
+          projectId: data.projectId,
+          inviteeId: data.inviteeId,
           status: InvitationStatus.Pending,
         },
       });
@@ -27,15 +27,15 @@ export class InvitationRepository implements IInvitationRepository {
     }
   }
 
-  public async findById(
-    inviteeId: number,
-    projectId: number
-  ): Promise<Invitation | null> {
+  public async findById(where: {
+    inviteeId: number;
+    projectId: number;
+  }): Promise<Invitation | null> {
     try {
       const invitation = await prisma.invitation.findFirst({
         where: {
-          projectId,
-          inviteeId,
+          projectId: where.projectId,
+          inviteeId: where.inviteeId,
         },
       });
 
@@ -76,19 +76,19 @@ export class InvitationRepository implements IInvitationRepository {
     }
   }
 
-  public async addParticipant(
-    participantId: number,
-    projectId: number
-  ): Promise<void> {
+  public async addParticipant(data: {
+    participantId: number;
+    projectId: number;
+  }): Promise<void> {
     try {
       await prisma.project.update({
         where: {
-          id: projectId,
+          id: data.projectId,
         },
         data: {
           participants: {
             connect: {
-              id: participantId,
+              id: data.participantId,
             },
           },
         },
@@ -98,12 +98,15 @@ export class InvitationRepository implements IInvitationRepository {
     }
   }
 
-  public async remove(userId: number, invitationId: number): Promise<void> {
+  public async remove(data: {
+    userId: number;
+    invitationId: number;
+  }): Promise<void> {
     try {
       await prisma.invitation.delete({
         where: {
-          id: invitationId,
-          inviteeId: userId,
+          id: data.invitationId,
+          inviteeId: data.userId,
         },
       });
     } catch {

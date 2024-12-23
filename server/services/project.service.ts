@@ -21,7 +21,7 @@ export class ProjectService {
    * @returns New project object.
    */
   public async createProject(userId: number, name: string) {
-    return await this.projectRepository.create(userId, name);
+    return await this.projectRepository.create({ userId, name });
   }
 
   /**
@@ -88,7 +88,7 @@ export class ProjectService {
     name: string
   ) {
     await this.ensureUserIsProjectLeader(userId, projectId);
-    return await this.projectRepository.updateName(projectId, name);
+    return await this.projectRepository.updateName({ projectId, name });
   }
 
   /**
@@ -104,7 +104,10 @@ export class ProjectService {
     await this.ensureUserIsProjectLeader(userId, projectId);
     await this.ensureUserIsParticipant(participantId, projectId);
     await this.ensureUserIsNotProjectLeader(participantId, projectId);
-    await this.projectRepository.addLeader(participantId, projectId);
+    await this.projectRepository.addLeader({
+      userId: participantId,
+      projectId,
+    });
   }
 
   /**
@@ -120,10 +123,10 @@ export class ProjectService {
   ) {
     await this.ensureUserIsProjectLeader(projectLeaderId, projectId);
 
-    const IsParticipantProjectLeader = await this.projectRepository.findLeader(
-      participantId,
-      projectId
-    );
+    const IsParticipantProjectLeader = await this.projectRepository.findLeader({
+      userId: participantId,
+      projectId,
+    });
 
     if (IsParticipantProjectLeader) {
       const allProjectLeaders = await this.projectRepository.getAllLeaders(
@@ -138,14 +141,17 @@ export class ProjectService {
       }
     }
 
-    await this.projectRepository.removeParticipant(participantId, projectId);
+    await this.projectRepository.removeParticipant({
+      participantId,
+      projectId,
+    });
   }
 
   public async ensureUserIsProjectLeader(userId: number, projectId: number) {
-    const isProjectLeader = await this.projectRepository.findLeader(
+    const isProjectLeader = await this.projectRepository.findLeader({
       userId,
-      projectId
-    );
+      projectId,
+    });
     if (!isProjectLeader) {
       throw new HttpError(409, 'User is not the project leader of the project');
     }
@@ -155,10 +161,10 @@ export class ProjectService {
     participantId: number,
     projectId: number
   ) {
-    const isProjectLeader = await this.projectRepository.findLeader(
-      participantId,
-      projectId
-    );
+    const isProjectLeader = await this.projectRepository.findLeader({
+      userId: participantId,
+      projectId,
+    });
     if (isProjectLeader) {
       throw new HttpError(
         409,
@@ -168,20 +174,20 @@ export class ProjectService {
   }
 
   public async ensureUserIsNotParticipant(userId: number, projectId: number) {
-    const isParticipant = await this.projectRepository.findParticipant(
+    const isParticipant = await this.projectRepository.findParticipant({
       userId,
-      projectId
-    );
+      projectId,
+    });
     if (isParticipant) {
       throw new HttpError(403, 'User is already a participant of the project');
     }
   }
 
   public async ensureUserIsParticipant(userId: number, projectId: number) {
-    const isParticipant = await this.projectRepository.findParticipant(
+    const isParticipant = await this.projectRepository.findParticipant({
       userId,
-      projectId
-    );
+      projectId,
+    });
     if (!isParticipant) {
       throw new HttpError(409, 'User is not a participant of the project');
     }

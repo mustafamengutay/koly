@@ -30,7 +30,7 @@ describe('InvitationRepository', () => {
     const inviteeId = 2;
 
     it('should call create with correct parameters', async () => {
-      await invitationRepository.invite(inviterId, projectId, inviteeId);
+      await invitationRepository.invite({ inviterId, projectId, inviteeId });
 
       expect(prisma.invitation.create as jest.Mock).toHaveBeenCalledWith({
         data: {
@@ -47,7 +47,7 @@ describe('InvitationRepository', () => {
       (prisma.invitation.create as jest.Mock).mockRejectedValue(error);
 
       await expect(
-        invitationRepository.invite(inviterId, projectId, inviteeId)
+        invitationRepository.invite({ inviterId, projectId, inviteeId })
       ).rejects.toThrow(error);
     });
   });
@@ -57,7 +57,7 @@ describe('InvitationRepository', () => {
     const inviteeId = 1;
 
     it('should call findFirst with correct parameters', async () => {
-      await invitationRepository.findById(inviteeId, projectId);
+      await invitationRepository.findById({ inviteeId, projectId });
 
       expect(prisma.invitation.findFirst as jest.Mock).toHaveBeenCalledWith({
         where: {
@@ -78,10 +78,10 @@ describe('InvitationRepository', () => {
         mockInvitation
       );
 
-      const invitation = await invitationRepository.findById(
+      const invitation = await invitationRepository.findById({
         inviteeId,
-        projectId
-      );
+        projectId,
+      });
 
       expect(invitation).toEqual(mockInvitation);
     });
@@ -91,7 +91,7 @@ describe('InvitationRepository', () => {
       (prisma.invitation.findFirst as jest.Mock).mockRejectedValue(error);
 
       await expect(
-        invitationRepository.findById(inviteeId, projectId)
+        invitationRepository.findById({ inviteeId, projectId })
       ).rejects.toThrow(error);
     });
   });
@@ -161,7 +161,7 @@ describe('InvitationRepository', () => {
     const projectId = 1;
 
     it('should call update with correct parameters', async () => {
-      await invitationRepository.addParticipant(participantId, projectId);
+      await invitationRepository.addParticipant({ participantId, projectId });
 
       expect(prisma.project.update as jest.Mock).toHaveBeenCalledWith({
         where: {
@@ -182,7 +182,7 @@ describe('InvitationRepository', () => {
       (prisma.project.update as jest.Mock).mockRejectedValue(error);
 
       await expect(
-        invitationRepository.addParticipant(participantId, projectId)
+        invitationRepository.addParticipant({ participantId, projectId })
       ).rejects.toThrow(error);
     });
   });
@@ -192,7 +192,7 @@ describe('InvitationRepository', () => {
     const userId = 1;
 
     it('should call delete with correct parameters', async () => {
-      await invitationRepository.remove(userId, invitationId);
+      await invitationRepository.remove({ userId, invitationId });
 
       expect(prisma.invitation.delete as jest.Mock).toHaveBeenCalledWith({
         where: {
@@ -207,7 +207,7 @@ describe('InvitationRepository', () => {
       (prisma.invitation.delete as jest.Mock).mockRejectedValue(error);
 
       await expect(
-        invitationRepository.remove(userId, invitationId)
+        invitationRepository.remove({ userId, invitationId })
       ).rejects.toThrow(error);
     });
   });

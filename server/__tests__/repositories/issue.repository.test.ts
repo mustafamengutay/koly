@@ -67,10 +67,10 @@ describe('IssueRepository', () => {
     it('should return an updated Issue on successful updating', async () => {
       (prisma.issue.update as jest.Mock).mockResolvedValue(mockUpdateIssueData);
 
-      const updatedIssue: Issue = await issueRepository.update(
+      const updatedIssue: Issue = await issueRepository.update({
         issueId,
-        mockUpdateIssueData
-      );
+        updateData: mockUpdateIssueData,
+      });
 
       expect(updatedIssue).toBe(mockUpdateIssueData);
     });
@@ -80,9 +80,9 @@ describe('IssueRepository', () => {
         new HttpError(500, 'The project could not be updated')
       );
 
-      await expect(issueRepository.update(issueId, issue)).rejects.toThrow(
-        HttpError
-      );
+      await expect(
+        issueRepository.update({ issueId, updateData: issue })
+      ).rejects.toThrow(HttpError);
     });
   });
 
@@ -162,7 +162,10 @@ describe('IssueRepository', () => {
         status: IssueStatus.InProgress,
       });
 
-      const adoptedIssue: Issue = await issueRepository.adopt(issueId, userId);
+      const adoptedIssue: Issue = await issueRepository.adopt({
+        issueId,
+        userId,
+      });
 
       expect(adoptedIssue.adoptedById).toBe(userId);
     });
@@ -174,7 +177,10 @@ describe('IssueRepository', () => {
         status: IssueStatus.InProgress,
       });
 
-      const adoptedIssue: Issue = await issueRepository.adopt(issueId, userId);
+      const adoptedIssue: Issue = await issueRepository.adopt({
+        issueId,
+        userId,
+      });
 
       expect(adoptedIssue.status).toBe(IssueStatus.InProgress);
     });
@@ -186,7 +192,7 @@ describe('IssueRepository', () => {
       );
       (prisma.issue.update as jest.Mock).mockRejectedValue(error);
 
-      await expect(issueRepository.adopt(issueId, userId)).rejects.toThrow(
+      await expect(issueRepository.adopt({ issueId, userId })).rejects.toThrow(
         error
       );
     });
@@ -204,10 +210,10 @@ describe('IssueRepository', () => {
         status: IssueStatus.Open,
       });
 
-      const releasedIssue: Issue = await issueRepository.release(
+      const releasedIssue: Issue = await issueRepository.release({
         issueId,
-        userId
-      );
+        userId,
+      });
 
       expect(releasedIssue).toEqual(mockReleasedIssue);
     });
@@ -218,10 +224,10 @@ describe('IssueRepository', () => {
         status: IssueStatus.Open,
       });
 
-      const releasedIssue: Issue = await issueRepository.release(
+      const releasedIssue: Issue = await issueRepository.release({
         issueId,
-        userId
-      );
+        userId,
+      });
 
       expect(releasedIssue.status).toEqual(IssueStatus.Open);
     });
@@ -233,9 +239,9 @@ describe('IssueRepository', () => {
       );
       (prisma.issue.update as jest.Mock).mockRejectedValue(error);
 
-      await expect(issueRepository.release(issueId, userId)).rejects.toThrow(
-        error
-      );
+      await expect(
+        issueRepository.release({ issueId, userId })
+      ).rejects.toThrow(error);
     });
   });
 
@@ -243,7 +249,10 @@ describe('IssueRepository', () => {
     it('should remove an issue successfully', async () => {
       (prisma.issue.delete as jest.Mock).mockResolvedValue(issue);
 
-      const removedIssue: Issue = await issueRepository.remove(issueId, userId);
+      const removedIssue: Issue = await issueRepository.remove({
+        issueId,
+        userId,
+      });
 
       expect(removedIssue).toBe(issue);
     });
@@ -255,7 +264,7 @@ describe('IssueRepository', () => {
       );
       (prisma.issue.delete as jest.Mock).mockRejectedValue(error);
 
-      await expect(issueRepository.remove(issueId, userId)).rejects.toThrow(
+      await expect(issueRepository.remove({ issueId, userId })).rejects.toThrow(
         error
       );
     });
@@ -274,10 +283,10 @@ describe('IssueRepository', () => {
         status: IssueStatus.Completed,
       });
 
-      const completedIssue: Issue = await issueRepository.markAsComplete(
+      const completedIssue: Issue = await issueRepository.markAsComplete({
         issueId,
-        userId
-      );
+        userId,
+      });
 
       expect(completedIssue).toEqual({
         ...mockOpenIssue,
@@ -293,7 +302,7 @@ describe('IssueRepository', () => {
       (prisma.issue.update as jest.Mock).mockRejectedValue(error);
 
       await expect(
-        issueRepository.markAsComplete(issueId, userId)
+        issueRepository.markAsComplete({ issueId, userId })
       ).rejects.toThrow(error);
     });
   });
@@ -302,10 +311,10 @@ describe('IssueRepository', () => {
     it('should return an issue successfully', async () => {
       (prisma.issue.findUniqueOrThrow as jest.Mock).mockResolvedValue(issue);
 
-      const issueDetails: Issue = await issueRepository.findById(
+      const issueDetails: Issue = await issueRepository.findById({
         issueId,
-        userId
-      );
+        projectId,
+      });
 
       expect(issueDetails).toBe(issue);
     });
@@ -315,9 +324,9 @@ describe('IssueRepository', () => {
       (error as any).code = 'P2025';
       (prisma.issue.findUniqueOrThrow as jest.Mock).mockRejectedValue(error);
 
-      await expect(issueRepository.findById(issueId, userId)).rejects.toThrow(
-        error
-      );
+      await expect(
+        issueRepository.findById({ issueId, projectId })
+      ).rejects.toThrow(error);
     });
 
     it('should throw an error if issue cannot be found', async () => {
@@ -327,9 +336,9 @@ describe('IssueRepository', () => {
       );
       (prisma.issue.findUniqueOrThrow as jest.Mock).mockRejectedValue(error);
 
-      await expect(issueRepository.findById(issueId, userId)).rejects.toThrow(
-        error
-      );
+      await expect(
+        issueRepository.findById({ issueId, projectId })
+      ).rejects.toThrow(error);
     });
   });
 });

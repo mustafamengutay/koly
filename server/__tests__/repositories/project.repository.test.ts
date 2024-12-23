@@ -37,10 +37,10 @@ describe('ProjectRepository', () => {
     it('should create a new project on successful project creation', async () => {
       (prisma.project.create as jest.Mock).mockResolvedValue(project);
 
-      const newProject: Project = await projectRepository.create(
+      const newProject: Project = await projectRepository.create({
         userId,
-        projectName
-      );
+        name: projectName,
+      });
 
       expect(newProject).toBe(project);
     });
@@ -51,7 +51,7 @@ describe('ProjectRepository', () => {
       );
 
       await expect(
-        projectRepository.create(userId, projectName)
+        projectRepository.create({ userId, name: projectName })
       ).rejects.toThrow(HttpError);
     });
   });
@@ -211,10 +211,10 @@ describe('ProjectRepository', () => {
         name: newProjectName,
       });
 
-      const updatedProject: Project = await projectRepository.updateName(
-        project.id,
-        newProjectName
-      );
+      const updatedProject: Project = await projectRepository.updateName({
+        projectId: project.id,
+        name: newProjectName,
+      });
 
       expect(updatedProject.name).toBe(newProjectName);
     });
@@ -224,7 +224,10 @@ describe('ProjectRepository', () => {
       (prisma.project.update as jest.Mock).mockRejectedValue(error);
 
       await expect(
-        projectRepository.updateName(project.id, newProjectName)
+        projectRepository.updateName({
+          projectId: project.id,
+          name: newProjectName,
+        })
       ).rejects.toThrow(error);
     });
   });
@@ -244,7 +247,7 @@ describe('ProjectRepository', () => {
     it('should find a user who is a project leader of the project', async () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(projectLeader);
 
-      await projectRepository.findLeader(userId, projectId);
+      await projectRepository.findLeader({ userId, projectId });
 
       expect(projectLeader).toEqual(projectLeader);
     });
@@ -254,7 +257,7 @@ describe('ProjectRepository', () => {
       (prisma.user.findUnique as jest.Mock).mockRejectedValue(error);
 
       await expect(
-        projectRepository.findLeader(userId, projectId)
+        projectRepository.findLeader({ userId, projectId })
       ).rejects.toThrow(new HttpError(500, 'User could not be found'));
     });
   });
@@ -274,10 +277,10 @@ describe('ProjectRepository', () => {
     it('should find a user who is a participant of the project', async () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(mockParticipant);
 
-      const participant = await projectRepository.findParticipant(
+      const participant = await projectRepository.findParticipant({
         userId,
-        projectId
-      );
+        projectId,
+      });
 
       expect(participant).toEqual(mockParticipant);
     });
@@ -287,7 +290,7 @@ describe('ProjectRepository', () => {
       (prisma.user.findUnique as jest.Mock).mockRejectedValue(error);
 
       await expect(
-        projectRepository.findParticipant(userId, projectId)
+        projectRepository.findParticipant({ userId, projectId })
       ).rejects.toThrow(new HttpError(500, 'User could not be found'));
     });
   });
@@ -297,7 +300,7 @@ describe('ProjectRepository', () => {
     const projectId = 1;
 
     it('should call update with correct parameters', async () => {
-      await projectRepository.removeParticipant(participantId, projectId);
+      await projectRepository.removeParticipant({ participantId, projectId });
 
       expect(prisma.user.update as jest.Mock).toHaveBeenCalledWith({
         where: {
@@ -326,7 +329,7 @@ describe('ProjectRepository', () => {
       (prisma.user.update as jest.Mock).mockRejectedValue(error);
 
       await expect(
-        projectRepository.removeParticipant(participantId, projectId)
+        projectRepository.removeParticipant({ participantId, projectId })
       ).rejects.toThrow(error);
     });
   });
@@ -336,7 +339,7 @@ describe('ProjectRepository', () => {
     const projectId = 1;
 
     it('should call update with correct parameters', async () => {
-      await projectRepository.addLeader(userId, projectId);
+      await projectRepository.addLeader({ userId, projectId });
 
       expect(prisma.project.update as jest.Mock).toHaveBeenCalledWith({
         where: {
@@ -355,7 +358,7 @@ describe('ProjectRepository', () => {
       (prisma.project.update as jest.Mock).mockRejectedValue(error);
 
       await expect(
-        projectRepository.addLeader(userId, projectId)
+        projectRepository.addLeader({ userId, projectId })
       ).rejects.toThrow(error);
     });
   });

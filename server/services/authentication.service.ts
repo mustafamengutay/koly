@@ -43,12 +43,12 @@ export class AuthenticationService {
     }
 
     const hashedPassword = await this.encryptionService.hashPassword(password);
-    const newUser = await this.userRepository.create(
+    const newUser = await this.userRepository.create({
       name,
       surname,
       email,
-      hashedPassword
-    );
+      hashedPassword,
+    });
 
     return newUser;
   }

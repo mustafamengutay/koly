@@ -7,19 +7,19 @@ import { HttpError } from '../types/errors';
 
 @injectable()
 export class UserRepository implements IUserRepository {
-  public async create(
-    name: string,
-    surname: string,
-    email: string,
-    hashedPassword: string
-  ): Promise<User> {
+  public async create(data: {
+    name: string;
+    surname: string;
+    email: string;
+    hashedPassword: string;
+  }): Promise<User> {
     try {
       const user = await prisma.user.create({
         data: {
-          name,
-          surname,
-          email,
-          password: hashedPassword,
+          name: data.name,
+          surname: data.surname,
+          email: data.email,
+          password: data.hashedPassword,
         },
       });
 

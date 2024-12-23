@@ -44,7 +44,11 @@ export class InvitationService {
     }
 
     await this.ensureInvitationIsNotSent(user.id, projectId);
-    await this.invitationRepository.invite(projectLeaderId, projectId, user.id);
+    await this.invitationRepository.invite({
+      inviterId: projectLeaderId,
+      projectId: projectId,
+      inviteeId: user.id,
+    });
   }
 
   /**
@@ -66,14 +70,20 @@ export class InvitationService {
     participantId: number,
     projectId: number
   ) {
-    await this.invitationRepository.addParticipant(participantId, projectId);
-
-    const invitation = await this.invitationRepository.findById(
+    await this.invitationRepository.addParticipant({
       participantId,
-      projectId
-    );
+      projectId,
+    });
 
-    await this.invitationRepository.remove(participantId, invitation!.id);
+    const invitation = await this.invitationRepository.findById({
+      inviteeId: participantId,
+      projectId: projectId,
+    });
+
+    await this.invitationRepository.remove({
+      userId: participantId,
+      invitationId: invitation!.id,
+    });
   }
 
   /**
@@ -82,14 +92,14 @@ export class InvitationService {
    * @param participantId User ID who received an invitation.
    */
   public async rejectProjectInvitation(userId: number, invitationId: number) {
-    await this.invitationRepository.remove(userId, invitationId);
+    await this.invitationRepository.remove({ userId, invitationId });
   }
 
   public async ensureInvitationIsNotSent(inviteeId: number, projectId: number) {
-    const invitation = await this.invitationRepository.findById(
+    const invitation = await this.invitationRepository.findById({
       inviteeId,
-      projectId
-    );
+      projectId,
+    });
     if (invitation) {
       throw new HttpError(409, 'Invitation is already sent to the user');
     }

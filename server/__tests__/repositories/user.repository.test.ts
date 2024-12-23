@@ -43,12 +43,12 @@ describe('UserRepository', () => {
     it('should create a user and return it successfully', async () => {
       (prisma.user.create as jest.Mock).mockResolvedValue(mockUser);
 
-      const user: User = await userRepository.create(
+      const user: User = await userRepository.create({
         name,
         surname,
         email,
-        password
-      );
+        hashedPassword: password,
+      });
 
       expect(user).toHaveProperty('email', email);
       expect(user).toHaveProperty('password', 'hashedPassword');
@@ -60,7 +60,12 @@ describe('UserRepository', () => {
       );
 
       await expect(
-        userRepository.create(name, surname, email, password)
+        userRepository.create({
+          name,
+          surname,
+          email,
+          hashedPassword: password,
+        })
       ).rejects.toThrow(new HttpError(500, 'The user could not be created'));
     });
   });

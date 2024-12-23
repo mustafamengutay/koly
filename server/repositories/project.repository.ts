@@ -7,19 +7,22 @@ import { HttpError } from '../types/errors';
 
 @injectable()
 export class ProjectRepository implements IProjectRepository {
-  public async create(userId: number, name: string): Promise<Project> {
+  public async create(data: {
+    userId: number;
+    name: string;
+  }): Promise<Project> {
     try {
       const newProject: Project = await prisma.project.create({
         data: {
-          name,
+          name: data.name,
           leaders: {
             connect: {
-              id: userId,
+              id: data.userId,
             },
           },
           participants: {
             connect: {
-              id: userId,
+              id: data.userId,
             },
           },
         },
@@ -138,14 +141,17 @@ export class ProjectRepository implements IProjectRepository {
     }
   }
 
-  public async updateName(projectId: number, name: string): Promise<Project> {
+  public async updateName(data: {
+    projectId: number;
+    name: string;
+  }): Promise<Project> {
     try {
       const updatedProject: Project = await prisma.project.update({
         where: {
-          id: projectId,
+          id: data.projectId,
         },
         data: {
-          name,
+          name: data.name,
         },
       });
 
@@ -155,24 +161,24 @@ export class ProjectRepository implements IProjectRepository {
     }
   }
 
-  public async removeParticipant(
-    participantId: number,
-    projectId: number
-  ): Promise<void> {
+  public async removeParticipant(data: {
+    participantId: number;
+    projectId: number;
+  }): Promise<void> {
     try {
       await prisma.user.update({
         where: {
-          id: participantId,
+          id: data.participantId,
         },
         data: {
           projects: {
             disconnect: {
-              id: projectId,
+              id: data.projectId,
             },
           },
           participatedProjects: {
             disconnect: {
-              id: projectId,
+              id: data.projectId,
             },
           },
         },
@@ -182,16 +188,19 @@ export class ProjectRepository implements IProjectRepository {
     }
   }
 
-  public async addLeader(userId: number, projectId: number): Promise<void> {
+  public async addLeader(data: {
+    userId: number;
+    projectId: number;
+  }): Promise<void> {
     try {
       await prisma.project.update({
         where: {
-          id: projectId,
+          id: data.projectId,
         },
         data: {
           leaders: {
             connect: {
-              id: userId,
+              id: data.userId,
             },
           },
         },
@@ -201,20 +210,20 @@ export class ProjectRepository implements IProjectRepository {
     }
   }
 
-  public async findLeader(
-    userId: number,
-    projectId: number
-  ): Promise<User | null> {
+  public async findLeader(data: {
+    userId: number;
+    projectId: number;
+  }): Promise<User | null> {
     try {
       const projectLeader = await prisma.user.findUnique({
         where: {
-          id: userId,
+          id: data.userId,
           participatedProjects: {
             some: {
-              id: projectId,
+              id: data.projectId,
               leaders: {
                 some: {
-                  id: userId,
+                  id: data.userId,
                 },
               },
             },
@@ -251,17 +260,17 @@ export class ProjectRepository implements IProjectRepository {
     }
   }
 
-  public async findParticipant(
-    userId: number,
-    projectId: number
-  ): Promise<User | null> {
+  public async findParticipant(where: {
+    userId: number;
+    projectId: number;
+  }): Promise<User | null> {
     try {
       const participant = await prisma.user.findUnique({
         where: {
-          id: userId,
+          id: where.userId,
           participatedProjects: {
             some: {
-              id: projectId,
+              id: where.projectId,
             },
           },
         },

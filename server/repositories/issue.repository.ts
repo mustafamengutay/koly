@@ -2,7 +2,7 @@ import { injectable } from 'inversify';
 import prisma from '../configs/database';
 import { Issue } from '@prisma/client';
 
-import { IssueData, IssueStatus } from '../types/issue';
+import { IssueData, IssueStatus, UpdateIssueData } from '../types/issue';
 import IIssueRepository from '../types/repositories/IIssueRepository';
 import { HttpError } from '../types/errors';
 
@@ -23,19 +23,19 @@ export class IssueRepository implements IIssueRepository {
     }
   }
 
-  public async update(
-    issueId: number,
-    data: { title?: string; description?: string; type?: string }
-  ): Promise<Issue> {
+  public async update(data: {
+    issueId: number;
+    updateData: UpdateIssueData;
+  }): Promise<Issue> {
     try {
       const updatedIssue: Issue = await prisma.issue.update({
         where: {
-          id: issueId,
+          id: data.issueId,
         },
         data: {
-          title: data.title,
-          description: data.description,
-          type: data.type,
+          title: data.updateData.title,
+          description: data.updateData.description,
+          type: data.updateData.type,
         },
       });
 
@@ -45,14 +45,17 @@ export class IssueRepository implements IIssueRepository {
     }
   }
 
-  public async adopt(issueId: number, userId: number): Promise<Issue> {
+  public async adopt(data: {
+    issueId: number;
+    userId: number;
+  }): Promise<Issue> {
     try {
       const adoptedIssue: Issue = await prisma.issue.update({
         where: {
-          id: issueId,
+          id: data.issueId,
         },
         data: {
-          adoptedById: userId,
+          adoptedById: data.userId,
           status: IssueStatus.InProgress,
         },
       });
@@ -63,12 +66,15 @@ export class IssueRepository implements IIssueRepository {
     }
   }
 
-  public async release(issueId: number, userId: number): Promise<Issue> {
+  public async release(data: {
+    issueId: number;
+    userId: number;
+  }): Promise<Issue> {
     try {
       const releasedIssue: Issue = await prisma.issue.update({
         where: {
-          id: issueId,
-          adoptedById: userId,
+          id: data.issueId,
+          adoptedById: data.userId,
         },
         data: {
           adoptedById: null,
@@ -82,12 +88,15 @@ export class IssueRepository implements IIssueRepository {
     }
   }
 
-  public async remove(issueId: number, userId: number): Promise<Issue> {
+  public async remove(data: {
+    issueId: number;
+    userId: number;
+  }): Promise<Issue> {
     try {
       const removedIssue: Issue = await prisma.issue.delete({
         where: {
-          id: issueId,
-          reportedById: userId,
+          id: data.issueId,
+          reportedById: data.userId,
         },
       });
 
@@ -97,12 +106,15 @@ export class IssueRepository implements IIssueRepository {
     }
   }
 
-  public async markAsComplete(issueId: number, userId: number): Promise<Issue> {
+  public async markAsComplete(data: {
+    issueId: number;
+    userId: number;
+  }): Promise<Issue> {
     try {
       const completedIssue: Issue = await prisma.issue.update({
         where: {
-          id: issueId,
-          adoptedById: userId,
+          id: data.issueId,
+          adoptedById: data.userId,
         },
         data: {
           status: IssueStatus.Completed,
@@ -115,12 +127,15 @@ export class IssueRepository implements IIssueRepository {
     }
   }
 
-  public async findById(issueId: number, projectId: number): Promise<Issue> {
+  public async findById(where: {
+    issueId: number;
+    projectId: number;
+  }): Promise<Issue> {
     try {
       const issue = await prisma.issue.findUniqueOrThrow({
         where: {
-          id: issueId,
-          projectId,
+          id: where.issueId,
+          projectId: where.issueId,
         },
         include: {
           reportedBy: {
