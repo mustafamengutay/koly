@@ -3,6 +3,7 @@ import Dashboard from './Dashboard';
 import Home from './Home';
 import Login from './Login';
 import Signup from './Signup';
+import ProjectBoard from './ProjectBoard';
 
 const pagesData: routerType[] = [
   {
@@ -24,6 +25,11 @@ const pagesData: routerType[] = [
     path: 'signup',
     element: <Signup />,
     title: 'signup',
+  },
+  {
+    path: 'projects/:projectId',
+    element: <ProjectBoard />,
+    title: 'projects',
   },
 ];
 
