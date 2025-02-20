@@ -1,8 +1,23 @@
 {
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
-  "sourceRoot": "src",
+  "sourceRoot": "apps/koly-api-gateway/src",
   "compilerOptions": {
-    "deleteOutDir": true
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/koly-api-gateway/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/koly-api-gateway",
+  "projects": {
+    "koly-api-gateway": {
+      "type": "application",
+      "root": "apps/koly-api-gateway",
+      "entryFile": "main",
+      "sourceRoot": "apps/koly-api-gateway/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/koly-api-gateway/tsconfig.app.json"
+      }
+    }
   }
 }
