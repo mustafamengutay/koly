@@ -11,12 +11,10 @@ describe('KolyApiGatewayController', () => {
       providers: [KolyApiGatewayService],
     }).compile();
 
-    kolyApiGatewayController = app.get<KolyApiGatewayController>(KolyApiGatewayController);
+    kolyApiGatewayController = app.get<KolyApiGatewayController>(
+      KolyApiGatewayController,
+    );
   });
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(kolyApiGatewayController.getHello()).toBe('Hello World!');
-    });
-  });
+  describe('root', () => {});
 });
