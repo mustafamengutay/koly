@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { ConflictException } from '@nestjs/common';
 import { SignupData } from '@app/common/user/interfaces/signup.interface';
+import { UserEmailData } from '@app/common/user/interfaces/user-email.interface';
 
 describe('UserService', () => {
   let userService: UserService;
@@ -88,6 +89,46 @@ describe('UserService', () => {
       // Assert
       await expect(userService.signup(signupData)).rejects.toThrow(
         new RpcException(new ConflictException('User is already exist')),
+      );
+    });
+  });
+
+  describe('findOne', () => {
+    it('should return user data when user is found', async () => {
+      // Arrange
+      const userEmailData: UserEmailData = { email: 'john@example.com' };
+      const foundUser = {
+        id: 1,
+        name: 'John',
+        surname: 'Doe',
+        email: 'john@example.com',
+      } as User;
+
+      userRepository.findOne.mockResolvedValue(foundUser);
+
+      // Act
+      const result = await userService.findOne(userEmailData);
+
+      // Assert
+      expect(result).toMatchObject({
+        user: {
+          id: foundUser.id,
+          name: foundUser.name,
+          surname: foundUser.surname,
+          email: foundUser.email,
+        },
+      });
+    });
+
+    it('should throw RpcException when user is not found', async () => {
+      // Arrange
+      const userEmailData: UserEmailData = { email: 'notfound@example.com' };
+
+      userRepository.findOne.mockResolvedValue(null);
+
+      // Assert
+      await expect(userService.findOne(userEmailData)).rejects.toThrow(
+        new RpcException({ statusCode: 404, message: 'User not found' }),
       );
     });
   });

@@ -6,6 +6,8 @@ import * as bcrypt from 'bcryptjs';
 import { User } from './user.entity';
 import { SignupData } from '@app/common/user/interfaces/signup.interface';
 import { SignupResponseDto } from '@app/common/user/dtos/signup.dto';
+import { UserResponseDto } from '@app/common/user/dtos/user-response.dto';
+import { UserEmailData } from '@app/common/user/interfaces/user-email.interface';
 
 @Injectable()
 export class UserService {
@@ -39,6 +41,24 @@ export class UserService {
         name: newUser.name,
         surname: newUser.surname,
         email: newUser.email,
+      },
+    };
+  }
+
+  async findOne(userEmailData: UserEmailData): Promise<UserResponseDto> {
+    const user = await this.userRepository.findOne({
+      where: { email: userEmailData.email },
+    });
+    if (!user) {
+      throw new RpcException({ statusCode: 404, message: 'User not found' });
+    }
+
+    return {
+      user: {
+        id: user.id,
+        name: user.name,
+        surname: user.surname,
+        email: user.email,
       },
     };
   }

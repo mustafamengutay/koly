@@ -1,4 +1,11 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  ValidationPipe,
+} from '@nestjs/common';
 import { UserService } from './user.service';
 import {
   SignupRequestDto,
@@ -12,6 +19,7 @@ import {
   ApiInternalServerErrorResponse,
   ApiOperation,
 } from '@nestjs/swagger';
+import { UserEmailDto } from '@app/common/user/dtos/user-email.dto';
 
 @Controller('users')
 export class UserController {
@@ -30,5 +38,26 @@ export class UserController {
     @Body() signupRequestDto: SignupRequestDto,
   ): Observable<SignupResponseDto> {
     return this.usersService.signup(signupRequestDto);
+  }
+
+  @ApiOperation({ summary: 'Find a user' })
+  @ApiCreatedResponse({
+    description: 'User',
+    type: SignupResponseDto,
+  })
+  @ApiBadRequestResponse({ description: 'Validation error' })
+  @ApiInternalServerErrorResponse({ description: 'Internal server error' })
+  @Get('')
+  findOne(
+    @Query(
+      new ValidationPipe({
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+        forbidNonWhitelisted: true,
+      }),
+    )
+    userEmailDto: UserEmailDto,
+  ): Observable<SignupResponseDto> {
+    return this.usersService.findOne(userEmailDto);
   }
 }

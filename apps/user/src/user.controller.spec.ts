@@ -6,6 +6,7 @@ import {
   SignupRequestDto,
   SignupResponseDto,
 } from '@app/common/user/dtos/signup.dto';
+import { UserEmailDto } from '@app/common/user/dtos/user-email.dto';
 
 describe('UserController', () => {
   let userController: UserController;
@@ -68,6 +69,42 @@ describe('UserController', () => {
 
       // Act
       const result = await userController.signup(signupData);
+
+      // Assert
+      expect(result).toEqual(expectedResponse);
+    });
+  });
+
+  describe('findOne', () => {
+    it('should call userService.findOne with correct parameters', async () => {
+      // Arrange
+      const userEmailDto: UserEmailDto = { email: 'john@example.com' };
+
+      const findOneServiceMock = jest.spyOn(userService, 'findOne');
+
+      // Act
+      await userController.findOne(userEmailDto);
+
+      // Assert
+      expect(findOneServiceMock).toHaveBeenCalledWith(userEmailDto);
+    });
+
+    it('should return UserResponseDto when user is found', async () => {
+      // Arrange
+      const userEmailDto: UserEmailDto = { email: 'john@example.com' };
+      const expectedResponse = {
+        user: {
+          id: 1,
+          name: 'John',
+          surname: 'Doe',
+          email: 'john@example.com',
+        },
+      };
+
+      jest.spyOn(userService, 'findOne').mockResolvedValue(expectedResponse);
+
+      // Act
+      const result = await userController.findOne(userEmailDto);
 
       // Assert
       expect(result).toEqual(expectedResponse);
