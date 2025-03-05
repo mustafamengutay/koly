@@ -49,6 +49,7 @@ export class UserService {
     const user = await this.userRepository.findOne({
       where: { email: userEmailData.email },
     });
+
     if (!user) {
       throw new RpcException({ statusCode: 404, message: 'User not found' });
     }
@@ -59,6 +60,7 @@ export class UserService {
         name: user.name,
         surname: user.surname,
         email: user.email,
+        password: user.password,
       },
     };
   }
