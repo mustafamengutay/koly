@@ -7,7 +7,8 @@ import { ProjectService } from './project.service';
 import { Project } from './project.entity';
 import { CreateProjectData } from '@app/common/project/interfaces/create-project.interface';
 import { RpcException } from '@nestjs/microservices';
-import { ProjectDto } from '@app/common/project/dtos/project.dto';
+import { ProjectResponseDto } from '@app/common/project/dtos/project-response.dto';
+import { findProjectData } from '@app/common/project/interfaces/find-project.interface';
 
 describe('ProjectService', () => {
   let projectService: ProjectService;
@@ -54,10 +55,12 @@ describe('ProjectService', () => {
       jest.spyOn(projectRepository, 'findOne').mockResolvedValue(null);
       jest.spyOn(projectRepository, 'save').mockResolvedValue(savedProject);
 
-      const expectedResponse: ProjectDto = {
-        id: savedProject.id,
-        name: savedProject.name,
-        createdAt: savedProject.createdAt,
+      const expectedResponse: ProjectResponseDto = {
+        project: {
+          id: savedProject.id,
+          name: savedProject.name,
+          createdAt: savedProject.createdAt,
+        },
       };
 
       // Act
@@ -88,6 +91,46 @@ describe('ProjectService', () => {
           message:
             'Test Project already exist. Please provide a different name',
         }),
+      );
+    });
+  });
+
+  describe('findOne', () => {
+    it('should return project if found', async () => {
+      // Arrange
+      const findData: findProjectData = { userId: 1, projectId: 2 };
+      const project: Project = {
+        id: 2,
+        name: 'Test Project',
+        leaderIds: [1],
+        createdAt: new Date(),
+      } as Project;
+
+      projectRepository.findOne.mockResolvedValue(project);
+
+      const expectedResponse: ProjectResponseDto = {
+        project: {
+          id: project.id,
+          name: project.name,
+          createdAt: project.createdAt,
+        },
+      };
+
+      // Act
+      const result = await projectService.findOne(findData);
+
+      // Assert
+      expect(result).toEqual(expectedResponse);
+    });
+
+    it('should throw RpcException if project is not found', async () => {
+      // Arrange
+      const findData: findProjectData = { userId: 1, projectId: 99 };
+      projectRepository.findOne.mockResolvedValue(null);
+
+      // Act & Assert
+      await expect(projectService.findOne(findData)).rejects.toThrow(
+        new RpcException({ statusCode: 404, message: 'Project not found' }),
       );
     });
   });

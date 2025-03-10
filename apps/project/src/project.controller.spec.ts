@@ -64,4 +64,51 @@ describe('ProjectController', () => {
       expect(result).toEqual(createdProject);
     });
   });
+
+  describe('findOne', () => {
+    it('should call ProjectService.findOne with correct parameters', async () => {
+      // Arrange
+      const findProjectData = { userId: 1, projectId: 2 };
+      const projectServiceMock = jest.spyOn(projectService, 'findOne');
+
+      // Act
+      await projectController.findOne(findProjectData);
+
+      // Assert
+      expect(projectServiceMock).toHaveBeenCalledWith(findProjectData);
+    });
+
+    it('should return the found project', async () => {
+      // Arrange
+      const findProjectData = { userId: 1, projectId: 2 };
+      const projectResponse = {
+        project: {
+          id: 2,
+          name: 'Test Project',
+          createdAt: new Date(),
+        },
+      };
+
+      jest.spyOn(projectService, 'findOne').mockResolvedValue(projectResponse);
+
+      // Act
+      const result = await projectController.findOne(findProjectData);
+
+      // Assert
+      expect(result).toEqual(projectResponse);
+    });
+
+    it('should throw an error if project is not found', async () => {
+      // Arrange
+      const findProjectData = { userId: 1, projectId: 99 };
+      jest
+        .spyOn(projectService, 'findOne')
+        .mockRejectedValue(new Error('Project not found'));
+
+      // Act & Assert
+      await expect(projectController.findOne(findProjectData)).rejects.toThrow(
+        'Project not found',
+      );
+    });
+  });
 });
