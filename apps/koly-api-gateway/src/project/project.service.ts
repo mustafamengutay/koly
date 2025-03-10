@@ -1,6 +1,5 @@
 import { CreateProjectRequestDto } from '@app/common/project/dtos/create-project.dto';
 import { ProjectResponseDto } from '@app/common/project/dtos/project-response.dto';
-import { ProjectDto } from '@app/common/project/dtos/project.dto';
 import { PROJECT_PATTERNS } from '@app/common/project/project.patterns';
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
@@ -15,7 +14,7 @@ export class ProjectService {
   create(
     userId: number,
     createProjectRequestDto: CreateProjectRequestDto,
-  ): Observable<ProjectDto> {
+  ): Observable<ProjectResponseDto> {
     return this.projectClient.send(PROJECT_PATTERNS.CREATE, {
       userId,
       createProjectRequestDto,

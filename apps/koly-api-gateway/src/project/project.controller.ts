@@ -38,10 +38,10 @@ export class ProjectController {
   @ApiBadRequestResponse({ description: 'Validation error' })
   @ApiInternalServerErrorResponse({ description: 'Internal server error' })
   @Post()
-  signup(
+  create(
     @UserId() userId: number,
     @Body() createProjectRequestDto: CreateProjectRequestDto,
-  ): Observable<ProjectDto> {
+  ): Observable<ProjectResponseDto> {
     return this.projectService.create(userId, createProjectRequestDto);
   }
 

@@ -2,7 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Project } from './project.entity';
 import { Repository } from 'typeorm';
-import { ProjectDto } from '@app/common/project/dtos/project.dto';
 import { RpcException } from '@nestjs/microservices';
 import { CreateProjectData } from '@app/common/project/interfaces/create-project.interface';
 import { findProjectData } from '@app/common/project/interfaces/find-project.interface';
@@ -15,7 +14,9 @@ export class ProjectService {
     private readonly projectRepository: Repository<Project>,
   ) {}
 
-  async create(createProjectData: CreateProjectData): Promise<ProjectDto> {
+  async create(
+    createProjectData: CreateProjectData,
+  ): Promise<ProjectResponseDto> {
     const { userId, createProjectRequestDto } = createProjectData;
 
     const project = await this.projectRepository.findOne({
@@ -34,9 +35,11 @@ export class ProjectService {
     });
 
     return {
-      id: newProject.id,
-      name: newProject.name,
-      createdAt: newProject.createdAt,
+      project: {
+        id: newProject.id,
+        name: newProject.name,
+        createdAt: newProject.createdAt,
+      },
     };
   }
 

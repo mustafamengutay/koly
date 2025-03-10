@@ -3,7 +3,7 @@ import { ProjectController } from './project.controller';
 import { ProjectService } from './project.service';
 import { createMock, DeepMocked } from '@golevelup/ts-jest';
 import { CreateProjectData } from '@app/common/project/interfaces/create-project.interface';
-import { ProjectDto } from '@app/common/project/dtos/project.dto';
+import { ProjectResponseDto } from '@app/common/project/dtos/project-response.dto';
 
 describe('ProjectController', () => {
   let projectController: ProjectController;
@@ -48,10 +48,12 @@ describe('ProjectController', () => {
         createProjectRequestDto: { name: 'New Project' },
       };
 
-      const createdProject: ProjectDto = {
-        id: 1,
-        name: 'New Project',
-        createdAt: new Date(),
+      const createdProject: ProjectResponseDto = {
+        project: {
+          id: 1,
+          name: 'New Project',
+          createdAt: new Date(),
+        },
       };
 
       const projectServiceMock = jest.spyOn(projectService, 'create');
