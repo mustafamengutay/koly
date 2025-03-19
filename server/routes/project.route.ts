@@ -1,13 +1,9 @@
-import container from '../inversify.config';
-
 import express from 'express';
 import { param, body } from 'express-validator';
 import { inputValidator } from '../middlewares/validation';
 import { verifyUser } from '../middlewares/authorization';
 
-import { ProjectController } from '../controllers/project.controller';
-
-const projectController = container.get(ProjectController);
+import * as projectController from '../controllers/project.controller';
 
 const router = express.Router();
 

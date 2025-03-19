@@ -1,13 +1,9 @@
-import container from '../inversify.config';
-
 import express from 'express';
 import { param, query } from 'express-validator';
 import { inputValidator } from '../middlewares/validation';
 import { verifyUser } from '../middlewares/authorization';
 
-import { SearchController } from '../controllers/search.controller';
-
-const searchController = container.get<SearchController>(SearchController);
+import * as searchController from '../controllers/search.controller';
 
 const router = express.Router();
 

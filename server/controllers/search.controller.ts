@@ -1,45 +1,26 @@
-import { inject, injectable } from 'inversify';
-
 import { Response, NextFunction } from 'express';
 import { CustomRequest } from '../types/customRequest';
+import * as searchService from '../services/search.service';
 
-import { SearchService } from '../services/search.service';
+export async function getSearchIssue(
+  req: CustomRequest,
+  res: Response,
+  next: NextFunction
+) {
+  const query = req.query.issue?.toString();
+  const projectId = Number(req.params.projectId);
+  const userId = req.userId!;
 
-@injectable()
-export class SearchController {
-  private searchService: SearchService;
+  try {
+    const results = await searchService.searchIssue(userId, projectId, query!);
 
-  public constructor(
-    @inject(SearchService)
-    searchService: SearchService
-  ) {
-    this.searchService = searchService;
+    res.status(200).json({
+      status: 'success',
+      data: {
+        results,
+      },
+    });
+  } catch (error) {
+    next(error);
   }
-
-  getSearchIssue = async (
-    req: CustomRequest,
-    res: Response,
-    next: NextFunction
-  ) => {
-    const query = req.query.issue?.toString();
-    const projectId = Number(req.params.projectId);
-    const userId = req.userId!;
-
-    try {
-      const results = await this.searchService.searchIssue(
-        userId,
-        projectId,
-        query!
-      );
-
-      res.status(200).json({
-        status: 'success',
-        data: {
-          results,
-        },
-      });
-    } catch (error) {
-      next(error);
-    }
-  };
 }
